@@ -10,6 +10,7 @@ PUERTO=${PUERTO:-8199}
 export BASE="http://127.0.0.1:$PUERTO"
 export TMP=$(mktemp -d)
 export TUPLANNER_UPLOADS="$TMP/uploads"
+export TUPLANNER_BORRADOS="$TMP/borrados"   # copias de la papelera (web_97)
 # Conector con el Panel Tukán Central (web_95_central.sh): datos de prueba, el sitio y las pruebas los ven igual
 export TUKAN_CENTRAL_ID=tuplanner-prueba
 export TUKAN_CENTRAL_SECRET=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef

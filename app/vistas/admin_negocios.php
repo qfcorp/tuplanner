@@ -16,6 +16,7 @@ use TuPlanner\{PanelTukan, WhatsApp};
             <select id="f" name="f" data-autoenviar>
                 <option value="">Todos</option>
                 <?php foreach (PanelTukan::ESTADOS as $k => $txt): ?><option value="<?= $k ?>" <?= $filtro === $k ? 'selected' : '' ?>><?= $txt ?></option><?php endforeach; ?>
+                <option value="papelera" <?= $filtro === 'papelera' ? 'selected' : '' ?>>Papelera (borrados)</option>
             </select></div>
         <div class="campo"><label for="plan">Plan</label>
             <select id="plan" name="plan" data-autoenviar>
@@ -42,7 +43,9 @@ use TuPlanner\{PanelTukan, WhatsApp};
                     <td><a href="<?= e(url('admin_negocio', ['id' => $n['id']])) ?>"><strong><?= e($n['nombre']) ?></strong></a><br><small><?= e($n['ciudad']) ?> · desde <?= date('d/m/Y', strtotime($n['creado_en'])) ?></small></td>
                     <td><?= e($n['dueno']) ?><br><small><?= e($n['dueno_email']) ?></small></td>
                     <td><?= e($n['plan_nombre']) ?></td>
-                    <td><span class="etq est-<?= e($n['estado_cuenta']) ?>"><?= PanelTukan::ESTADOS[$n['estado_cuenta']] ?></span></td>
+                    <td><span class="etq est-<?= e($n['estado_cuenta']) ?>"><?= PanelTukan::ESTADOS[$n['estado_cuenta']] ?></span>
+                        <?php if (!empty($n['eliminado_en'])): ?><br><span class="etq est-cancelado">En la papelera</span>
+                            <small>desde <?= date('d/m/Y', strtotime($n['eliminado_en'])) ?> · se borra el <?= date('d/m/Y', strtotime(TuPlanner\Papelera::fechaPurga($n['eliminado_en']))) ?></small><?php endif; ?></td>
                     <td><?= $vence ? date('d/m/Y', strtotime($vence)) : '—' ?></td>
                     <td class="der"><?= (int) $n['eventos_30'] ?></td>
                     <td class="der"><?= (int) $n['espacios'] ?></td>

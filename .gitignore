@@ -13,3 +13,6 @@ uploads/
 # Copias de respaldo
 *.bak
 *.bak_*
+
+# Copias de los negocios borrados (papelera del Panel Tukán Central)
+respaldos/

@@ -3,11 +3,12 @@ declare(strict_types=1);
 
 /**
  * Tareas automáticas de TuPlanner. Se corre CADA HORA con cron:
- *   5 * * * * php /var/www/tuplanner/bin/tareas.php >> $HOME/tuplanner-tareas.log 2>&1
+ *   7 * * * * php /var/www/tuplanner/bin/tareas.php >> /var/log/tuplanner-tareas.log 2>&1   (crontab de www-data)
  *
  * Hace: vence cotizaciones, libera fechas retenidas, avisa cuotas por cobrar (8:00), revisar precio,
  * eventos en 7 días, pasa a "realizado" los eventos que ya pasaron (y avisa devolver la garantía),
- * el reporte del mes (día 1 desde las 7:00) y los seguimientos del día por Telegram (8:00).
+ * el reporte del mes (día 1 desde las 7:00), los seguimientos del día por Telegram (8:00) y la papelera del Panel Tukán Central
+ * (borra de verdad los negocios con más de 30 días en la papelera y las copias de más de 1 año).
  * Cada cosa se envía una sola vez aunque el cron corra muchas veces.
  *
  * Para probar con otra fecha:  php bin/tareas.php "2026-11-01 08:00"

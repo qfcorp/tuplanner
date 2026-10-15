@@ -26,7 +26,14 @@ Se hizo **copiando TuEvento** (qfcorp/tuevento, salones y quintas) y adaptándol
 - [x] Datos de ejemplo de organizador (servicios de organización, paquete "Organización integral de boda", lugares, tareas, decoración propia), textos, planes, íconos "TP"
 - [x] Pruebas: **lógica 2271/2271** (nuevas: logica_100, 136) y **pantallas 1916/1916** (nuevas: web_100, 114), sin avisos de PHP; revisado en celular (390 px) y computadora sin errores de JavaScript ni nada que se salga a lo ancho
 
+## Hecho (15 oct 2026) — Pausar y borrar clientes desde el Panel Tukán Central (Anexo A)
+- [x] **Pausar** (con tipo: falta de pago, pedido del cliente, revisión, uso indebido u otro, y motivo obligatorio): el negocio queda suspendido; al entrar ve "Tu cuenta está pausada" con el motivo (en revisión y uso indebido, un texto genérico) y el botón de WhatsApp de Tukán. Su página pública, portales (también "Tu planificación" e "Ideas"), invitaciones, firmas y enlaces dicen "temporalmente no disponible". **Reactivar** lo quita
+- [x] **Borrar** (escribiendo el nombre exacto y el motivo; solo el dueño del Panel Central): primero se guarda una copia completa del negocio (todas sus filas de todas sus tablas, también las del organizador, y la lista de sus archivos) en `respaldos/borrados/` (fuera de la web, solo la lee el programa), y queda en la **papelera**: no entra, no sale en listas ni cifras, sus páginas dan 404 y no recibe tareas ni avisos
+- [x] **Restaurar** dentro de 30 días (desde el Panel Central o desde el Panel Tukán del programa, filtro "Papelera"): vuelve tal cual. A los 30 días la tarea de cada hora lo borra de verdad; la copia se guarda 1 año
+- [x] Pruebas: logica_97 (127) y web_97 (56), migración 097. Totales: lógica 2398/2398 y pantallas 1973/1973
+
 ## Pendiente
+0. [ ] DIMI: al actualizar en el servidor, volver a correr el instalador del README: crea la carpeta `respaldos/borrados` y pasa las tareas de cada hora al usuario `www-data`
 1. [ ] DIMI: instalar en qfcorp (línea del README) y crear la ruta del túnel `tuplanner.tukanec.com` → HTTP → localhost:80 (Host header)
 2. [ ] DIMI: crear el super usuario (`php /var/www/tuplanner/bin/crear_admin.php`) y conectar al Panel Tukán Central (tipo "TuPlanner")
 3. [ ] Confirmar precios y qué va en cada plan después de hablar con 2-3 wedding planners

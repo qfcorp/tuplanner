@@ -51,6 +51,13 @@ if (es_post()) {
                 registrar_admin('Notas internas actualizadas', $id);
                 aviso('Notas guardadas.');
                 break;
+            case 'restaurar':   // Anexo A: sacar de la papelera (dentro de los 30 días)
+                if (empty($negocio['eliminado_en'])) throw new RuntimeException('Este negocio no está en la papelera.');
+                if (TuPlanner\Papelera::fechaPurga($negocio['eliminado_en']) <= date('Y-m-d')) throw new RuntimeException('Ya pasaron los 30 días de la papelera.');
+                (new TuPlanner\Papelera(db()))->restaurar($id);
+                registrar_admin('Restaurado de la papelera', $id);
+                aviso('Negocio restaurado: vuelve tal como estaba.');
+                break;
             case 'clave':
                 $_SESSION['clave_nueva_' . $id] = $panel->nuevaClaveDueno($id);
                 registrar_admin('Nueva contraseña para el dueño', $id);

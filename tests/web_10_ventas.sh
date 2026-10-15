@@ -286,8 +286,8 @@ check "Solo 5 consultas creadas" "5" "$(sql "SELECT count(*) FROM eventos WHERE 
 check "Negocio que no existe" "404" "$(get "r=sitio&s=no-existe-xyz")"
 contiene "Página no disponible" "$TMP/pag.html" "no está disponible"
 sql "UPDATE negocios SET estado='suspendido' WHERE id=$NID_A" > /dev/null
-check "Negocio suspendido: no disponible" "404" "$(get "r=sitio&s=$SLUG")"
-check "Suspendido: JSON tampoco" "404" "$(get "r=disponible&s=$SLUG&fecha=$FUT")"
+check "Negocio suspendido (pausado): temporalmente no disponible (503)" "503" "$(get "r=sitio&s=$SLUG")"
+check "Suspendido: JSON tampoco (503)" "503" "$(get "r=disponible&s=$SLUG&fecha=$FUT")"
 sql "UPDATE negocios SET estado='prueba' WHERE id=$NID_A" > /dev/null
 
 echo "11. Permisos"

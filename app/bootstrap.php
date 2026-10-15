@@ -175,9 +175,10 @@ function usuario(): ?array
     }
     $st = db()->prepare(
         'SELECT u.id, u.nombre, u.email, u.rol, u.negocio_id, u.telefono,
-                n.nombre AS negocio, n.slug, n.plan_codigo, n.estado, n.prueba_hasta, n.activo_hasta, n.color, n.iva_pct
+                n.nombre AS negocio, n.slug, n.plan_codigo, n.estado, n.prueba_hasta, n.activo_hasta, n.color, n.iva_pct,
+                n.pausa_tipo, n.pausa_motivo
            FROM usuarios u JOIN negocios n ON n.id = u.negocio_id
-          WHERE u.id = ? AND u.activo'
+          WHERE u.id = ? AND u.activo AND n.eliminado_en IS NULL'
     );
     $st->execute([$_SESSION['usuario_id']]);
     return $u = ($st->fetch() ?: null);

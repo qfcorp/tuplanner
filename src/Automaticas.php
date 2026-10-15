@@ -303,8 +303,19 @@ final class Automaticas
                   'semana' => 0, 'realizados' => 0, 'garantias' => 0, 'reportes' => 0, 'seguimientos' => 0, 'errores' => 0];
         $total += ['prov_pagos' => 0, 'prov_documentos' => 0, 'prov_confirmar' => 0];   // proveedores (060)
         $total['cotizaciones_vencidas'] = (new Cotizaciones($this->db))->vencerAntiguas($hoy);
+        // Papelera (Anexo A): borra de verdad los negocios con más de 30 días en la papelera y las copias de más de 1 año
+        $total += ['purgados' => 0, 'copias_borradas' => 0];
+        try {
+            $p = (new Papelera($this->db))->purgar($ahora);
+            $total['purgados'] = $p['negocios'];
+            $total['copias_borradas'] = $p['copias'];
+        } catch (\Throwable $e) {
+            $total['errores']++;
+            error_log('TuPlanner tareas papelera: ' . $e->getMessage());
+        }
         $planes = new Planes($this->db);
-        $negocios = $this->db->query("SELECT id, estado, prueba_hasta, activo_hasta FROM negocios WHERE estado IN ('prueba','activo') ORDER BY id")->fetchAll();
+        // Ni los pausados (suspendidos) ni los que están en la papelera reciben tareas ni avisos
+        $negocios = $this->db->query("SELECT id, estado, prueba_hasta, activo_hasta FROM negocios WHERE estado IN ('prueba','activo') AND eliminado_en IS NULL ORDER BY id")->fetchAll();
         foreach ($negocios as $n) {
             if (!$planes->alDia($n, $hoy)) continue;
             $id = (int) $n['id'];
@@ -333,6 +344,8 @@ final class Automaticas
         return $ahora->format('Y-m-d H:i') . " · negocios {$r['negocios']} · cotizaciones vencidas {$r['cotizaciones_vencidas']}"
              . " · fechas liberadas {$r['retenciones']} · avisos de cobro {$r['cuotas']} · revisar precio {$r['precios']}"
              . " · eventos en 7 dias {$r['semana']} · realizados {$r['realizados']} (garantias {$r['garantias']})"
-             . " · reportes {$r['reportes']} · seguimientos {$r['seguimientos']}" . AvisosProveedores::resumen($r) . ($r['errores'] ? " · ERRORES {$r['errores']}" : '');
+             . " · reportes {$r['reportes']} · seguimientos {$r['seguimientos']}" . AvisosProveedores::resumen($r)
+             . (($r['purgados'] ?? 0) || ($r['copias_borradas'] ?? 0) ? " · papelera: borrados {$r['purgados']}, copias viejas {$r['copias_borradas']}" : '')
+             . ($r['errores'] ? " · ERRORES {$r['errores']}" : '');
     }
 }

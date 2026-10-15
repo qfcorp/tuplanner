@@ -8,16 +8,30 @@ $textos = [
 ];
 [$titulo, $texto, $motivo] = $textos[$estadoCuenta] ?? $textos['prueba_vencida'];
 $wa = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode("Hola, $motivo de TuPlanner (" . $u['negocio'] . ', ' . $u['email'] . ') y quiero contratar un plan.');
+$pausada = $estadoCuenta === 'suspendido';
+if ($pausada) {   // Anexo A: cuenta pausada por Tukán, con el motivo (genérico en revisión y uso indebido) y el WhatsApp de Tukán
+    $texto = \TuPlanner\Papelera::textoPausa($u['pausa_tipo'] ?? null, $u['pausa_motivo'] ?? null);
+    $wa = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola, mi cuenta de TuPlanner está pausada (' . $u['negocio'] . ', ' . $u['email'] . '). ¿Me ayudan a reactivarla?');
+}
 ?>
 <section class="bloque" style="max-width:600px">
     <h1><?= e($titulo) ?></h1>
-    <p><?= e($texto) ?></p>
+    <?php if ($pausada): ?>
+        <p class="aviso-pausa"><strong>Motivo:</strong> <?= e($texto) ?></p>
+        <p>Mientras está pausada no puedes trabajar en TuPlanner y tus páginas públicas dicen "temporalmente no disponible".</p>
+    <?php else: ?>
+        <p><?= e($texto) ?></p>
+    <?php endif; ?>
     <div class="g-ayuda">
         <strong>Todo está guardado:</strong>
         <?= (int) $guardado['eventos'] ?> eventos (<?= (int) $guardado['proximos'] ?> próximos), <?= (int) $guardado['clientes'] ?> clientes, cotizaciones, contratos y pagos.
         Nada se borra.
     </div>
-    <?php if (es_dueno($u)): ?>
+    <?php if ($pausada): ?>
+        <div class="acciones">
+            <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Escribir a Tukán por WhatsApp (+<?= e(whatsapp_ventas()) ?>)</a>
+        </div>
+    <?php elseif (es_dueno($u)): ?>
         <div class="acciones">
             <a class="boton" href="<?= e(url('planes')) ?>">Ver planes y precios</a>
             <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Escribir por WhatsApp</a>

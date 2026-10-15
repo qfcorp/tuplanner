@@ -292,10 +292,13 @@ final class TukanCentral
             'pruebas_vencen_7d' => array_slice(array_map(fn($n) => ['nombre' => (string) $n['nombre'], 'vence' => (string) $n['prueba_hasta']], $pruebas), 0, self::MAX_LISTA),
             'pagos_vencidos' => array_slice($vencidos, 0, self::MAX_LISTA),
             'extra' => [
-                'Eventos este mes' => $contar("SELECT count(*) FROM eventos WHERE fecha >= ? AND fecha < ? AND estado IN ('separado','confirmado','realizado')",
+                // Sin los negocios que están en la papelera (Anexo A)
+                'Eventos este mes' => $contar("SELECT count(*) FROM eventos x JOIN negocios n ON n.id = x.negocio_id AND n.eliminado_en IS NULL
+                                                WHERE x.fecha >= ? AND x.fecha < ? AND x.estado IN ('separado','confirmado','realizado')",
                                               [$inicioMes, $inicioSiguiente]),
-                'Cotizaciones del mes' => $contar('SELECT count(*) FROM cotizaciones WHERE creado_en >= ? AND creado_en < ?', [$inicioMes, $inicioSiguiente]),
-                'Usuarios activos' => $contar('SELECT count(*) FROM usuarios WHERE activo'),
+                'Cotizaciones del mes' => $contar('SELECT count(*) FROM cotizaciones x JOIN negocios n ON n.id = x.negocio_id AND n.eliminado_en IS NULL
+                                                    WHERE x.creado_en >= ? AND x.creado_en < ?', [$inicioMes, $inicioSiguiente]),
+                'Usuarios activos' => $contar('SELECT count(*) FROM usuarios x JOIN negocios n ON n.id = x.negocio_id AND n.eliminado_en IS NULL WHERE x.activo'),
                 'Eventos registrados (30 días)' => array_sum(array_map(fn($n) => (int) $n['eventos_30'], $todos)),
                 'Ingreso mensual recurrente' => $panel->ingresoMensual($hoy),
                 'Pruebas terminadas sin pagar' => $cuenta['prueba_vencida'],

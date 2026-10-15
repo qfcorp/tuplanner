@@ -404,7 +404,8 @@ final class Cotizaciones
     /** Marca vencidas las enviadas cuya validez pasó (tarea automática). Devuelve cuántas. */
     public function vencerAntiguas(?DateTimeImmutable $hoy = null): int
     {
-        $st = $this->db->prepare("UPDATE cotizaciones SET estado = 'vencida' WHERE estado = 'enviada' AND valida_hasta < ?::date");
+        $st = $this->db->prepare("UPDATE cotizaciones SET estado = 'vencida' WHERE estado = 'enviada' AND valida_hasta < ?::date
+                                     AND negocio_id NOT IN (SELECT id FROM negocios WHERE eliminado_en IS NOT NULL)");   // la papelera no se toca
         $st->execute([($hoy ?? new DateTimeImmutable('today'))->format('Y-m-d')]);
         return $st->rowCount();
     }

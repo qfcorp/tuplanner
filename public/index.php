@@ -58,6 +58,31 @@ if (!in_array($ruta, array_merge($publicas, $privadas, $deAdmin), true) || !is_f
     $ruta = usuario() ? 'inicio' : 'login';
 }
 
+// Anexo A: las páginas públicas y portales de un negocio pausado dicen "temporalmente no disponible" (503);
+// las de un negocio en la papelera no existen (404). Cada página pública está en Papelera::RUTAS_PUBLICAS o PUBLICAS_SIN_NEGOCIO.
+if (in_array($ruta, $publicas, true) && !in_array($ruta, \TuPlanner\Papelera::PUBLICAS_SIN_NEGOCIO, true)) {
+    $papelera = new \TuPlanner\Papelera(db());
+    $nidPublico = $papelera->negocioDeRuta($ruta, $_GET);
+    $estadoPublico = $nidPublico === null ? 'normal' : $papelera->estadoPublico($nidPublico);
+    if ($estadoPublico !== 'normal') {
+        $borrado = $estadoPublico === 'eliminado';
+        http_response_code($borrado ? 404 : 503);
+        header('Cache-Control: no-store');
+        if (!$borrado) header('Retry-After: 3600');
+        $texto = $borrado ? 'Esta página no está disponible.' : 'Temporalmente no disponible. Intenta más tarde.';
+        if ($ruta === 'disponible' || !empty($_GET['json'])) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['error' => $texto, 'disponible' => false], JSON_UNESCAPED_UNICODE);
+        } elseif ($ruta === 'ical') {
+            header('Content-Type: text/plain; charset=utf-8');
+            echo $texto . "\n";
+        } elseif ($ruta !== 'imagen_publica' && empty($_GET['qr']) && empty($_GET['foto'])) {   // imágenes y QR: solo el código
+            vista_publica($borrado ? 'sitio_no' : 'no_disponible', [], $borrado ? 'Página no disponible' : 'Temporalmente no disponible', null);
+        }
+        exit;
+    }
+}
+
 if (in_array($ruta, $privadas, true)) {
     $u = requiere_sesion();
     if ($u['rol'] === 'coordinador' && !in_array($ruta, $deCoordinador, true)) {

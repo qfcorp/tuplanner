@@ -17,6 +17,23 @@ $accion = fn(string $a) => e(url('admin_negocio', ['id' => $n['id'], 'accion' =>
         <button class="boton boton-claro" type="submit">Ver como el negocio (soporte)</button></form>
 </div>
 
+<?php if (!empty($n['eliminado_en'])): $purga = TuPlanner\Papelera::fechaPurga($n['eliminado_en']); ?>
+    <section class="bloque" style="border-color:var(--rojo);border-width:2px" role="alert">
+        <h2>En la papelera</h2>
+        <p>Borrado el <?= date('d/m/Y H:i', strtotime($n['eliminado_en'])) ?> por <?= e($n['eliminado_por']) ?>. Motivo: <?= e($n['eliminado_motivo']) ?></p>
+        <p>No puede entrar y sus páginas no existen. <strong>Se borra para siempre el <?= date('d/m/Y', strtotime($purga)) ?></strong> (la copia se guarda 1 año).</p>
+        <?php if ($purga > date('Y-m-d')): ?>
+            <form method="post" action="<?= $accion('restaurar') ?>"><?= campo_csrf() ?><button class="boton" type="submit">Restaurar</button></form>
+        <?php endif; ?>
+    </section>
+<?php elseif ($n['estado'] === 'suspendido' && !empty($n['pausa_motivo'])): ?>
+    <section class="bloque" role="status">
+        <h2>Cuenta pausada<?= !empty($n['pausa_tipo']) ? ' · ' . e(TuPlanner\Papelera::TIPOS_PAUSA[$n['pausa_tipo']] ?? $n['pausa_tipo']) : '' ?></h2>
+        <p>Motivo: <?= e($n['pausa_motivo']) ?><?= $n['pausa_en'] ? ' · desde el ' . date('d/m/Y', strtotime($n['pausa_en'])) : '' ?></p>
+        <p class="suave">El cliente ve: «<?= e(TuPlanner\Papelera::textoPausa($n['pausa_tipo'], $n['pausa_motivo'])) ?>»</p>
+    </section>
+<?php endif; ?>
+
 <?php if ($claveNueva):
     $msg = "Hola {$claveNueva['nombre']}, tu acceso a TuPlanner: " . url_completa('login') . " · Correo: {$claveNueva['email']} · Contraseña temporal: {$claveNueva['clave']} (cámbiala en Mi cuenta)";
     $waClave = WhatsApp::enlace($telefono, $msg); ?>

@@ -55,7 +55,7 @@ Dirección: **tuplanner.tukanec.com** (servidor qfcorp). Web de la marca: tukans
 | Invitado / puerta / en vivo / personal | `/?r=invitacion&t=…` · `/?r=puerta&t=…` · `/?r=vivo&t=…` · `/?r=staff&t=…` |
 | Proveedor (portal) / verificar orden de compra | `/?r=portal_proveedor&t=<enlace secreto>` · `/?r=verificar_oc&c=<código>` |
 | Tukán (super administrador) | `/?r=admin_entrar` · cuenta creada con `php bin/crear_admin.php` en el servidor · o con un clic desde el Panel Tukán Central |
-| Panel Tukán Central (conector) | v1: `/tukan_central.php?accion=sso&t=…` (entrar, con enlace directo `ir`) · `/tukan_central.php?accion=estado&t=…` (cifras en JSON) · v2: `POST /tukan_central.php?accion=<capacidades, clientes, cliente, cotizar, planes, solicitudes, solicitud, finanzas, ejecutar>` |
+| Panel Tukán Central (conector) | v1: `/tukan_central.php?accion=sso&t=…` (entrar, con enlace directo `ir`) · `/tukan_central.php?accion=estado&t=…` (cifras en JSON) · v2: `POST /tukan_central.php?accion=<capacidades, clientes, cliente, cotizar, planes, solicitudes, solicitud, finanzas, ejecutar>` (incluye pausar, borrar_cliente y restaurar_cliente) |
 
 ## Tecnología
 PHP 8.3+, PostgreSQL 16 (extensiones `btree_gist` y `pgcrypto`), TCPDF (con composer) para los PDF. Sin librerías de JavaScript.
@@ -95,14 +95,21 @@ Con el mismo ID y el mismo secreto, el panel central ve y maneja a los clientes 
 - **Operaciones** (con las mismas funciones del panel de Tukán y una línea en "Últimos movimientos del panel" con el correo del Central): crear demo (negocio en prueba con datos de ejemplo; la contraseña temporal se muestra una sola vez), alargar la prueba, registrar pago (con la fecha en que pagó), anular pago, suspender, reactivar, cancelar, cambiar plan, nueva clave del dueño, nota interna, atender solicitud y guardar plan/precios.
 - **Finanzas**: cobrado por mes (por plan, tiempo y forma de pago), nuevos pagadores, devengado e ingreso mensual recurrente.
 - Si el Central repite una operación (se cortó la red), TuPlanner no la hace dos veces: devuelve el mismo resultado (`tukan_central_operaciones`, 90 días, sin contraseñas).
+- **Pausar y borrar clientes** (Anexo A del protocolo):
+  - `pausar` (tipo: falta de pago, pedido del cliente, revisión, uso indebido u otro + motivo): el negocio no puede trabajar y ve "Tu cuenta está pausada" con el motivo (en revisión y uso indebido, un texto genérico) y el WhatsApp de Tukán; su página pública y todos sus portales y enlaces dicen "temporalmente no disponible". `reactivar` la quita.
+  - `borrar_cliente` (escribir el nombre exacto del negocio o su número + motivo; solo el rol dueño del Central): guarda una **copia completa** (todas las filas de todas las tablas del negocio, sacadas del esquema, y la lista de sus archivos subidos) en `respaldos/borrados/<id>_<fecha>.json.gz` (fuera de la web, carpeta 700 de `www-data`; otra carpeta con `TUPLANNER_BORRADOS`) y lo manda a la **papelera**: no entra, no sale en listas ni cifras (`estado`, `clientes`, `finanzas` desde ese día), sus páginas y portales dan 404 y no recibe tareas ni avisos.
+  - `restaurar_cliente` dentro de 30 días lo devuelve tal cual (también desde el Panel Tukán del programa: Negocios → filtro **Papelera** → Restaurar). Pasados 30 días, la tarea de cada hora lo borra de verdad (sus archivos pasan junto a la copia); las copias se borran al año.
+  - `clientes` con `filtros.estado = "papelera"` los lista (cada uno con `papelera: {desde, hasta, motivo}`); cada ficha trae los botones que corresponden (`pausar`/`reactivar`, `borrar_cliente` o `restaurar_cliente`).
 
 ## Tareas automáticas y respaldo
 El instalador deja programado:
 ```
-7 * * * * php /var/www/tuplanner/bin/tareas.php          (cada hora, minuto 7: no choca con TuEvento)
+7 * * * * php /var/www/tuplanner/bin/tareas.php          (cada hora, minuto 7: no choca con TuEvento; crontab de www-data)
 35 3 * * * /var/www/tuplanner/deploy/respaldo.sh         (cada día 3:35, guarda 14 días en /var/backups/tuplanner)
 ```
-Tareas: vencer cotizaciones, avisar fechas retenidas que se liberan, cuotas por vencer, revisar precios, evento en 7 días, pasar a realizado, devolver garantías, reporte del mes, seguimientos del día, pagos a proveedores que vencen, documentos de proveedores por vencer y proveedores sin confirmar a 3 días del evento.
+Tareas: vencer cotizaciones, avisar fechas retenidas que se liberan, cuotas por vencer, revisar precios, evento en 7 días, pasar a realizado, devolver garantías, reporte del mes, seguimientos del día, pagos a proveedores que vencen, documentos de proveedores por vencer, proveedores sin confirmar a 3 días del evento y la **papelera** (borra de verdad los negocios con más de 30 días en ella y las copias de más de 1 año). Los negocios pausados o en la papelera no reciben tareas ni avisos.
+
+**Al actualizar a esta versión** hay que volver a correr el instalador (la línea de arriba): crea `respaldos/borrados` y pasa las tareas al usuario `www-data` (así pueden borrar las copias viejas).
 
 Telegram (opcional) en `config/.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` y `TELEGRAM_WEBHOOK_SECRET` (obligatorio si se usa el webhook).
 
@@ -110,11 +117,11 @@ Telegram (opcional) en `config/.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNA
 Solo en bases de prueba (se borran y se vuelven a crear):
 
 ```bash
-# Lógica (2271 pruebas)
+# Lógica (2398 pruebas)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php
-# Pantallas de punta a punta (1916 pruebas; levanta un sitio de prueba solo)
+# Pantallas de punta a punta (1973 pruebas; levanta un sitio de prueba solo)
 PGPASSWORD=prueba bash tests/run_web.sh
-# Solo el conector con el Panel Tukán Central (v1 = logica_95/web_95, v2 = logica_96/web_96)
+# Solo el conector con el Panel Tukán Central (v1 = logica_95/web_95, v2 = logica_96/web_96, pausar y papelera = logica_97/web_97)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_9
 PGPASSWORD=prueba bash tests/run_web.sh web_9
 ```

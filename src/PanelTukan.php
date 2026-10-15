@@ -29,6 +29,7 @@ final class PanelTukan
     private const SQL_NEGOCIOS = "
         SELECT n.id, n.nombre, n.slug, n.telefono, n.whatsapp, n.email, n.ciudad, n.plan_codigo, n.estado, n.prueba_hasta, n.activo_hasta,
                n.notas_admin, n.creado_en, n.logo, n.origen, pl.nombre AS plan_nombre,
+               n.pausa_tipo, n.pausa_motivo, n.pausa_en, n.eliminado_en, n.eliminado_motivo, n.eliminado_por, n.eliminado_copia,
                u.nombre AS dueno, u.email AS dueno_email, u.telefono AS dueno_telefono, u.id AS dueno_usuario_id, u.ultimo_ingreso AS dueno_ingreso,
                (SELECT count(*) FROM espacios es WHERE es.negocio_id = n.id AND es.activo) AS espacios,
                (SELECT count(*) FROM usuarios us WHERE us.negocio_id = n.id AND us.activo) AS usuarios,
@@ -42,10 +43,19 @@ final class PanelTukan
           JOIN planes pl ON pl.codigo = n.plan_codigo
      LEFT JOIN LATERAL (SELECT id, nombre, email, telefono, ultimo_ingreso FROM usuarios WHERE negocio_id = n.id AND rol = 'dueno' ORDER BY id LIMIT 1) u ON true";
 
-    /** Lista de negocios con su estado real. $filtro = '' | una clave de ESTADOS. $plan = '' | código. */
-    public function negocios(string $filtro = '', string $buscar = '', ?DateTimeImmutable $hoy = null, string $plan = ''): array
+    /** Pagos que cuentan en las cifras: de negocios que no están en la papelera, o hechos hasta el día en que se mandaron ahí. */
+    public const SQL_PAGO_CUENTA = 'NOT EXISTS (SELECT 1 FROM negocios nx WHERE nx.id = suscripciones.negocio_id AND nx.eliminado_en IS NOT NULL
+                                                AND suscripciones.pagado_en > nx.eliminado_en::date)';
+    /** Pagos de negocios que siguen vivos (para el ingreso mensual de hoy). */
+    public const SQL_PAGO_VIVO = 'NOT EXISTS (SELECT 1 FROM negocios nx WHERE nx.id = suscripciones.negocio_id AND nx.eliminado_en IS NOT NULL)';
+
+    /**
+     * Lista de negocios con su estado real. $filtro = '' | una clave de ESTADOS. $plan = '' | código.
+     * Los que están en la papelera no salen; con $papelera = true salen solo ellos.
+     */
+    public function negocios(string $filtro = '', string $buscar = '', ?DateTimeImmutable $hoy = null, string $plan = '', bool $papelera = false): array
     {
-        $sql = self::SQL_NEGOCIOS . ' WHERE true';
+        $sql = self::SQL_NEGOCIOS . ' WHERE n.eliminado_en IS ' . ($papelera ? 'NOT NULL' : 'NULL');
         $params = [];
         if (($buscar = trim($buscar)) !== '') {
             $sql .= ' AND (n.nombre ILIKE ? OR u.nombre ILIKE ? OR u.email ILIKE ? OR n.telefono ILIKE ? OR n.slug ILIKE ? OR n.ciudad ILIKE ? OR n.ruc ILIKE ?)';
@@ -110,7 +120,7 @@ final class PanelTukan
             $porPlan[$n['plan_nombre']] = ($porPlan[$n['plan_nombre']] ?? 0) + 1;
         }
         $cobradoMes = $this->cobradoMes($hoy->format('Y-m'));
-        $st = $this->db->prepare("SELECT COALESCE(sum(monto),0) FROM suscripciones WHERE NOT anulada AND to_char(pagado_en,'YYYY') = ?");
+        $st = $this->db->prepare("SELECT COALESCE(sum(monto),0) FROM suscripciones WHERE NOT anulada AND " . self::SQL_PAGO_CUENTA . " AND to_char(pagado_en,'YYYY') = ?");
         $st->execute([$hoy->format('Y')]);
         $cobradoAnio = (float) $st->fetchColumn();
         $mensual = $this->ingresoMensual($hoy);
@@ -134,7 +144,7 @@ final class PanelTukan
     /** Lo cobrado en un mes ('YYYY-MM'): pagos de suscripción no anulados. Lo usan el resumen y el Panel Tukán Central. */
     public function cobradoMes(string $mes): float
     {
-        $st = $this->db->prepare("SELECT COALESCE(sum(monto),0) FROM suscripciones WHERE NOT anulada AND to_char(pagado_en,'YYYY-MM') = ?");
+        $st = $this->db->prepare("SELECT COALESCE(sum(monto),0) FROM suscripciones WHERE NOT anulada AND " . self::SQL_PAGO_CUENTA . " AND to_char(pagado_en,'YYYY-MM') = ?");
         $st->execute([$mes]);
         return round((float) $st->fetchColumn(), 2);
     }
@@ -142,7 +152,7 @@ final class PanelTukan
     /** Ingreso mensual recurrente: lo que vale al mes cada pago vigente. */
     public function ingresoMensual(DateTimeImmutable $hoy): float
     {
-        $st = $this->db->prepare('SELECT COALESCE(sum(monto / meses_recibidos),0) FROM suscripciones WHERE NOT anulada AND inicio <= ? AND fin >= ?');
+        $st = $this->db->prepare('SELECT COALESCE(sum(monto / meses_recibidos),0) FROM suscripciones WHERE NOT anulada AND ' . self::SQL_PAGO_VIVO . ' AND inicio <= ? AND fin >= ?');
         $st->execute([$hoy->format('Y-m-d'), $hoy->format('Y-m-d')]);
         return round((float) $st->fetchColumn(), 2);
     }
@@ -161,8 +171,13 @@ final class PanelTukan
     public function cambiarEstado(int $negocioId, string $estado): void
     {
         if (!in_array($estado, ['prueba', 'activo', 'suspendido', 'cancelado'], true)) throw new RuntimeException('Estado no válido.');
-        $st = $this->db->prepare('UPDATE negocios SET estado = ? WHERE id = ?');
-        $st->execute([$estado, $negocioId]);
+        // Al salir de "suspendido" se borra el motivo de la pausa (Papelera::pausar lo pone)
+        $st = $this->db->prepare("UPDATE negocios SET estado = ?,
+                                         pausa_tipo = CASE WHEN ? = 'suspendido' THEN pausa_tipo END,
+                                         pausa_motivo = CASE WHEN ? = 'suspendido' THEN pausa_motivo END,
+                                         pausa_en = CASE WHEN ? = 'suspendido' THEN COALESCE(pausa_en, now()) END
+                                   WHERE id = ?");
+        $st->execute([$estado, $estado, $estado, $estado, $negocioId]);
         if ($st->rowCount() !== 1) throw new RuntimeException('Negocio no encontrado.');
     }
 
