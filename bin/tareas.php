@@ -31,7 +31,8 @@ spl_autoload_register(function (string $c): void {
 if (is_file(RAIZ . '/vendor/autoload.php')) require RAIZ . '/vendor/autoload.php';
 
 // Evita que dos tareas corran a la vez
-$candado = fopen(sys_get_temp_dir() . '/tuplanner-tareas-' . md5(RAIZ . (getenv('TUPLANNER_DB_NAME') ?: '')) . '.lock', 'c');
+// (el nombre lleva el usuario: antes corría con el usuario normal y ahora con www-data, que no puede abrir el candado viejo)
+$candado = fopen(sys_get_temp_dir() . '/tuplanner-tareas-' . md5(RAIZ . (getenv('TUPLANNER_DB_NAME') ?: '')) . (function_exists('posix_geteuid') ? '-' . posix_geteuid() : '') . '.lock', 'c');
 if (!$candado || !flock($candado, LOCK_EX | LOCK_NB)) { echo "Ya hay una tarea corriendo.\n"; exit(0); }
 
 try {
