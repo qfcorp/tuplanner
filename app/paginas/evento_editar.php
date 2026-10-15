@@ -2,7 +2,7 @@
 use TuPlanner\{Eventos, Ventas};
 
 /**
- * Editar los datos generales del evento (cliente, fecha, horas, invitados, espacios, montaje, presupuesto, notas, vendedor).
+ * Editar los datos generales del evento (cliente, fecha, horas, invitados, lugares, montaje, presupuesto, notas, vendedor).
  * Si el evento ya está separado, el núcleo revisa que la nueva fecha/espacio siga libre.
  */
 exigir(es_comercial($u), 'Solo el dueño y los vendedores pueden editar eventos.');
@@ -17,7 +17,7 @@ if (!$ev) {
     return;
 }
 $espacios = $ventas->espacios($nid, false);
-// Un espacio desactivado que el evento ya usa sigue apareciendo para no perderlo
+// Un lugar desactivado que el evento ya usa sigue apareciendo para no perderlo
 $activos = array_map('intval', array_column($espacios, 'id'));
 foreach ($ev['espacios'] as $es) {
     if (!in_array((int) $es['id'], $activos, true) && ($fila = $ventas->espacio($nid, (int) $es['id']))) $espacios[] = $fila;
@@ -48,7 +48,7 @@ if (es_post()) {
         if (Ventas::fechaValida($datos['fecha']) && $datos['espacios'] && !in_array($ev['estado'], Eventos::BLOQUEAN, true)) {
             $choquesForm = Ventas::separarChoques($eventos->choques($nid, $datos['fecha'], $datos['hora_inicio'], $datos['hora_fin'], $datos['espacios'], $id));
             if ($choquesForm['bloqueados'] && empty($_POST['aceptar_choque'])) {
-                throw new RuntimeException('Ese espacio no está libre a esa hora. Cambia la fecha, la hora o el espacio, o marca la casilla para guardarlo igual como consulta.');
+                throw new RuntimeException('Ese lugar no está libre a esa hora. Cambia la fecha, la hora o el lugar, o marca la casilla para guardarlo igual como consulta.');
             }
         }
         $antes = $ev;

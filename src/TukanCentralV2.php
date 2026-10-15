@@ -654,7 +654,7 @@ final class TukanCentralV2
             ['campo' => 'nombre', 'etiqueta' => 'Nombre', 'tipo' => 'texto', 'requerido' => false, 'max' => 50],
             ['campo' => 'precio_mensual', 'etiqueta' => 'Precio al mes ($)', 'tipo' => 'dinero', 'requerido' => false, 'min' => 0],
             ['campo' => 'descripcion', 'etiqueta' => 'Descripción', 'tipo' => 'texto', 'requerido' => false, 'max' => 300],
-            ['campo' => 'max_espacios', 'etiqueta' => 'Máximo de espacios (vacío = ilimitados)', 'tipo' => 'numero', 'requerido' => false, 'min' => 1],
+            ['campo' => 'max_espacios', 'etiqueta' => 'Máximo de lugares (vacío = ilimitados)', 'tipo' => 'numero', 'requerido' => false, 'min' => 1],
             ['campo' => 'max_usuarios', 'etiqueta' => 'Máximo de usuarios (vacío = ilimitados)', 'tipo' => 'numero', 'requerido' => false, 'min' => 1],
         ];
     }

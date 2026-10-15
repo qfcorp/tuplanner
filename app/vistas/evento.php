@@ -8,18 +8,18 @@ $primerNombre = explode(' ', trim((string) $cliente['nombre']))[0];
 $waCliente = WhatsApp::enlace($cliente['telefono'], "Hola $primerNombre, te saludamos de {$u['negocio']}. ");
 $textoPaso = [
     'consulta>cotizado' => ['Marcar como cotizado', 'Ya le enviaste la cotización. La fecha queda retenida unos días.'],
-    'consulta>separado' => ['Separar la fecha', 'Úsalo solo si ya pagó la reserva. Bloquea el espacio.'],
-    'cotizado>separado' => ['Separar la fecha', 'Úsalo solo si ya pagó la reserva. Bloquea el espacio.'],
+    'consulta>separado' => ['Separar la fecha', 'Úsalo solo si ya pagó la reserva. Bloquea el lugar.'],
+    'cotizado>separado' => ['Separar la fecha', 'Úsalo solo si ya pagó la reserva. Bloquea el lugar.'],
     'cotizado>consulta' => ['Volver a consulta', 'Quita la retención de la fecha.'],
     'separado>confirmado' => ['Confirmar evento', 'El contrato está firmado: el evento va.'],
-    'separado>cotizado' => ['Volver a cotizado', 'Libera el bloqueo del espacio (por ejemplo, si se anuló el pago).'],
+    'separado>cotizado' => ['Volver a cotizado', 'Libera el bloqueo del lugar (por ejemplo, si se anuló el pago).'],
     'confirmado>realizado' => ['Marcar como realizado', 'El evento ya pasó.'],
     'confirmado>separado' => ['Volver a separado', 'Por ejemplo, si se anuló el contrato.'],
     'realizado>confirmado' => ['Volver a confirmado', 'Si lo marcaste como realizado por error.'],
     'perdido>consulta' => ['Reabrir como consulta', 'El cliente volvió a escribir.'],
     'perdido>cotizado' => ['Reabrir como cotizado', 'Retiene la fecha otra vez unos días.'],
     'cancelado>consulta' => ['Reabrir como consulta', 'El cliente quiere retomar.'],
-    'cancelado>separado' => ['Volver a separar', 'Bloquea el espacio otra vez (revisamos que siga libre).'],
+    'cancelado>separado' => ['Volver a separar', 'Bloquea el lugar otra vez (revisamos que siga libre).'],
 ];
 $pasos = Eventos::PASOS[$ev['estado']];
 // "Realizado" solo desde el día del evento
@@ -76,8 +76,8 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                 <?php foreach ($normales as $p):
                     [$txt, $ayuda] = $textoPaso[$ev['estado'] . '>' . $p] ?? ['Pasar a ' . Eventos::ESTADOS[$p], Eventos::ESTADOS_AYUDA[$p]];
                     $confirmar = match ($p) {
-                        'separado' => in_array($ev['estado'], ['consulta', 'cotizado'], true) ? '¿Separar la fecha? Hazlo solo si ya pagó la reserva: el espacio queda bloqueado para este evento.' : '',
-                        'cotizado' => $ev['estado'] === 'separado' ? '¿Volver a cotizado? El espacio deja de estar bloqueado y otra persona podría separarlo.' : '',
+                        'separado' => in_array($ev['estado'], ['consulta', 'cotizado'], true) ? '¿Separar la fecha? Hazlo solo si ya pagó la reserva: el lugar queda bloqueado para este evento.' : '',
+                        'cotizado' => $ev['estado'] === 'separado' ? '¿Volver a cotizado? El lugar deja de estar bloqueado y otra persona podría separarlo.' : '',
                         'realizado' => '',
                         default => '',
                     }; ?>
@@ -108,7 +108,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                                 </datalist>
                             </div>
                             <button class="boton boton-peligro boton-chico" type="submit"
-                                    data-confirmar="<?= $p === 'perdido' ? '¿Marcar como perdido? La fecha queda libre para otros clientes.' : '¿Cancelar el evento? La fecha y el espacio quedan libres. Los pagos registrados no se borran.' ?>">
+                                    data-confirmar="<?= $p === 'perdido' ? '¿Marcar como perdido? La fecha queda libre para otros clientes.' : '¿Cancelar el evento? La fecha y el lugar quedan libres. Los pagos registrados no se borran.' ?>">
                                 <?= $p === 'perdido' ? 'Confirmar: perdido' : 'Confirmar cancelación' ?></button>
                         </form>
                     </details>
@@ -131,7 +131,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
             <?php endforeach; ?>
         </ul>
         <?php if ($choques['bloqueados'] && !in_array($ev['estado'], Eventos::BLOQUEAN, true)): ?>
-            <p class="aviso aviso-error">Mientras el otro evento tenga la fecha separada, este no se puede separar. Ofrécele otra fecha u otro espacio.</p>
+            <p class="aviso aviso-error">Mientras el otro evento tenga la fecha separada, este no se puede separar. Ofrécele otra fecha u otro lugar.</p>
         <?php else: ?>
             <p class="suave ayuda-chica">El primero que pague la reserva se queda con la fecha.</p>
         <?php endif; ?>
@@ -148,7 +148,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
             <dt>Tipo</dt><dd><?= e(Eventos::TIPOS[$ev['tipo']]) ?></dd>
             <dt>Fecha</dt><dd><?= e(ucfirst(fecha_larga($ev['fecha']))) ?></dd>
             <dt>Horario</dt><dd><?= e(hora_corta($ev['hora_inicio'])) ?> a <?= e(hora_corta($ev['hora_fin'])) ?><?= $ev['hora_fin'] <= $ev['hora_inicio'] ? ' (del día siguiente)' : '' ?></dd>
-            <dt>Espacios</dt><dd><?= e($ev['espacios_texto'] ?: 'Sin espacio') ?></dd>
+            <dt>Lugares</dt><dd><?= e($ev['espacios_texto'] ?: 'Sin espacio') ?></dd>
             <dt>Invitados</dt><dd><?= (int) $ev['invitados'] ?>
                 <?php if ($capacidad !== null && (int) $ev['invitados'] > $capacidad): ?>
                     <span class="ocupado">· supera la capacidad (<?= $capacidad ?>)</span>
@@ -335,8 +335,8 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                 <?php if ($waPortal): ?><a class="boton boton-wa boton-chico" href="<?= e($waPortal) ?>" target="_blank" rel="noopener">Enviar por WhatsApp</a><?php endif; ?>
             </div>
         <?php else: ?>
-            <p class="candado">Es del plan Quinta.</p>
-            <p class="suave">Con el plan Quinta, tu cliente tiene su propio enlace para ver sus pagos, firmar y armar su lista de invitados.</p>
+            <p class="candado">Es del plan Agencia.</p>
+            <p class="suave">Con el plan Agencia, tu cliente tiene su propio enlace para ver sus pagos, firmar y armar su lista de invitados.</p>
         <?php endif; ?>
     </section>
     <?php endif; ?>
@@ -418,7 +418,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
     <?php if ($puedeVender): ?>
     <section class="bloque" aria-labelledby="t-dup">
         <h2 id="t-dup">Copiar a otra fecha</h2>
-        <p class="suave">Para el mismo cliente (por ejemplo, la fiesta de la empresa cada año). Se crea como consulta, con los mismos espacios y horario.</p>
+        <p class="suave">Para el mismo cliente (por ejemplo, la fiesta de la empresa cada año). Se crea como consulta, con los mismos lugares y horario.</p>
         <form method="post" action="<?= e(url('evento', ['id' => $ev['id'], 'accion' => 'duplicar'])) ?>" class="fila-en-linea">
             <?= campo_csrf() ?>
             <label class="sr-only" for="dup-fecha">Nueva fecha</label>

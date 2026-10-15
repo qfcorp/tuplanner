@@ -10,7 +10,7 @@ $token = (string) ($_GET['t'] ?? '');
 $ev = (new Eventos(db()))->porToken('token_cliente', $token);
 if (!$ev) {
     http_response_code(404);
-    vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido o ya no existe. Pide uno nuevo al local donde contrataste tu evento.'], 'Pagar · TuPlanner');
+    vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido o ya no existe. Pide uno nuevo al negocio donde contrataste tu evento.'], 'Pagar · TuPlanner');
     return;
 }
 if (!es_post()) {

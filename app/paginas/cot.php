@@ -10,7 +10,7 @@ $cotz = new Cotizaciones(db());
 $c = $cotz->porToken($token);
 if (!$c) {
     http_response_code(404);
-    vista_publica('error_publico', ['mensaje' => 'Este enlace de cotización no existe o está mal copiado. Pide al local que te lo vuelva a enviar.'], 'Cotización · TuPlanner');
+    vista_publica('error_publico', ['mensaje' => 'Este enlace de cotización no existe o está mal copiado. Pide al negocio que te lo vuelva a enviar.'], 'Cotización · TuPlanner');
     return;
 }
 $st = db()->prepare('SELECT * FROM negocios WHERE id = ?');
@@ -34,7 +34,7 @@ if (es_post()) {
         (new Notificaciones(db()))->alNegocio((int) $c['negocio_id'],
             "$nombre aceptó la cotización de {$c['evento_codigo']} ({$c['evento']}) por " . dinero($c['total']) . '. Ya puedes cobrar la reserva y preparar el contrato.',
             (int) $c['evento_id']);
-        aviso('¡Listo! Aceptaste la cotización. El local te escribirá para separar la fecha con la reserva.');
+        aviso('¡Listo! Aceptaste la cotización. El negocio te escribirá para separar la fecha con la reserva.');
     } catch (RuntimeException $e) {
         aviso($e->getMessage(), 'error');
     }
@@ -49,7 +49,7 @@ $nombreCliente = trim(explode(' ', trim((string) $c['cliente']))[0]);
 $waDudas = WhatsApp::enlace($telNegocio, "Hola, soy $nombreCliente. Tengo unas dudas sobre la cotización N.º {$c['numero']} de {$c['evento']} (" . fecha_corta($c['evento_fecha']) . ').');
 $waActualizar = WhatsApp::enlace($telNegocio, "Hola, soy $nombreCliente. Mi cotización N.º {$c['numero']} de {$c['evento']} ya venció. ¿Me pueden enviar una actualizada, por favor?");
 $portal = url_completa('portal', ['t' => $c['token_cliente']]);
-// Si fue reemplazada: ¿hay una versión más nueva enviada o aceptada? (su enlace lo manda el local)
+// Si fue reemplazada: ¿hay una versión más nueva enviada o aceptada? (su enlace lo manda el negocio)
 $hayNueva = false;
 if ($c['estado'] === 'reemplazada') {
     $st = db()->prepare("SELECT 1 FROM cotizaciones WHERE evento_id = ? AND version > ? AND estado IN ('enviada','aceptada') LIMIT 1");

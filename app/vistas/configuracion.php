@@ -60,18 +60,18 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
             <input type="text" id="direccion" name="direccion" value="<?= $f('direccion') ?>" maxlength="250" placeholder="Vía a Tumbaco km 5, junto a…"></div>
         <div class="campo"><label for="mapa_url">Enlace de Google Maps</label>
             <input type="url" id="mapa_url" name="mapa_url" value="<?= $f('mapa_url') ?>" placeholder="https://maps.app.goo.gl/...">
-            <small>En Google Maps busca tu local → Compartir → Copiar enlace, y pégalo aquí.</small></div>
+            <small>En Google Maps busca tu negocio → Compartir → Copiar enlace, y pégalo aquí.</small></div>
         <div class="fila-campos">
             <div class="campo"><label for="instagram">Instagram</label>
                 <input type="text" id="instagram" name="instagram" value="<?= $n['instagram'] ? '@' . e(ltrim((string) $n['instagram'], '@')) : '' ?>" placeholder="@tuquinta"></div>
             <div class="campo"><label for="facebook">Facebook <small>(enlace)</small></label>
-                <input type="url" id="facebook" name="facebook" value="<?= $f('facebook') ?>" placeholder="https://facebook.com/tuquinta"></div>
+                <input type="url" id="facebook" name="facebook" value="<?= $f('facebook') ?>" placeholder="https://facebook.com/anaperezplanner"></div>
         </div>
         <div class="campo"><label for="resenas_url">Enlace para dejar reseña en Google</label>
             <input type="url" id="resenas_url" name="resenas_url" value="<?= $f('resenas_url') ?>" placeholder="https://g.page/r/...">
             <small>En tu perfil de Google → Pedir reseñas → copiar el enlace. Se usa en el mensaje de agradecimiento después del evento.</small></div>
         <div class="campo"><label for="descripcion">Descripción para tu página pública</label>
-            <textarea id="descripcion" name="descripcion" rows="5" maxlength="3000" placeholder="Ej.: Quinta con jardines, capilla y salón para 300 personas, a 20 minutos de Quito. Bodas, quince años y eventos corporativos."><?= $f('descripcion') ?></textarea></div>
+            <textarea id="descripcion" name="descripcion" rows="5" maxlength="3000" placeholder="Ej.: Organizamos bodas, quince años y eventos en Quito y los valles. Nos encargamos de todo: proveedores, presupuesto, decoración y el día del evento."><?= $f('descripcion') ?></textarea></div>
         <fieldset class="campo"><legend>Color de tu marca</legend>
             <div class="g-colores">
                 <?php foreach ($colores as $hex => $nom): ?>
@@ -135,7 +135,7 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
             <small>La que permite la ordenanza de tu ciudad. Sale en el contrato.</small></div>
         <div class="campo"><label for="horas_montaje">Horas de montaje antes del evento</label>
             <input type="number" id="horas_montaje" name="horas_montaje" value="<?= $num('horas_montaje') ?>" min="0" max="24" step="0.5" required>
-            <small>El espacio queda ocupado desde antes (decoración, cocina). Evita que dos eventos choquen.</small></div>
+            <small>El lugar queda ocupado desde antes (decoración, cocina). Evita que dos eventos choquen.</small></div>
         <div class="campo"><label for="horas_desmontaje">Horas de desmontaje después</label>
             <input type="number" id="horas_desmontaje" name="horas_desmontaje" value="<?= $num('horas_desmontaje') ?>" min="0" max="24" step="0.5" required></div>
         <div class="campo"><label for="invitados_por_mesero">Invitados por mesero</label>
@@ -144,6 +144,20 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
         <div class="campo"><label for="meses_revisar_precio">Avisar para revisar el precio (meses antes)</label>
             <input type="number" id="meses_revisar_precio" name="meses_revisar_precio" value="<?= (int) $n['meses_revisar_precio'] ?>" min="1" max="36" required>
             <small>Si vendiste un evento con mucha anticipación, te avisamos cuando falten estos meses para que revises tus costos.</small></div>
+        <div class="campo"><label for="max_eventos_dia">Máximo de eventos por día</label>
+            <input type="number" id="max_eventos_dia" name="max_eventos_dia" value="<?= (int) $n['max_eventos_dia'] ?>" min="1" max="50" required>
+            <small>Cuántos eventos puede atender tu equipo el mismo día. Te avisamos si te pasas y la página pública dice "sin cupo".</small></div>
+        <div class="campo"><label for="honorario_modo">Cómo cobras tus honorarios (para eventos nuevos)</label>
+            <select id="honorario_modo" name="honorario_modo">
+                <?php foreach (\TuPlanner\Planificacion::MODOS_HONORARIO as $k => $txt): ?><option value="<?= $k ?>" <?= $n['honorario_modo'] === $k ? 'selected' : '' ?>><?= e($txt) ?></option><?php endforeach; ?>
+            </select>
+            <small>Se puede cambiar en cada evento (pestaña Planificación).</small></div>
+        <div class="campo"><label for="honorario_pct">Tus honorarios si cobras por porcentaje (%)</label>
+            <input type="number" id="honorario_pct" name="honorario_pct" value="<?= $num('honorario_pct') ?>" min="1" max="100" step="0.01" required>
+            <small>Sobre lo que suman las partidas del presupuesto. En Ecuador suele ir del 10 % al 15 %.</small></div>
+        <div class="campo"><label for="comision_pct">Comisión que pides a los proveedores (%)</label>
+            <input type="number" id="comision_pct" name="comision_pct" value="<?= $num('comision_pct') ?>" min="0" max="100" step="0.01" required>
+            <small>Se propone en cada partida nueva del presupuesto. 0 = no cobras comisión.</small></div>
         <div class="campo"><label for="comision_vendedor_pct">Comisión del vendedor (%)</label>
             <input type="number" id="comision_vendedor_pct" name="comision_vendedor_pct" value="<?= $num('comision_vendedor_pct') ?>" min="0" max="50" step="0.01" required>
             <small>Sobre lo vendido sin IVA. Se ve en Reportes. 0 = sin comisión.</small></div>
@@ -190,11 +204,11 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
 
 <?php elseif ($tab === 'pagina'):
     $qr = $qrSvg($enlacePagina);
-    $waTexto = 'Conoce ' . $n['nombre'] . ', mira nuestros espacios y consulta tu fecha aquí: ' . $enlacePagina; ?>
+    $waTexto = 'Conoce ' . $n['nombre'] . ', mira nuestros lugares y consulta tu fecha aquí: ' . $enlacePagina; ?>
 <div class="rejilla rejilla-2">
     <section class="bloque">
         <h2>Tu página pública</h2>
-        <p>Una página con tus espacios, fotos y un formulario para que los novios consulten su fecha. Las consultas te llegan directo a TuPlanner.</p>
+        <p>Una página con tus lugares, fotos y un formulario para que los novios consulten su fecha. Las consultas te llegan directo a TuPlanner.</p>
         <div class="campo"><label for="enlace-pagina">Enlace de tu página</label>
             <div class="g-enlace-copiar">
                 <input type="text" id="enlace-pagina" value="<?= e($enlacePagina) ?>" readonly data-seleccionar>
@@ -209,8 +223,8 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
             <strong>Ideas para usarla</strong>
             <ul>
                 <li>Ponla en la biografía de tu Instagram y en tu página de Facebook.</li>
-                <li>Imprime el código QR en tus tarjetas, en la feria de bodas o en la entrada del local.</li>
-                <li>Cámbiale la descripción, el logo y el color en la pestaña <a href="<?= e(url('configuracion', ['tab' => 'datos'])) ?>">Negocio</a>; las fotos, en <a href="<?= e(url('espacios')) ?>">Espacios</a>.</li>
+                <li>Imprime el código QR en tus tarjetas, en la feria de bodas o en la entrada del negocio.</li>
+                <li>Cámbiale la descripción, el logo y el color en la pestaña <a href="<?= e(url('configuracion', ['tab' => 'datos'])) ?>">Negocio</a>; las fotos, en <a href="<?= e(url('espacios')) ?>">Lugares</a>.</li>
             </ul>
         </div>
     </section>
@@ -231,7 +245,8 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
     <section class="bloque" style="grid-row:span 2">
         <h2>Lista de tareas de cada evento</h2>
         <p class="g-nota">Cuando creas un evento, estas tareas se copian solas con su fecha (ej. "Degustación" 60 días antes). Te avisamos cuando estén por vencer.
-            Cambiarlas aquí no afecta a los eventos que ya existen.</p>
+            Si un tipo de evento (ej. Boda) tiene su propia lista, se usa solo esa; "Los demás eventos" es para los tipos sin lista propia.
+            Las tareas "para el cliente" las marca él en su portal. Cambiarlas aquí no afecta a los eventos que ya existen.</p>
         <?php if (!$tareas): ?><p class="vacio">No hay tareas. Agrega la primera.</p><?php endif; ?>
         <?php foreach ($tareas as $t): $d = (int) $t['dias_antes']; ?>
             <div class="g-tarea-fila">
@@ -241,8 +256,12 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
                     <input type="text" id="tt<?= (int) $t['id'] ?>" name="titulo" value="<?= e($t['titulo']) ?>" maxlength="150" required>
                     <label class="sr-only" for="tp<?= (int) $t['id'] ?>">Para qué eventos</label>
                     <select id="tp<?= (int) $t['id'] ?>" name="tipo_evento">
-                        <option value="">Todos los eventos</option>
+                        <option value="">Los demás eventos</option>
                         <?php foreach (Eventos::TIPOS as $k => $txt): ?><option value="<?= $k ?>" <?= $t['tipo_evento'] === $k ? 'selected' : '' ?>><?= e($txt) ?></option><?php endforeach; ?>
+                    </select>
+                    <label class="sr-only" for="ta<?= (int) $t['id'] ?>">Para quién</label>
+                    <select id="ta<?= (int) $t['id'] ?>" name="asignado">
+                        <?php foreach (\TuPlanner\Planificacion::ASIGNADO as $k => $txt): ?><option value="<?= $k ?>" <?= $t['asignado'] === $k ? 'selected' : '' ?>><?= e($txt) ?></option><?php endforeach; ?>
                     </select>
                     <label class="sr-only" for="td<?= (int) $t['id'] ?>">Días antes</label>
                     <input type="number" id="td<?= (int) $t['id'] ?>" name="dias_antes" value="<?= $d ?>" min="-60" max="400" required title="Días antes del evento">
@@ -264,8 +283,10 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
             <input type="text" id="nt-titulo" name="titulo" maxlength="150" required placeholder="Ej.: Prueba de peinado y maquillaje"></div>
         <div class="fila-campos">
             <div class="campo"><label for="nt-tipo">Para qué eventos</label>
-                <select id="nt-tipo" name="tipo_evento"><option value="">Todos los eventos</option>
+                <select id="nt-tipo" name="tipo_evento"><option value="">Los demás eventos</option>
                     <?php foreach (Eventos::TIPOS as $k => $txt): ?><option value="<?= $k ?>"><?= e($txt) ?></option><?php endforeach; ?></select></div>
+            <div class="campo"><label for="nt-asig">¿Quién la hace?</label>
+                <select id="nt-asig" name="asignado"><?php foreach (\TuPlanner\Planificacion::ASIGNADO as $k => $txt): ?><option value="<?= $k ?>"><?= e($txt) ?></option><?php endforeach; ?></select></div>
             <div class="campo"><label for="nt-dias">Días antes del evento</label>
                 <input type="number" id="nt-dias" name="dias_antes" value="30" min="-60" max="400" required>
                 <small>0 = el mismo día · negativo = después (ej. -8 para devolver la garantía).</small></div>
@@ -284,7 +305,7 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
                 <input type="text" id="enlace-ical" class="g-secreto" value="<?= e($enlaceIcal) ?>" readonly data-seleccionar>
                 <button type="button" class="boton boton-claro" data-copiar="<?= e($enlaceIcal) ?>">Copiar</button>
             </div>
-            <small>No lo compartas en redes: quien lo tenga ve tus eventos (nombres de clientes, espacios e invitados, sin montos).</small></div>
+            <small>No lo compartas en redes: quien lo tenga ve tus eventos (nombres de clientes, lugares e invitados, sin montos).</small></div>
         <div class="g-ayuda">
             <strong>Paso a paso (en una computadora)</strong>
             <ol>
@@ -322,16 +343,16 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
         <button class="boton" type="submit">Guardar</button>
     </form>
     <section class="bloque">
-        <h2>Catálogo y espacios</h2>
-        <p>Tus precios, paquetes y espacios se cambian en sus propias pantallas.</p>
+        <h2>Catálogo y lugares</h2>
+        <p>Tus precios, paquetes y lugares se cambian en sus propias pantallas.</p>
         <div class="acciones">
             <a class="boton boton-claro" href="<?= e(url('catalogo')) ?>">Catálogo y precios</a>
             <a class="boton boton-claro" href="<?= e(url('paquetes')) ?>">Paquetes</a>
-            <a class="boton boton-claro" href="<?= e(url('espacios')) ?>">Espacios</a>
+            <a class="boton boton-claro" href="<?= e(url('espacios')) ?>">Lugares</a>
         </div>
         <?php if (!$n['precios_revisados']): ?>
             <form method="post" action="<?= e(url('configuracion', ['tab' => 'otros', 'accion' => 'precios_revisados'])) ?>" style="margin-top:12px"><?= campo_csrf() ?>
-                <button class="boton boton-chico" type="submit">Ya revisé mis espacios y precios ✓</button></form>
+                <button class="boton boton-chico" type="submit">Ya revisé mis lugares y precios ✓</button></form>
         <?php endif; ?>
     </section>
     <section class="bloque">

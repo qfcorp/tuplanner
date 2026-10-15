@@ -2,7 +2,7 @@
 use TuPlanner\{DiaEvento, Eventos, Invitados};
 
 /**
- * Portal de invitados para los novios u organizadores (público, ?t=token_cliente, solo plan Quinta):
+ * Portal de invitados para los novios u organizadores (público, ?t=token_cliente, solo plan Agencia):
  * arman su lista, las mesas y mandan las invitaciones desde el celular.
  */
 $token = (string) ($_GET['t'] ?? '');

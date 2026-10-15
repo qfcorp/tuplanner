@@ -114,7 +114,7 @@ $filaCuota = function (array $c) use ($u, $puede, $metodosRapidos): void {
 <section class="bloque">
     <h2>Garantías por devolver</h2>
     <?php if ($t['garantias']): ?>
-    <p class="suave">Eventos que ya pasaron y cuya garantía sigue en manos del local. Devuélvela o registra lo retenido por daños.</p>
+    <p class="suave">Eventos que ya pasaron y cuya garantía sigue en manos del negocio. Devuélvela o registra lo retenido por daños.</p>
     <ul class="lista">
         <?php foreach ($t['garantias'] as $g): $wa = WhatsApp::enlace($g['telefono'], $g['texto']); ?>
         <li>

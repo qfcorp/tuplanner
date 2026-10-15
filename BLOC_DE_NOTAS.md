@@ -1,26 +1,41 @@
-# Bloc de notas — TuPlanner (salones de eventos, quintas y haciendas · marca Tukán)
+# Bloc de notas — TuPlanner (wedding planners y organizadores de eventos · marca Tukán)
 
-Última actualización: 13 de octubre de 2026
+Última actualización: 14 de octubre de 2026
 
 ## Qué es
-Programa para salones de eventos, quintas y haciendas de Ecuador. Nació del estudio de nichos (12 oct 2026): no había ningún programa ecuatoriano para este mercado.
-Se armó juntando lo mejor de los programas existentes y lo que Tukán ya tenía:
-- **Brinden** (Argentina): agenda con aviso de doble reserva, pipeline presupuestado → señado → reservado, presupuestos en PDF por WhatsApp, caja de señas, perfil público con formulario.
-- **EventControl** (México): cotizaciones y contratos con paquetes, compras y gastos por evento.
-- **Evento Plus**: avisos automáticos por WhatsApp en cada etapa.
-- **OfiEventos** (España, en español): presupuestos, planning, salones, invitados, inventario, control de cobros, escandallo de costos.
-- **Anolla / Infor / ReServe**: lista de espera, eventos que se repiten, comunicación automática, órdenes de servicio (BEO), contratos con la marca.
-- **ERP QF**: propuestas en PDF, firma con QR, personal por evento y personal mínimo, cronómetro de escaleta, reportes, exportar.
-- **TuSalón**: agenda, anticipos con transferencia/DeUna/Payphone, planes y prueba gratis, Telegram, app instalable.
-- **TuPass**: accesos con QR y transmisión (boda en vivo).
+Programa para **wedding planners y organizadores de eventos** (bodas, quince años y demás). Pedido de Dimi del 14 oct 2026:
+"un programa para wedding planner y organizador de eventos; es diferente que la quinta, porque hace todo el evento".
+Se hizo **copiando TuEvento** (qfcorp/tuevento, salones y quintas) y adaptándolo al organizador. TuEvento sigue igual.
 
-## Decisiones tomadas
-- [x] Nombre provisional: **TuPlanner** (se puede cambiar)
-- [x] Planes: **Salón $39/mes** (hasta 2 espacios y 3 usuarios) · **Quinta $69/mes** (todo, ilimitado). Semestral paga 5 recibe 6; anual paga 10 recibe 12 + dominio. Prueba gratis 7 días. Precios y lo que incluye cada plan se cambian después (panel Tukán → Planes).
-- [x] Plan Quinta incluye: portal del cliente completo, invitados con QR, día del evento, mobiliario y boda en vivo.
-- [x] **Sin facturación electrónica** por ahora (misma decisión pendiente que la veterinaria: opción B, proveedor registrado en el SRI).
-- [x] Tecnología igual que TuSalón: PHP + PostgreSQL, en el servidor qfcorp, dirección **tuplanner.tukanec.com**.
+## Decisiones tomadas (14 oct 2026)
+- [x] **Un solo programa** para bodas, quince años y todos los eventos (no dos)
+- [x] Nombre: **TuPlanner** · dirección **tuplanner.tukanec.com** · repositorio **qfcorp/tuplanner**
+- [x] Base: **copia de TuEvento** (no un modo dentro de TuEvento, para no dañar uno al tocar el otro)
+- [x] Formas de cobro del organizador: las **4** — tarifa fija, porcentaje del presupuesto, comisión de proveedores y reventa (todo pasa por su contrato)
+- [x] Planes provisionales: **Planner $39** (3 usuarios) y **Agencia $69** (todo, usuarios sin límite). Se cambian en el panel Tukán → Planes
+- [x] Colores: rosa antiguo #8A3F5C y dorado #C9A46A (TuEvento es vino #8E3B52)
 
+## Hecho (14 oct 2026) — lo propio del organizador (migración 100)
+- [x] Lugares (quintas, haciendas, iglesias) con dirección, mapa, contacto y tipo; evento con **lugar por definir**
+- [x] Tipos nuevos: pedida de mano, baby shower, despedida; categorías nuevas (honorarios, flores, pastel, vestido, maquillaje, invitaciones, transporte)
+- [x] Pestaña **Planificación**: tareas por meses (organizador / cliente), lista típica (boda 28, quince 17, general 8), presupuesto por proveedor, repartir el presupuesto con % típicos, pagos directos del cliente a proveedores, comisiones, honorarios fijos o por % a la cotización, resumen del dinero
+- [x] Pantalla **Comisiones** (por cobrar, cobradas por periodo, recordatorio por WhatsApp)
+- [x] Pestaña **Ideas**: tablero de fotos (organizador y cliente), me encanta / no va, temática y paleta de colores
+- [x] **Portal del cliente**: "Tu planificación" (sus tareas, presupuesto sin costos de reventa ni comisiones, sus pagos a proveedores, próximas reuniones) e "Ideas" (sube fotos)
+- [x] **Máximo de eventos por día** (aviso y página pública con cupos), honorarios y comisión por defecto en Configuración → Reglas; plantilla de tareas con "para quién"
+- [x] Datos de ejemplo de organizador (servicios de organización, paquete "Organización integral de boda", lugares, tareas, decoración propia), textos, planes, íconos "TP"
+- [x] Pruebas: **lógica 2271/2271** (nuevas: logica_100, 136) y **pantallas 1916/1916** (nuevas: web_100, 114), sin avisos de PHP; revisado en celular (390 px) y computadora sin errores de JavaScript ni nada que se salga a lo ancho
+
+## Pendiente
+1. [ ] DIMI: instalar en qfcorp (línea del README) y crear la ruta del túnel `tuplanner.tukanec.com` → HTTP → localhost:80 (Host header)
+2. [ ] DIMI: crear el super usuario (`php /var/www/tuplanner/bin/crear_admin.php`) y conectar al Panel Tukán Central (tipo "TuPlanner")
+3. [ ] Confirmar precios y qué va en cada plan después de hablar con 2-3 wedding planners
+4. [ ] Agregar TuPlanner a tukansoftware.com (repo qfcorp/tukan-web)
+5. [ ] Ideas para después: cronograma de pagos a proveedores con recordatorio al cliente por WhatsApp, comparar 2-3 cotizaciones de proveedores por partida, portal del proveedor ligado a las partidas, lista de regalos
+6. [ ] Probar Payphone con claves reales (solo se probó con simulador)
+
+---
+## Historia heredada de TuEvento (13 oct 2026)
 ## Hecho (13 oct 2026) — piloto completo
 - [x] Base de datos (36 tablas + 5 migraciones) con **bloqueo de doble reserva en la base** (restricción de exclusión por espacio y horario)
 - [x] Ventas: calendario mensual y "próximos sábados", eventos (lista y tablero), evento con estados, seguimiento, tareas, clientes, espacios y fechas cerradas, lista de espera
@@ -84,15 +99,3 @@ Se armó juntando lo mejor de los programas existentes y lo que Tukán ya tenía
 - [x] Se guarda de dónde vino cada negocio (se registró solo, panel de Tukán o demo del central)
 - [x] Pruebas: logica_96 (301) y web_96 (86), migración 096. Totales: lógica 2135/2135 y pantallas 1803/1803
 - Falta (no existe en TuPlanner): pedidos de demo, comprobantes de pago y soporte. Si se quieren en el central, hay que construirlos aquí primero (subir comprobante desde la pantalla de prueba terminada y un formulario de ayuda)
-
-## Pendiente
-0. [ ] DIMI: cuando el Panel Tukán Central esté listo, correr `sudo bash /var/www/tuplanner/deploy/conectar_central.sh {ID} {SECRETO} {URL}` con los datos que da el panel (después de actualizar TuPlanner)
-1. [ ] DIMI: instalar en el servidor (comando en el README) y crear la ruta del túnel `tuplanner.tukanec.com`
-2. [ ] DIMI: crear el super usuario del panel Tukán (`php /var/www/tuplanner/bin/crear_admin.php`)
-3. [ ] Probar Payphone con claves reales de un local (solo se probó con simulador)
-4. [ ] Lista de 10 salones/quintas conocidos por QF Producciones → entrevistas y piloto gratis con 2-3
-5. [ ] Decidir nombre definitivo (TuPlanner / TuFecha / TuQuinta), precios y qué va en cada plan después del piloto
-6. [ ] Facturación electrónica (opción B, proveedor registrado en el SRI) cuando se decida
-7. [ ] WhatsApp automático (API oficial, pagada); hoy hay WhatsApp con un toque
-8. [ ] Agregar TuPlanner a tukansoftware.com
-9. [ ] Manual en PDF y presentación de ventas (como TuSalón)

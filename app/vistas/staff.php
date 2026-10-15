@@ -20,7 +20,7 @@ $hoy = date('Y-m-d');
     <div class="acciones">
         <?php if ($mapa): ?><a class="boton boton-claro" href="<?= e($mapa) ?>" target="_blank" rel="noopener">Ver en el mapa</a><?php endif; ?>
         <?php if ($wa = WhatsApp::enlace($contactoGeneral, 'Hola, soy ' . $p['nombre'] . ' del personal.')): ?>
-            <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Escribir al local</a><?php endif; ?>
+            <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Escribir al negocio</a><?php endif; ?>
     </div>
 </section>
 
@@ -45,7 +45,7 @@ $hoy = date('Y-m-d');
     <?php if ($x['confirmado']): ?>
         <p class="dia-staff-estado dia-ok-texto">✓ Confirmaste que vas.</p>
         <form method="post" class="dia-en-linea"><?= campo_csrf() ?><input type="hidden" name="asig_id" value="<?= (int) $x['id'] ?>">
-            <button class="boton-enlace" type="submit" name="respuesta" value="no" data-confirmar="¿Avisar que ya NO puedes ir? Le llega un aviso al local.">Ya no puedo ir</button></form>
+            <button class="boton-enlace" type="submit" name="respuesta" value="no" data-confirmar="¿Avisar que ya NO puedes ir? Le llega un aviso al negocio.">Ya no puedo ir</button></form>
     <?php else: ?>
         <?php if ($x['respuesta'] === 'no'): ?><p class="dia-staff-estado dia-alerta-texto">Avisaste que no puedes ir.</p><?php else: ?><p class="dia-staff-estado"><strong>¿Puedes ir?</strong></p><?php endif; ?>
         <form method="post" class="dia-staff-botones"><?= campo_csrf() ?><input type="hidden" name="asig_id" value="<?= (int) $x['id'] ?>">

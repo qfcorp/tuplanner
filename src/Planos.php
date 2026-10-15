@@ -8,7 +8,7 @@ use RuntimeException;
 
 /**
  * Plano visual del salón (diagrama de distribución), como el de Tripleseat o Cvent pero sencillo:
- *   - Plantillas por espacio ("Boda 150 redondas", "Corporativo escuela"): las arma el dueño.
+ *   - Plantillas por lugar ("Boda 150 redondas", "Corporativo escuela"): las arma el dueño.
  *   - Plano de cada evento: copia de una plantilla o desde cero. Lo editan dueño, vendedor y coordinador.
  * Medidas en metros. Cada elemento: centro (x, y), ancho, alto, rotación, etiqueta y puestos (mesas).
  *
@@ -121,7 +121,7 @@ final class Planos
     // Planos
     // ------------------------------------------------------------------
 
-    /** Plano del negocio (o error), con el nombre del espacio y del evento. */
+    /** Plano del negocio (o error), con el nombre del lugar y del evento. */
     public function plano(int $negocioId, int $id): array
     {
         $p = $this->q('SELECT p.*, es.nombre AS espacio, e.nombre AS evento, e.codigo AS evento_codigo, e.fecha AS evento_fecha
@@ -149,7 +149,7 @@ final class Planos
         return $res;
     }
 
-    /** Plantillas del negocio (de un espacio o de todos), con cuántas mesas y puestos tienen. */
+    /** Plantillas del negocio (de un lugar o de todos), con cuántas mesas y puestos tienen. */
     public function plantillas(int $negocioId, ?int $espacioId = null): array
     {
         $sql = "SELECT p.id, p.nombre, p.ancho, p.largo, p.espacio_id, p.actualizado_en, es.nombre AS espacio, es.color AS espacio_color,
@@ -165,7 +165,7 @@ final class Planos
     private function espacio(int $negocioId, int $espacioId): array
     {
         $e = $this->q('SELECT * FROM espacios WHERE id = ? AND negocio_id = ?', [$espacioId, $negocioId])->fetch();
-        if (!$e) throw new RuntimeException('No se encontró el espacio.');
+        if (!$e) throw new RuntimeException('No se encontró el lugar.');
         return $e;
     }
 
@@ -179,7 +179,7 @@ final class Planos
     public const EJEMPLOS = ['' => 'Vacía (la armo yo)', 'boda' => 'Ejemplo de boda o quince: mesas redondas, pista y tarima',
                              'escuela' => 'Ejemplo corporativo: mesas en filas mirando a la tarima'];
 
-    /** Nueva plantilla de distribución para un espacio. $ejemplo: '' (vacía), 'boda' o 'escuela' (ya viene armada). */
+    /** Nueva plantilla de distribución para un lugar. $ejemplo: '' (vacía), 'boda' o 'escuela' (ya viene armada). */
     public function crearPlantilla(int $negocioId, int $espacioId, string $nombre, mixed $ancho, mixed $largo, ?int $usuarioId = null, string $ejemplo = ''): int
     {
         $this->espacio($negocioId, $espacioId);
@@ -189,7 +189,7 @@ final class Planos
         if (!isset(self::EJEMPLOS[$ejemplo])) throw new RuntimeException('Elige cómo empezar la distribución.');
         $capacidad = (int) ($this->espacio($negocioId, $espacioId)['capacidad_banquete'] ?? 0);
         $hay = (int) $this->q("SELECT count(*) FROM planos WHERE negocio_id = ? AND tipo = 'plantilla' AND espacio_id = ?", [$negocioId, $espacioId])->fetchColumn();
-        if ($hay >= self::MAX_PLANTILLAS) throw new RuntimeException('Este espacio ya tiene ' . self::MAX_PLANTILLAS . ' distribuciones. Borra una que ya no uses.');
+        if ($hay >= self::MAX_PLANTILLAS) throw new RuntimeException('Este lugar ya tiene ' . self::MAX_PLANTILLAS . ' distribuciones. Borra una que ya no uses.');
         return $this->enTransaccion(function () use ($negocioId, $espacioId, $nombre, $a, $l, $usuarioId, $ejemplo, $capacidad) {
             $id = (int) $this->q("INSERT INTO planos (negocio_id, tipo, espacio_id, nombre, ancho, largo, creado_por) VALUES (?, 'plantilla', ?, ?, ?, ?, ?) RETURNING id",
                                  [$negocioId, $espacioId, $nombre, $a, $l, $usuarioId])->fetchColumn();
@@ -201,7 +201,7 @@ final class Planos
     /**
      * Distribución de ejemplo para empezar (no se pisa nada): 'boda' = tarima, pista, mesa de honor, barra, buffet y mesas redondas
      * en lo que queda; 'escuela' = tarima y filas de mesas angostas con pasillo al centro.
-     * $capacidad = sentados del espacio (si se sabe, no pone más puestos que eso).
+     * $capacidad = sentados del lugar (si se sabe, no pone más puestos que eso).
      */
     public static function ejemplo(string $cual, float $A, float $L, int $capacidad = 0): array
     {
@@ -287,11 +287,11 @@ final class Planos
         });
     }
 
-    /** Copia una plantilla ("… (copia)") en el mismo espacio. */
+    /** Copia una plantilla ("… (copia)") en el mismo lugar. */
     public function duplicarPlantilla(int $negocioId, int $planoId, ?int $usuarioId = null): int
     {
         $p = $this->plano($negocioId, $planoId);
-        if ($p['tipo'] !== 'plantilla') throw new RuntimeException('Solo se pueden copiar las distribuciones de los espacios.');
+        if ($p['tipo'] !== 'plantilla') throw new RuntimeException('Solo se pueden copiar las distribuciones de los lugares.');
         return $this->enTransaccion(function () use ($negocioId, $p, $usuarioId) {
             $nuevo = $this->crearPlantilla($negocioId, (int) $p['espacio_id'], mb_substr($p['nombre'], 0, 72) . ' (copia)', $p['ancho'], $p['largo'], $usuarioId);
             $this->q('INSERT INTO plano_elementos (plano_id, tipo, x, y, ancho, alto, rotacion, etiqueta, puestos, orden)
@@ -327,7 +327,7 @@ final class Planos
         return $id ? $this->plano($negocioId, (int) $id) : null;
     }
 
-    /** Plantillas para elegir al armar el plano del evento: primero las de los espacios del evento. */
+    /** Plantillas para elegir al armar el plano del evento: primero las de los lugares del evento. */
     public function plantillasParaEvento(int $negocioId, int $eventoId): array
     {
         $this->evento($negocioId, $eventoId);
@@ -367,7 +367,7 @@ final class Planos
         $base = null;
         if ($plantillaId) {
             $base = $this->plano($negocioId, $plantillaId);
-            if ($base['tipo'] !== 'plantilla') throw new RuntimeException('Elige una distribución de tus espacios.');
+            if ($base['tipo'] !== 'plantilla') throw new RuntimeException('Elige una distribución de tus lugares.');
             $a = $base['ancho'];
             $l = $base['largo'];
             $espacioId = (int) $base['espacio_id'];

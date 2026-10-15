@@ -26,7 +26,7 @@ final class Anexos
     public const ESTADOS = ['enviado' => 'Por firmar', 'firmado' => 'Firmado', 'anulado' => 'Anulado'];
 
     public const VARIABLES = [
-        'negocio' => 'Nombre comercial del local', 'razon_social' => 'Razón social', 'ruc' => 'RUC del local', 'ciudad' => 'Ciudad',
+        'negocio' => 'Nombre comercial del negocio', 'razon_social' => 'Razón social', 'ruc' => 'RUC del negocio', 'ciudad' => 'Ciudad',
         'cliente' => 'Nombre del cliente', 'identificacion' => 'Cédula o RUC del cliente', 'evento' => 'Nombre del evento',
         'fecha' => 'Fecha del evento (larga)', 'codigo' => 'Código del evento',
         'numero_anexo' => 'Número del anexo', 'numero_contrato' => 'Número del contrato original',
@@ -71,7 +71,7 @@ final class Anexos
 ANEXO {{numero_anexo}} AL CONTRATO N.º {{numero_contrato}}
 EXTRAS PARA EL EVENTO "{{evento}}"
 
-En la ciudad de {{ciudad}}, a {{fecha_anexo}}, comparecen {{razon_social}}, con RUC {{ruc}}, propietaria del local "{{negocio}}", a quien en adelante se denominará "EL LOCAL"; y {{cliente}}, con cédula/RUC {{identificacion}}, a quien en adelante se denominará "EL CLIENTE". Ambas partes acuerdan este anexo al contrato N.º {{numero_contrato}}, firmado el {{fecha_contrato}}, para el evento "{{evento}}" del {{fecha}} (código {{codigo}}).
+En la ciudad de {{ciudad}}, a {{fecha_anexo}}, comparecen {{razon_social}}, con RUC {{ruc}}, propietaria del negocio "{{negocio}}", a quien en adelante se denominará "EL LOCAL"; y {{cliente}}, con cédula/RUC {{identificacion}}, a quien en adelante se denominará "EL CLIENTE". Ambas partes acuerdan este anexo al contrato N.º {{numero_contrato}}, firmado el {{fecha_contrato}}, para el evento "{{evento}}" del {{fecha}} (código {{codigo}}).
 
 PRIMERA — EXTRAS QUE SE AGREGAN. A pedido de EL CLIENTE, EL LOCAL agrega al evento los siguientes servicios:
 {{extras}}
@@ -267,9 +267,9 @@ TXT;
         if (!$a) throw new RuntimeException('El enlace del anexo no es válido.');
         if ($a['estado'] === 'firmado') throw new RuntimeException('Este anexo ya fue firmado.');
         if ($a['estado'] !== 'enviado' || $a['contrato_estado'] !== 'firmado') {
-            throw new RuntimeException('Este anexo ya no se puede firmar: su contrato fue reemplazado. Pide al local el contrato nuevo.');
+            throw new RuntimeException('Este anexo ya no se puede firmar: su contrato fue reemplazado. Pide al negocio el contrato nuevo.');
         }
-        if (!$a['integro']) throw new RuntimeException('El texto del anexo fue alterado. Pide al local que lo revise.');
+        if (!$a['integro']) throw new RuntimeException('El texto del anexo fue alterado. Pide al negocio que lo revise.');
         if (!$acepta) throw new RuntimeException('Marca la casilla para aceptar el anexo.');
         $nombre = trim($nombre);
         $identificacion = preg_replace('/\D+/', '', $identificacion);

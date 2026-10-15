@@ -17,7 +17,7 @@ $urlMes = fn(DateTimeImmutable $d, array $extra = []) => url('calendario', ['a' 
 <div class="cabecera">
     <div>
         <h1>Calendario</h1>
-        <p><?= $vistaCal === 'sabados' ? 'Los próximos 12 sábados, espacio por espacio' : 'Toca un día para ver qué espacios están libres' ?></p>
+        <p><?= $vistaCal === 'sabados' ? 'Los próximos 12 sábados, lugar por espacio' : 'Toca un día para ver qué lugares están libres' ?></p>
     </div>
     <div class="acciones">
         <?php if ($puedeCrear): ?><a class="boton" href="<?= e(url('evento_nuevo', $dia ? ['fecha' => $dia] : [])) ?>">Nuevo evento</a><?php endif; ?>
@@ -32,8 +32,8 @@ $urlMes = fn(DateTimeImmutable $d, array $extra = []) => url('calendario', ['a' 
 <?php if ($vistaCal === 'sabados'): ?>
     <?php if (!$espacios): ?>
         <section class="bloque vacio">
-            <p>Todavía no tienes espacios activos.</p>
-            <a class="boton" href="<?= e(url('espacios')) ?>">Crear un espacio</a>
+            <p>Todavía no tienes lugares activos.</p>
+            <a class="boton" href="<?= e(url('espacios')) ?>">Crear un lugar</a>
         </section>
     <?php else: ?>
     <p class="suave cal-ayuda">Los sábados son los días que más se venden. Úsalo cuando un cliente pregunte "¿qué sábados tienen libres?".</p>
@@ -74,9 +74,9 @@ $urlMes = fn(DateTimeImmutable $d, array $extra = []) => url('calendario', ['a' 
         <input type="hidden" name="r" value="calendario">
         <input type="hidden" name="a" value="<?= $anio ?>">
         <input type="hidden" name="m" value="<?= $mes ?>">
-        <label class="sr-only" for="filtro-espacio">Espacio</label>
+        <label class="sr-only" for="filtro-espacio">Lugar</label>
         <select id="filtro-espacio" name="espacio" data-autoenviar>
-            <option value="">Todos los espacios</option>
+            <option value="">Todos los lugares</option>
             <?php foreach ($espacios as $es): ?>
                 <option value="<?= (int) $es['id'] ?>" <?= $espacioId === (int) $es['id'] ? 'selected' : '' ?>><?= e($es['nombre']) ?></option>
             <?php endforeach; ?>
@@ -143,14 +143,14 @@ $urlMes = fn(DateTimeImmutable $d, array $extra = []) => url('calendario', ['a' 
         </div>
         <?php if (!empty($cierresDia)): ?>
             <?php foreach ($cierresDia as $c): ?>
-                <p class="aviso aviso-error">Cerrado<?= $c['espacio'] ? ' (' . e($c['espacio']) . ')' : ' (todo el local)' ?><?= $c['motivo'] ? ': ' . e($c['motivo']) : '' ?></p>
+                <p class="aviso aviso-error">Cerrado<?= $c['espacio'] ? ' (' . e($c['espacio']) . ')' : ' (todo el negocio)' ?><?= $c['motivo'] ? ': ' . e($c['motivo']) : '' ?></p>
             <?php endforeach; ?>
         <?php endif; ?>
         <?php if ($dia < $hoyTxt): ?><p class="suave">Este día ya pasó.</p><?php endif; ?>
         <?php if (!$disponibilidad): ?>
-            <p class="vacio">No tienes espacios activos. <a href="<?= e(url('espacios')) ?>">Crea uno</a>.</p>
+            <p class="vacio">No tienes lugares activos. <a href="<?= e(url('espacios')) ?>">Crea uno</a>.</p>
         <?php else: ?>
-        <h3>Espacios</h3>
+        <h3>Lugares</h3>
         <ul class="filas disp-lista">
             <?php foreach ($disponibilidad as $d): ?>
                 <li>

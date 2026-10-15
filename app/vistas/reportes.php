@@ -148,15 +148,15 @@ $t = $conversion['total'];
             <?= $barras(array_map(fn($m, $k) => [ucfirst(Reportes::mesCorto($k)), $m['pct'], $m['vendidos'] . ' de ' . $m['sabados']], $ocupacion['por_mes'], array_keys($ocupacion['por_mes']))) ?>
         </div>
         <div>
-            <h3>Por espacio</h3>
-            <?php if (!$ocupacion['espacios']): ?><p class="vacio">No tienes espacios activos.</p><?php else: ?>
+            <h3>Por lugar</h3>
+            <?php if (!$ocupacion['espacios']): ?><p class="vacio">No tienes lugares activos.</p><?php else: ?>
                 <div class="tabla-scroll"><table class="tabla" style="min-width:300px">
-                    <thead><tr><th>Espacio</th><th class="num">Fechas</th><th class="num">Sábados</th><th class="num">% sábados</th></tr></thead>
+                    <thead><tr><th>Lugar</th><th class="num">Fechas</th><th class="num">Sábados</th><th class="num">% sábados</th></tr></thead>
                     <tbody><?php foreach ($ocupacion['espacios'] as $es): ?>
                         <tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:<?= e($es['color']) ?>;margin-right:6px" aria-hidden="true"></span><?= e($es['nombre']) ?></td>
                             <td class="num"><?= $es['fechas'] ?></td><td class="num"><?= $es['sabados'] ?></td><td class="num"><?= $es['pct_sabados'] ?> %</td></tr>
                     <?php endforeach; ?>
-                    <tr class="fila-total"><td>Todo el local</td><td class="num"><?= $ocupacion['fechas_vendidas'] ?></td><td class="num"><?= $ocupacion['sabados_vendidos'] ?> de <?= $ocupacion['sabados'] ?></td><td class="num"><?= $ocupacion['pct_sabados'] ?> %</td></tr>
+                    <tr class="fila-total"><td>Todo el negocio</td><td class="num"><?= $ocupacion['fechas_vendidas'] ?></td><td class="num"><?= $ocupacion['sabados_vendidos'] ?> de <?= $ocupacion['sabados'] ?></td><td class="num"><?= $ocupacion['pct_sabados'] ?> %</td></tr>
                     </tbody>
                 </table></div>
             <?php endif; ?>

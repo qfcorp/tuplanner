@@ -2,7 +2,7 @@
 use TuPlanner\Planos;
 
 /**
- * Editor del plano (distribución de un espacio o plano de un evento). El dibujo lo arma mod_plano.js;
+ * Editor del plano (distribución de un lugar o plano de un evento). El dibujo lo arma mod_plano.js;
  * sin JavaScript se ve el plano fijo (SVG del servidor).
  * @var ?array $ev @var array $plano @var array $planoDatos @var bool $editable @var bool $puedeBorrar @var array $config
  */

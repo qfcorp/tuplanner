@@ -11,7 +11,7 @@ $token = (string) ($_GET['t'] ?? '');
 $ev = (new Eventos(db()))->porToken('token_cliente', $token);
 if (!$ev) {
     http_response_code(404);
-    vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido o ya no existe. Revisa que esté completo o pide uno nuevo al local donde contrataste tu evento.'],
+    vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido o ya no existe. Revisa que esté completo o pide uno nuevo al negocio donde contrataste tu evento.'],
                   'Portal del cliente · TuPlanner');
     return;
 }
@@ -86,9 +86,13 @@ if ($quinta) {
         usort($cronograma, fn($a, $b) => [($a['hora'] < $corte), $a['hora']] <=> [($b['hora'] < $corte), $b['hora']]);
     }
 }
+$st = db()->prepare('SELECT es.nombre, es.direccion, es.mapa_url FROM evento_espacios ee JOIN espacios es ON es.id = ee.espacio_id
+                       WHERE ee.evento_id = ? ORDER BY es.orden, es.id');
+$st->execute([$eid]);
+$lugares = $st->fetchAll();
 $telNegocio = $negocio['whatsapp'] ?: $negocio['telefono'];
 $primerNombre = trim(explode(' ', trim((string) $ev['cliente']))[0]);
 $waNegocio = \TuPlanner\WhatsApp::enlace($telNegocio, "Hola, soy $primerNombre ({$ev['codigo']} · {$ev['nombre']}). Te escribo desde mi portal del evento.");
 vista_publica('portal', compact('ev', 'negocio', 'token', 'quinta', 'activo', 'res', 'historial', 'cotizacion', 'contrato', 'payphone', 'banco', 'deuna',
-                                 'invitados', 'cronograma', 'waNegocio', 'primerNombre'),
+                                 'invitados', 'cronograma', 'waNegocio', 'primerNombre', 'lugares'),
               'Mi evento · ' . $negocio['nombre'], $marca);

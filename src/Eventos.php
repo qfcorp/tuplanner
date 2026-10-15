@@ -11,14 +11,15 @@ use RuntimeException;
 /**
  * Eventos: el centro de TuPlanner.
  * Estados: consulta -> cotizado -> separado -> confirmado -> realizado (o perdido / cancelado).
- * Una fecha queda ASEGURADA (bloquea el espacio) desde "separado". Nadie más puede separar ese espacio
+ * Una fecha queda ASEGURADA (bloquea el lugar) desde "separado". Nadie más puede separar ese espacio
  * a la misma hora: lo impide la base de datos con una restricción de exclusión (no solo el programa).
  * Una fecha "cotizada" queda RETENIDA unos días: se avisa, pero no se bloquea.
  */
 final class Eventos
 {
     public const TIPOS = [
-        'boda' => 'Boda', 'quince' => 'Quince años', 'graduacion' => 'Graduación', 'bautizo' => 'Bautizo',
+        'boda' => 'Boda', 'quince' => 'Quince años', 'pedida' => 'Pedida de mano', 'baby_shower' => 'Baby shower',
+        'despedida' => 'Despedida de soltera/o', 'graduacion' => 'Graduación', 'bautizo' => 'Bautizo',
         'primera_comunion' => 'Primera comunión', 'cumpleanos' => 'Cumpleaños', 'corporativo' => 'Evento corporativo',
         'aniversario' => 'Aniversario', 'otro' => 'Otro',
     ];
@@ -30,7 +31,7 @@ final class Eventos
     public const ESTADOS_AYUDA = [
         'consulta'   => 'El cliente preguntó. La fecha no está guardada.',
         'cotizado'   => 'Ya tiene cotización. La fecha queda retenida unos días, sin bloquearla.',
-        'separado'   => 'Pagó la reserva: la fecha y el espacio quedan bloqueados.',
+        'separado'   => 'Pagó la reserva: la fecha y el lugar quedan bloqueados.',
         'confirmado' => 'Contrato firmado. El evento va.',
         'realizado'  => 'El evento ya pasó.',
         'perdido'    => 'El cliente no contrató.',
@@ -58,7 +59,7 @@ final class Eventos
         'teatro' => 'Auditorio / teatro', 'escuela' => 'Escuela', 'herradura' => 'Herradura', 'mixto' => 'Mixto',
     ];
     public const TIPOS_ACTIVIDAD = [
-        'nota' => 'Nota', 'llamada' => 'Llamada', 'whatsapp' => 'WhatsApp', 'visita' => 'Visita al local',
+        'nota' => 'Nota', 'llamada' => 'Llamada', 'whatsapp' => 'WhatsApp', 'visita' => 'Visita al negocio',
         'degustacion' => 'Degustación', 'reunion' => 'Reunión', 'correo' => 'Correo', 'sistema' => 'Sistema',
     ];
 
@@ -147,7 +148,7 @@ final class Eventos
     // ------------------------------------------------------------------
 
     /**
-     * Desde y hasta que se ocupa el espacio: X horas antes (montaje) y X horas después (desmontaje).
+     * Desde y hasta que se ocupa el lugar: X horas antes (montaje) y X horas después (desmontaje).
      * Si la hora de fin es menor o igual que la de inicio, el evento termina al día siguiente.
      * @return array{0:string,1:string} 'Y-m-d H:i:s'
      */
@@ -165,7 +166,7 @@ final class Eventos
     }
 
     /**
-     * Eventos que chocan con ese horario en esos espacios.
+     * Eventos que chocan con ese horario en esos lugares.
      * Cada choque trae 'nivel': 'bloqueado' (separado/confirmado/realizado), 'retenido' (cotizado vigente) o 'consulta'.
      */
     public function choques(int $negocioId, string $fecha, string $horaInicio, string $horaFin, array $espacioIds, ?int $excluirEvento = null, ?DateTimeImmutable $hoy = null): array
@@ -200,15 +201,15 @@ final class Eventos
         $st->execute([$negocioId, $fecha, ...$espacioIds]);
         foreach ($st->fetchAll() as $c) {
             $choques[] = ['id' => null, 'codigo' => '', 'nombre' => 'Día cerrado' . ($c['motivo'] ? ': ' . $c['motivo'] : ''),
-                          'estado' => 'cerrado', 'nivel' => 'bloqueado', 'espacio' => $c['espacio'] ?? 'Todo el local',
+                          'estado' => 'cerrado', 'nivel' => 'bloqueado', 'espacio' => $c['espacio'] ?? 'Todo el negocio',
                           'espacio_id' => $c['espacio_id'], 'cliente' => '', 'fecha' => $c['fecha'], 'hora_inicio' => null, 'hora_fin' => null, 'retenida_hasta' => null];
         }
         return $choques;
     }
 
     /**
-     * Disponibilidad de todos los espacios en una fecha (para el calendario y la página pública).
-     * @return list<array{espacio_id:int, espacio:string, capacidad_banquete:?int, estado:string, eventos:array}>
+     * Disponibilidad de todos los lugares en una fecha (para el calendario y la página pública).
+     * @return list<array{espacio_id:int, lugar:string, capacidad_banquete:?int, estado:string, eventos:array}>
      *   estado: libre | consulta | retenido | ocupado | cerrado
      */
     public function disponibilidad(int $negocioId, string $fecha, ?DateTimeImmutable $hoy = null): array
@@ -268,11 +269,13 @@ final class Eventos
         $inv = (int) ($d['invitados'] ?? 0);
         if ($inv < 1 || $inv > 20000) throw new RuntimeException('Escribe cuántos invitados (aproximado).');
         $espacios = array_values(array_unique(array_filter(array_map('intval', (array) ($d['espacios'] ?? [])))));
-        if (!$espacios) throw new RuntimeException('Elige al menos un espacio.');
+        // El organizador puede crear el evento sin lugar ("por definir") y elegirlo después
+        if ($espacios) {
         $marcas = implode(',', array_fill(0, count($espacios), '?'));
         $st = $this->db->prepare("SELECT count(*) FROM espacios WHERE negocio_id = ? AND activo AND id IN ($marcas)");
         $st->execute([$negocioId, ...$espacios]);
-        if ((int) $st->fetchColumn() !== count($espacios)) throw new RuntimeException('Uno de los espacios no existe.');
+        if ((int) $st->fetchColumn() !== count($espacios)) throw new RuntimeException('Uno de los lugares no existe.');
+        }
         $nombre = trim((string) ($d['nombre'] ?? ''));
         $origen = (string) ($d['origen'] ?? '');
         $montaje = (string) ($d['montaje'] ?? '');
@@ -324,9 +327,11 @@ final class Eventos
             $id = (int) $st->fetchColumn();
             $this->guardarEspacios($negocioId, $id, $v['fecha'], $v['hora_inicio'], $v['hora_fin'], $v['espacios'], false);
             $this->crearTareasDesdePlantilla($negocioId, $id, $v['tipo'], $v['fecha']);
-            $st = $this->db->prepare('SELECT garantia_defecto FROM negocios WHERE id = ?');
+            $st = $this->db->prepare('SELECT garantia_defecto, honorario_modo, honorario_pct FROM negocios WHERE id = ?');
             $st->execute([$negocioId]);
-            $this->db->prepare('UPDATE eventos SET garantia = ? WHERE id = ?')->execute([(float) $st->fetchColumn(), $id]);
+            $n = $st->fetch();
+            $this->db->prepare('UPDATE eventos SET garantia = ?, honorario_modo = ?, honorario_pct = ? WHERE id = ?')
+                     ->execute([(float) $n['garantia_defecto'], $n['honorario_modo'], (float) $n['honorario_pct'], $id]);
             if ($propia) $this->db->commit();
             return $id;
         } catch (\Throwable $e) {
@@ -335,7 +340,7 @@ final class Eventos
         }
     }
 
-    /** Cambia los datos generales. Si cambia la fecha, la hora o los espacios de un evento separado, revisa que siga libre. */
+    /** Cambia los datos generales. Si cambia la fecha, la hora o los lugares de un evento separado, revisa que siga libre. */
     public function actualizar(int $negocioId, int $id, array $d): void
     {
         $ev = $this->obtener($negocioId, $id);
@@ -372,10 +377,14 @@ final class Eventos
         }
     }
 
-    /** Guarda los espacios del evento con su horario. Traduce el choque de la base de datos a un mensaje claro. */
+    /** Guarda los lugares del evento con su horario. Traduce el choque de la base de datos a un mensaje claro. */
     private function guardarEspacios(int $negocioId, int $eventoId, string $fecha, string $hi, string $hf, array $espacios, bool $bloquea): void
     {
         [$desde, $hasta] = $this->periodo($negocioId, $fecha, $hi, $hf);
+        if (!$espacios) {   // lugar por definir
+            $this->db->prepare('DELETE FROM evento_espacios WHERE evento_id = ?')->execute([$eventoId]);
+            return;
+        }
         if ($bloquea) $this->exigirLibre($negocioId, $fecha, $hi, $hf, $espacios, $eventoId);
         $marcas = implode(',', array_fill(0, count($espacios), '?'));
         $this->db->prepare("DELETE FROM evento_espacios WHERE evento_id = ? AND espacio_id NOT IN ($marcas)")->execute([$eventoId, ...$espacios]);
@@ -396,7 +405,7 @@ final class Eventos
             if ($c['nivel'] === 'bloqueado') {
                 throw new RuntimeException($c['estado'] === 'cerrado'
                     ? "Esa fecha está cerrada en {$c['espacio']} ({$c['nombre']})."
-                    : "{$c['espacio']} ya está separado ese día por {$c['codigo']} ({$c['nombre']}, " . substr((string) $c['hora_inicio'], 0, 5) . ' a ' . substr((string) $c['hora_fin'], 0, 5) . '). Elige otra fecha, otra hora u otro espacio.');
+                    : "{$c['espacio']} ya está separado ese día por {$c['codigo']} ({$c['nombre']}, " . substr((string) $c['hora_inicio'], 0, 5) . ' a ' . substr((string) $c['hora_fin'], 0, 5) . '). Elige otra fecha, otra hora u otro lugar.');
             }
         }
     }
@@ -408,7 +417,7 @@ final class Eventos
             $f();
         } catch (PDOException $e) {
             if ($e->getCode() === '23P01') {
-                throw new RuntimeException('Otra persona acaba de separar ese espacio en ese horario. Revisa el calendario.');
+                throw new RuntimeException('Otra persona acaba de separar ese lugar en ese horario. Revisa el calendario.');
             }
             throw $e;
         }
@@ -429,7 +438,7 @@ final class Eventos
         $e = $st->fetch();
         if (!$e) return null;
         $e['espacios'] = $this->espacios($id);
-        $e['espacios_texto'] = implode(', ', array_column($e['espacios'], 'nombre'));
+        $e['espacios_texto'] = $e['espacios'] ? implode(', ', array_column($e['espacios'], 'nombre')) : 'Lugar por definir';
         return $e;
     }
 
@@ -454,7 +463,7 @@ final class Eventos
     }
 
     /**
-     * Cambia el estado. Al separar, bloquea los espacios (falla si otro evento ya los tiene).
+     * Cambia el estado. Al separar, bloquea los lugares (falla si otro evento ya los tiene).
      * $extra['motivo'] es obligatorio para perdido y cancelado.
      */
     public function cambiarEstado(int $negocioId, int $id, string $nuevo, array $extra = [], ?array $usuario = null, ?DateTimeImmutable $hoy = null): void
@@ -486,8 +495,15 @@ final class Eventos
             $bloquea = in_array($nuevo, self::BLOQUEAN, true);
             $espacios = array_map('intval', array_column($this->espacios($id), 'id'));
             if ($bloquea && !in_array($actual, self::BLOQUEAN, true)) {
-                if (!$espacios) throw new RuntimeException('El evento no tiene espacio asignado.');
-                $this->exigirLibre($negocioId, $ev['fecha'], $ev['hora_inicio'], $ev['hora_fin'], $espacios, $id);
+                if ($espacios) {
+                    $this->exigirLibre($negocioId, $ev['fecha'], $ev['hora_inicio'], $ev['hora_fin'], $espacios, $id);
+                } else {
+                    // Lugar por definir: solo se revisa que el negocio no tenga cerrado todo ese día
+                    $st = $this->db->prepare('SELECT motivo FROM fechas_cerradas WHERE negocio_id = ? AND fecha = ?::date AND espacio_id IS NULL LIMIT 1');
+                    $st->execute([$negocioId, $ev['fecha']]);
+                    $cer = $st->fetch();
+                    if ($cer) throw new RuntimeException('Esa fecha está cerrada para todo el negocio' . ($cer['motivo'] ? ' (' . $cer['motivo'] . ')' : '') . '. Elige otra fecha o abre ese día en Lugares.');
+                }
             }
             $this->conTraduccionDeChoque(function () use ($id, $bloquea) {
                 $this->db->prepare('UPDATE evento_espacios SET bloquea = ? WHERE evento_id = ?')->execute([$bloquea ? 'true' : 'false', $id]);
@@ -568,7 +584,7 @@ final class Eventos
         return $st->fetchAll();
     }
 
-    /** Eventos de un mes con sus espacios (para el calendario). Incluye 7 días antes y después para completar semanas. */
+    /** Eventos de un mes con sus lugares (para el calendario). Incluye 7 días antes y después para completar semanas. */
     public function calendarioMes(int $negocioId, int $anio, int $mes): array
     {
         $ini = (new DateTimeImmutable(sprintf('%04d-%02d-01', $anio, $mes)))->modify('-7 days')->format('Y-m-d');
@@ -668,15 +684,20 @@ final class Eventos
     /** Crea las tareas del evento según la plantilla del negocio (ej. "Degustación" 60 días antes). */
     public function crearTareasDesdePlantilla(int $negocioId, int $eventoId, string $tipo, string $fecha): int
     {
-        $st = $this->db->prepare('SELECT titulo, dias_antes, orden FROM plantilla_tareas
+        // Si el negocio tiene una lista propia para ese tipo (ej. boda), se usa SOLO esa;
+        // si no, la de "todos los demás eventos" (tipo_evento vacío).
+        $st = $this->db->prepare('SELECT titulo, dias_antes, orden, asignado, tipo_evento FROM plantilla_tareas
                                    WHERE negocio_id = ? AND (tipo_evento IS NULL OR tipo_evento = ?) ORDER BY dias_antes DESC, orden');
         $st->execute([$negocioId, $tipo]);
-        $ins = $this->db->prepare('INSERT INTO evento_tareas (evento_id, titulo, vence, orden)
-                                    VALUES (?,?, CASE WHEN ?::int < 0 THEN ?::date - ?::int ELSE LEAST(?::date, GREATEST(CURRENT_DATE, ?::date - ?::int)) END, ?)');
+        $filas = $st->fetchAll();
+        $propias = array_values(array_filter($filas, fn($t) => $t['tipo_evento'] !== null));
+        if ($propias) $filas = $propias;
+        $ins = $this->db->prepare('INSERT INTO evento_tareas (evento_id, titulo, vence, asignado, orden)
+                                    VALUES (?,?, CASE WHEN ?::int < 0 THEN ?::date - ?::int ELSE LEAST(?::date, GREATEST(CURRENT_DATE, ?::date - ?::int)) END, ?, ?)');
         $n = 0;
-        foreach ($st->fetchAll() as $t) {
+        foreach ($filas as $t) {
             $d = (int) $t['dias_antes'];
-            $ins->execute([$eventoId, $t['titulo'], $d, $fecha, $d, $fecha, $fecha, $d, $n++]);
+            $ins->execute([$eventoId, $t['titulo'], $d, $fecha, $d, $fecha, $fecha, $d, $t['asignado'] ?? 'planner', $n++]);
         }
         return $n;
     }

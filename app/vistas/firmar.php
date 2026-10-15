@@ -33,13 +33,13 @@ $inicial = mb_strtoupper(mb_substr((string) $negocio['nombre'], 0, 1));
 <?php elseif ($k['estado'] === 'anulado'): ?>
 <section class="bloque doc-pub-estado doc-pub-aviso">
     <h2>Este contrato fue reemplazado</h2>
-    <p>El local anuló este contrato (por ejemplo, por un cambio en el evento). Pídeles el enlace del contrato nuevo.</p>
+    <p>El negocio anuló este contrato (por ejemplo, por un cambio en el evento). Pídeles el enlace del contrato nuevo.</p>
     <?php if ($waDudas): ?><a class="boton boton-wa boton-ancho" href="<?= e($waDudas) ?>" target="_blank" rel="noopener">Escribir por WhatsApp</a><?php endif; ?>
 </section>
 <?php elseif ($k['estado'] === 'borrador'): ?>
 <section class="bloque doc-pub-estado doc-pub-aviso">
     <h2>El contrato todavía se está preparando</h2>
-    <p>El local te avisará cuando esté listo para firmar.</p>
+    <p>El negocio te avisará cuando esté listo para firmar.</p>
     <?php if ($waDudas): ?><a class="boton boton-wa boton-ancho" href="<?= e($waDudas) ?>" target="_blank" rel="noopener">Escribir por WhatsApp</a><?php endif; ?>
 </section>
 <?php else: ?>

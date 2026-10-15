@@ -8,7 +8,7 @@ namespace TuPlanner;
  *  - Cotización: datos del cliente y del evento, detalle por categoría, totales con IVA, precio por persona,
  *    notas, condiciones, validez y un QR con el enlace para verla y aceptarla en línea.
  *  - Contrato: texto completo bien formateado, firma del cliente (imagen) con nombre, cédula, fecha e IP,
- *    línea de firma del local, QR de verificación (26 mm) con el código y la huella SHA-256.
+ *    línea de firma del negocio, QR de verificación (26 mm) con el código y la huella SHA-256.
  *    Si no está firmado lleva la marca de agua "BORRADOR – SIN FIRMAR".
  * No toca la base de datos: recibe los datos ya leídos (Cotizaciones::obtener / Contratos::obtener).
  */
@@ -18,7 +18,7 @@ final class PdfDocumentos
      * @param array  $negocio  fila de la tabla negocios
      * @param array  $cot      Cotizaciones::obtener()
      * @param ?string $enlace  dirección pública de la cotización (va en el QR)
-     * @param string $espacios texto de los espacios del evento
+     * @param string $espacios texto de los lugares del evento
      * @return \TCPDF
      */
     public static function cotizacion(array $negocio, array $cot, ?string $enlace = null, string $espacios = ''): object

@@ -15,7 +15,7 @@ contiene "Contraseña mala" "$TMP/post.html" "no coinciden"
 r=$(post "r=login" --data-urlencode "email=$EMAIL" --data-urlencode "clave=claveSegura1")
 check "Entrar lleva al inicio" "302 $BASE/?r=inicio" "$r"
 check "Política de privacidad" "200" "$(get "r=privacidad")"
-contiene "Privacidad habla de eventos" "$TMP/pag.html" "quintas"
+contiene "Privacidad habla de eventos" "$TMP/pag.html" "organizadores de eventos"
 check "Ruta que no existe: 404" "404" "$(get "r=no_existe")"
 check "Menú Más" "200" "$(get "r=mas")"
 contiene "Más lista Catálogo" "$TMP/pag.html" "Catálogo y precios"

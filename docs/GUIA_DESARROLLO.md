@@ -1,6 +1,6 @@
 # Guía para programar en TuPlanner
 
-TuPlanner es el programa de la familia Tukán para **salones de eventos, quintas y haciendas** (Ecuador).
+TuPlanner es el programa de la familia Tukán para **wedding planners y organizadores de eventos** (Ecuador). Es una copia adaptada de TuEvento (qfcorp/tuevento).
 Misma forma de trabajar que TuSalón (qfcorp/tusalon): PHP 8.3+ sin framework, PostgreSQL 16, sin librerías de JavaScript.
 
 ## Estructura
@@ -71,6 +71,16 @@ bash tests/run_web.sh
   - Cuidado: `PDOException` es `RuntimeException`; en el conector siempre se relanza antes de convertir los `RuntimeException` del negocio en 422 (si no, un error de base saldría como "dato inválido" con el texto técnico).
   - `Planes::suscribir(..., $pagadoEn)` y `PanelTukan::registrarPago(['fecha' => …])` guardan la fecha del pago (`pagado_en`); sin ella, hoy. Anular el único pago de un negocio activo lo vuelve a `prueba` (el panel no lo hacía: quedaba "al día sin vencimiento").
 
+- Organizador (100): "Espacios" se llaman **Lugares** en pantalla, pero la tabla, las rutas (`r=espacios`) y las variables siguen siendo `espacios` (no se renombraron para no romper nada). Planes: el código `salon` = **Planner** y `quinta` = **Agencia** (`es_quinta()` / `requiere_quinta()` = plan Agencia).
+- Un evento puede no tener lugares (`espacios_texto` = "Lugar por definir"); al separarlo sin lugar solo se revisa que el negocio no tenga cerrado todo el día. `guardarEspacios` con lista vacía borra los lugares del evento.
+- Tareas desde la plantilla: si el negocio tiene filas para ese tipo de evento, se usan SOLO esas; si no, las de tipo vacío ("Los demás eventos"). `asignado` = planner o cliente (el cliente marca solo las suyas, en `portal_plan`).
+- Dinero del organizador: la regla vive en `Planificacion::valor()` (contratado o estimado; descartadas = 0), `Planificacion::comision()` (solo contratadas; valor fijo o % de lo contratado) y `Planificacion::resumen()`. Total del evento = cotización aceptada (`eventos.total`) + partidas `paga='cliente'`. Las partidas `paga='planner'` (reventa) ya están dentro de la cotización: no se suman dos veces. Con `$soloVisibles` (portal) nunca salen el costo de reventa ni las comisiones.
+- Pagos directos (`presupuesto_pagos`) son solo para llevar la cuenta: no son dinero del negocio y no entran en Cobros ni en la ganancia. No se paga más que el saldo (la partida se bloquea con `FOR UPDATE`).
+- Honorarios a la cotización: `Planificacion::honorarioACotizacion()` borra la línea `categoria='honorarios'` sin producto y agrega la nueva con `Cotizaciones::agregarLineaLibre()` (solo borrador o enviada).
+- Ideas: fotos con `Fotos::guardarImagen` en `uploads/ideas`; se sirven por `r=evento_ideas&id=&foto=` (con sesión) y `r=portal_ideas&t=&foto=` (enlace del cliente). El cliente sube hasta 30 y borra solo las suyas.
+- Capacidad: `Planificacion::cargaDelDia()` cuenta eventos separados o confirmados ese día; `disponibilidadPublica()` da libre / consultar (queda 1 cupo) / ocupado (lleno o día cerrado). La página pública usa esto, no los lugares.
+- CSS del módulo: `mod_plan.css` (prefijos `pn-` planificación, `id-` ideas).
+
 ## Archivos de cada módulo
 | Módulo | Pruebas | Migración | Clases |
 |---|---|---|---|
@@ -86,8 +96,9 @@ bash tests/run_web.sh
 | Plano visual del salón y metas de ventas | logica_80, web_80 | 080 | Planos, PdfPlano, Metas (editor: `public/assets/mod_plano.js` + `mod_plano.css`, prefijo `pl-`; metas: `mod_metas.css`, prefijo `mt-`) |
 | Conector con el Panel Tukán Central (SSO, estado, solo central, `deploy/conectar_central.sh`) | logica_95, web_95 | 095 | TukanCentral, TukanCentralRechazo (entrada `public/tukan_central.php`, fuera del enrutador) |
 | Panel Tukán Central v2 (capacidades, clientes, cliente, cotizar, planes, solicitudes, finanzas, ejecutar; SSO con `ir`) | logica_96, web_96 | 096 | TukanCentralV2, TukanCentralError |
+| Organizador: lugares, tareas por meses, presupuesto por proveedor, pagos directos, comisiones, honorarios, ideas, capacidad por día, portal (`evento_plan`, `evento_ideas`, `comisiones`, `portal_plan`, `portal_ideas`) | logica_100, web_100 | 100 | Planificacion, Inspiracion |
 
 ## Servidor
-- Cron cada hora: `php /var/www/tuplanner/bin/tareas.php` · respaldo diario 3:25: `deploy/respaldo.sh`
+- Cron cada hora: `php /var/www/tuplanner/bin/tareas.php` · respaldo diario 3:35 (cron cada hora en el minuto 7): `deploy/respaldo.sh`
 - Super usuario: `php bin/crear_admin.php` · Telegram: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET`
 - Panel Tukán Central: `sudo bash /var/www/tuplanner/deploy/conectar_central.sh {ID} {SECRETO} {URL}` · `TUKAN_SOLO_CENTRAL=1` (solo desde el central; 0 = vuelve el ingreso local)

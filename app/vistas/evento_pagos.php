@@ -231,7 +231,7 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
         <dt>Recibida</dt><dd><?= dinero($g['recibida']) ?></dd>
         <?php if ($g['devuelta'] > 0): ?><dt>Devuelta</dt><dd><?= dinero($g['devuelta']) ?></dd><?php endif; ?>
         <?php if ($g['retenida'] > 0): ?><dt>Retenida por daños</dt><dd><?= dinero($g['retenida']) ?></dd><?php endif; ?>
-        <dt>En manos del local</dt><dd><strong><?= dinero($g['saldo']) ?></strong></dd>
+        <dt>En manos del negocio</dt><dd><strong><?= dinero($g['saldo']) ?></strong></dd>
     </dl>
     <?php if ($g['pedida'] > $g['recibida'] && $activo): ?><p class="cb-nota">Falta recibir <?= dinero($g['pedida'] - $g['recibida']) ?> de garantía.</p><?php endif; ?>
     <?php if ($g['saldo'] > 0 && $ev['fecha'] < $hoy): ?><p class="aviso aviso-error">El evento ya pasó: devuelve la garantía o registra lo retenido por daños.</p><?php endif; ?>

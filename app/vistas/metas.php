@@ -27,7 +27,7 @@ $nombreDe = array_column($vendedores, 'nombre', 'id');
 
 <form method="post" class="bloque" action="<?= e(url('metas', ['anio' => $anio])) ?>">
     <?= campo_csrf() ?><input type="hidden" name="accion" value="local"><input type="hidden" name="anio" value="<?= $anio ?>">
-    <h2>Meta del local</h2>
+    <h2>Meta del negocio</h2>
     <div class="mt-general">
         <div class="campo"><label for="mt-monto">Meta de todos los meses <small>(vendido, en dólares con IVA)</small></label>
             <input type="text" inputmode="decimal" id="mt-monto" name="monto" value="<?= e($monto($general)) ?>" placeholder="Ej. 15000"></div>
@@ -53,7 +53,7 @@ $nombreDe = array_column($vendedores, 'nombre', 'id');
             </tbody>
         </table>
     </div>
-    <button class="boton" type="submit">Guardar metas del local</button>
+    <button class="boton" type="submit">Guardar metas del negocio</button>
 </form>
 
 <?php if ($vendedores): ?>

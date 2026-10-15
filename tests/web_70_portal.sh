@@ -28,7 +28,7 @@ check "Plantillas de formularios" "200" "$(get "r=cuestionarios")"
 contiene "Título" "$TMP/pag.html" "Formularios del evento"
 contiene "Formulario de boda con sus preguntas" "$TMP/pag.html" "Canción de entrada de la novia"
 contiene "Chips por tipo de evento" "$TMP/pag.html" "Quince años"
-check "Se crearon las 9 plantillas" "9" "$(sql "SELECT count(*) FROM cuestionario_plantillas WHERE negocio_id = $NID1")"
+check "Se crearon las 12 plantillas" "12" "$(sql "SELECT count(*) FROM cuestionario_plantillas WHERE negocio_id = $NID1")"
 r=$(post_desde "r=cuestionarios&tipo=boda" "r=cuestionarios&tipo=boda" --data-urlencode "accion=pregunta" --data-urlencode "texto=¿Quieren lluvia de pétalos?" \
      --data-urlencode "tipo=sino" --data-urlencode "seccion=Ceremonia" --data-urlencode "obligatoria=")
 check "Agregar pregunta a la plantilla" "1" "$(sql "SELECT count(*) FROM cuestionario_preguntas q JOIN cuestionario_plantillas p ON p.id = q.plantilla_id WHERE p.negocio_id = $NID1 AND q.texto = '¿Quieren lluvia de pétalos?'")"
@@ -62,7 +62,7 @@ check "Formulario en el portal" "200" "$(get "r=portal_cuestionario&t=$TOKEN")"
 contiene "Guardado automático" "$TMP/pag.html" "data-pt-autoguardar"
 contiene "Pregunta de la boda" "$TMP/pag.html" "Canción del primer baile"
 contiene "Fecha de cierre" "$TMP/pag.html" "Puedes llenarlo y cambiarlo hasta el"
-contiene "Botón Listo" "$TMP/pag.html" "Listo, enviar al local"
+contiene "Botón Listo" "$TMP/pag.html" "Listo, enviar al negocio"
 P_BAILE=$(sql "SELECT id FROM evento_preguntas WHERE evento_id = $EV AND texto = 'Canción del primer baile'")
 P_MUSICA=$(sql "SELECT id FROM evento_preguntas WHERE evento_id = $EV AND texto = 'Estilos de música para la fiesta'")
 P_VALS=$(sql "SELECT id FROM evento_preguntas WHERE evento_id = $EV AND texto = 'Hora del vals'")
@@ -89,7 +89,7 @@ contiene "Listo sin la obligatoria: pide responderla" "$TMP/pag.html" "Te falta 
 r=$(post_portal "r=portal_cuestionario&t=$TOKEN" --data-urlencode "accion=terminar" --data-urlencode "en[]=$P_CONTACTO" --data-urlencode "r[$P_CONTACTO]=Pedro 0991234567")
 check "Listo: vuelve al portal" "302 $BASE/?r=portal&t=$TOKEN" "$r"
 check "Queda enviado" "1" "$(sql "SELECT count(*) FROM evento_cuestionarios WHERE evento_id = $EV AND enviado_en IS NOT NULL")"
-check "Aviso al local" "1" "$(sql "SELECT count(DISTINCT texto) FROM notificaciones WHERE negocio_id = $NID1 AND texto LIKE '📝 %terminó el formulario%'")"
+check "Aviso al negocio" "1" "$(sql "SELECT count(DISTINCT texto) FROM notificaciones WHERE negocio_id = $NID1 AND texto LIKE '📝 %terminó el formulario%'")"
 get "r=portal&t=$TOKEN" > /dev/null
 contiene "Gracias al enviar" "$TMP/pag.html" "Enviamos tus respuestas"
 contiene "La tarjeta muestra el avance" "$TMP/pag.html" "4 de $NPREG"
@@ -97,12 +97,12 @@ check "Token falso: 404" "404" "$(get "r=portal_cuestionario&t=$(printf 'ab%.0s'
 r=$(curl -s -o "$TMP/post.html" -w "%{http_code}" --data-urlencode "ajax=1" --data-urlencode "csrf=malo" "$BASE/?r=portal_cuestionario&t=$TOKEN")
 check "Guardado sin token de la página: 400" "400" "$r"
 
-echo "3. El local ve y corrige las respuestas; PDF y hoja del evento"
+echo "3. El negocio ve y corrige las respuestas; PDF y hoja del evento"
 get "r=evento_formulario&id=$EV" > /dev/null
-contiene "El local ve la respuesta" "$TMP/pag.html" "Perfect - Ed Sheeran"
+contiene "El negocio ve la respuesta" "$TMP/pag.html" "Perfect - Ed Sheeran"
 contiene "Dice que el cliente lo envió" "$TMP/pag.html" "El cliente lo envió el"
 r=$(post_desde "r=evento_formulario&id=$EV" "r=evento_formulario&id=$EV" --data-urlencode "accion=respuestas" --data-urlencode "en[]=$P_BAILE" --data-urlencode "r[$P_BAILE]=Thinking out loud")
-check "El local corrige una respuesta" "Thinking out loud" "$(sql "SELECT respuesta FROM evento_preguntas WHERE id = $P_BAILE")"
+check "El negocio corrige una respuesta" "Thinking out loud" "$(sql "SELECT respuesta FROM evento_preguntas WHERE id = $P_BAILE")"
 check "Queda quién la cambió" "Dimitry Prueba" "$(sql "SELECT respondido_por FROM evento_preguntas WHERE id = $P_BAILE")"
 r=$(post_desde "r=evento_formulario&id=$EV" "r=evento_formulario&id=$EV" --data-urlencode "accion=pregunta_agregar" --data-urlencode "texto=¿Traen su propio licor?" --data-urlencode "tipo=sino")
 check "Pregunta solo para este evento" "$((NPREG+1))" "$(sql "SELECT count(*) FROM evento_preguntas WHERE evento_id = $EV")"
@@ -143,7 +143,7 @@ get "r=mensajes" > /dev/null
 no_contiene "Ya no sale" "$TMP/pag.html" "Formularios del evento sin llenar"
 contiene "Sale en enviados hoy" "$TMP/pag.html" "Formulario</span>"
 
-echo "5. Extras: el local elige qué se pide en el portal"
+echo "5. Extras: el negocio elige qué se pide en el portal"
 P_HORA=$(sql "SELECT id FROM productos WHERE negocio_id = $NID1 AND nombre = 'Hora adicional'")
 P_LOCA=$(sql "SELECT id FROM productos WHERE negocio_id = $NID1 AND nombre = 'Hora loca'")
 check "Extras del portal" "200" "$(get "r=extras")"
@@ -179,11 +179,11 @@ check "Pedido pendiente por 667" "pendiente|667.00" "$(sql "SELECT estado || '|'
 get "r=portal_extras&t=$TOKEN" > /dev/null
 contiene "El cliente ve que espera respuesta" "$TMP/pag.html" "Esperando respuesta"
 contiene "Aviso de enviado" "$TMP/pag.html" "Enviamos tu pedido"
-check "Aviso al local del pedido" "1" "$(sql "SELECT count(DISTINCT texto) FROM notificaciones WHERE negocio_id = $NID1 AND texto LIKE '🛍️ %Hora adicional ×2%'")"
+check "Aviso al negocio del pedido" "1" "$(sql "SELECT count(DISTINCT texto) FROM notificaciones WHERE negocio_id = $NID1 AND texto LIKE '🛍️ %Hora adicional ×2%'")"
 get "r=portal&t=$TOKEN" > /dev/null
 contiene "El portal muestra el pedido esperando" "$TMP/pag.html" "1 pedido esperando respuesta"
 
-echo "7. El local aprueba: se suma a la cotización y al plan de pagos"
+echo "7. El negocio aprueba: se suma a la cotización y al plan de pagos"
 TOTAL0=$(sql "SELECT total FROM eventos WHERE id = $EV")
 NCUOTAS0=$(sql "SELECT count(*) FROM cuotas WHERE evento_id = $EV")
 get "r=extras" > /dev/null
@@ -217,7 +217,7 @@ contiene "Portal: el plan de pagos con los extras" "$TMP/pag.html" "Extras: Hora
 get "r=portal_extras&t=$TOKEN" > /dev/null
 contiene "Portal: aprobado" "$TMP/pag.html" "Aprobado"
 contiene "Portal: lo que se sumó" "$TMP/pag.html" "Se sumaron <strong>\$667,00</strong>"
-contiene "Portal: nota del local" "$TMP/pag.html" "Los zanqueros llegan 23:00"
+contiene "Portal: nota del negocio" "$TMP/pag.html" "Los zanqueros llegan 23:00"
 
 echo "8. Rechazar y cancelar"
 r=$(post_portal "r=portal_extras&t=$TOKEN" --data-urlencode "accion=pedir" --data-urlencode "cant[$P_HORA]=3")
@@ -352,7 +352,7 @@ get "r=portal&t=$TOKB" > /dev/null
 contiene "Plan Salón: también tiene el formulario" "$TMP/pag.html" "Formulario de tu evento"
 check "Plan Salón: formulario en el portal" "200" "$(get "r=portal_cuestionario&t=$TOKB")"
 contiene "Plan Salón: con preguntas" "$TMP/pag.html" "data-pt-autoguardar"
-check "Plan Salón: plantillas propias" "9" "$(sql "SELECT count(*) FROM cuestionario_plantillas WHERE negocio_id = $NID2")"
+check "Plan Planner: plantillas propias" "12" "$(sql "SELECT count(*) FROM cuestionario_plantillas WHERE negocio_id = $NID2")"
 
 echo "13. Anexo de contrato por extras aprobados (migración 090)"
 FIRMA70=$(php -r '$i=imagecreatetruecolor(400,150);imagefill($i,0,0,imagecolorallocate($i,255,255,255));$n=imagecolorallocate($i,10,10,40);imagesetthickness($i,4);for($k=0;$k<6;$k++)imageline($i,20+$k*50,120-($k%2)*80,70+$k*50,40+($k%2)*80,$n);ob_start();imagepng($i);echo "data:image/png;base64,".base64_encode(ob_get_clean());')
@@ -434,7 +434,7 @@ check "Sin aceptar: no se firma" "enviado" "$(sql "SELECT estado FROM contrato_a
 r=$(post_desde "r=firmar_anexo&t=$ATOK" "r=firmar_anexo&t=$ATOK" --data-urlencode "nombre=Cliente Web Anexo" --data-urlencode "identificacion=1712345678" --data-urlencode "firma=$FIRMA70" --data-urlencode "acepto=1")
 check "Firmar redirige a la misma página" "302 $BASE/?r=firmar_anexo&t=$ATOK" "$r"
 check "Anexo firmado" "firmado|Cliente Web Anexo" "$(sql "SELECT estado || '|' || firmante_nombre FROM contrato_anexos WHERE id = $AID")"
-check "Aviso al local de la firma" "1" "$(sql "SELECT count(DISTINCT texto) FROM notificaciones WHERE negocio_id = $NID1 AND texto LIKE '✍️ %firmó el anexo 1%'")"
+check "Aviso al negocio de la firma" "1" "$(sql "SELECT count(DISTINCT texto) FROM notificaciones WHERE negocio_id = $NID1 AND texto LIKE '✍️ %firmó el anexo 1%'")"
 check "Historial de la firma" "1" "$(sql "SELECT count(*) FROM registro_cambios WHERE evento_id = $EVK AND accion LIKE 'Firmó el anexo 1%'")"
 get "r=firmar_anexo&t=$ATOK" > /dev/null
 contiene "Firmado: lo confirma" "$TMP/pag.html" "Anexo firmado"

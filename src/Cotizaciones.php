@@ -17,8 +17,10 @@ use RuntimeException;
 final class Cotizaciones
 {
     public const CATEGORIAS = [
-        'espacio' => 'Espacio', 'menu' => 'Menú y comida', 'bebidas' => 'Bebidas', 'decoracion' => 'Decoración',
-        'musica' => 'Música y sonido', 'foto_video' => 'Foto y video', 'mobiliario' => 'Mobiliario',
+        'honorarios' => 'Organización (honorarios)', 'espacio' => 'Lugar', 'menu' => 'Menú y comida', 'bebidas' => 'Bebidas',
+        'pasteleria' => 'Pastel y postres', 'decoracion' => 'Decoración', 'flores' => 'Flores', 'musica' => 'Música y sonido',
+        'foto_video' => 'Foto y video', 'vestuario' => 'Vestido y traje', 'belleza' => 'Maquillaje y peinado',
+        'invitaciones' => 'Invitaciones y recuerdos', 'transporte' => 'Transporte', 'mobiliario' => 'Mobiliario',
         'personal' => 'Personal', 'transmision' => 'Transmisión en vivo', 'otros' => 'Otros',
     ];
     public const UNIDADES = ['persona' => 'por persona', 'evento' => 'por evento', 'hora' => 'por hora', 'unidad' => 'por unidad'];
@@ -87,7 +89,7 @@ final class Cotizaciones
                 $a = $st->fetch();
                 $this->db->prepare('UPDATE cotizaciones SET descuento = ?, notas = ? WHERE id = ?')->execute([$a['descuento'], $a['notas'], $id]);
             } else {
-                // Primera cotización sin paquete: arranca con el alquiler de los espacios del evento
+                // Primera cotización sin paquete: arranca con el alquiler de los lugares del evento
                 $esp = $this->db->prepare('SELECT es.nombre, es.precio_base FROM evento_espacios ee JOIN espacios es ON es.id = ee.espacio_id WHERE ee.evento_id = ? ORDER BY es.orden');
                 $esp->execute([$eventoId]);
                 foreach ($esp->fetchAll() as $i => $e) {
@@ -149,6 +151,20 @@ final class Cotizaciones
             'unidad' => $p['unidad'], 'cantidad' => $cantidad, 'precio_unitario' => (float) $p['precio'],
             'costo_unitario' => (float) $p['costo'], 'con_iva' => (bool) $p['con_iva'], 'orden' => 900,
         ]);
+        $this->recalcular($cotizacionId);
+        return $id;
+    }
+
+    /**
+     * Agrega una línea escrita a mano a una cotización en borrador o enviada (la usa Planificación para los honorarios).
+     * $l: categoria, descripcion, unidad, cantidad, precio_unitario, costo_unitario, con_iva.
+     */
+    public function agregarLineaLibre(int $negocioId, int $cotizacionId, array $l): int
+    {
+        $this->cotizacionEditable($negocioId, $cotizacionId);
+        if (trim((string) ($l['descripcion'] ?? '')) === '') throw new RuntimeException('Escribe la descripción.');
+        if ((float) ($l['precio_unitario'] ?? 0) < 0) throw new RuntimeException('El precio no puede ser negativo.');
+        $id = $this->agregarLinea($cotizacionId, $l + ['orden' => -1]);
         $this->recalcular($cotizacionId);
         return $id;
     }

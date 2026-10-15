@@ -21,8 +21,8 @@ final class Contratos
 
     /** Variables que se pueden usar en la plantilla. */
     public const VARIABLES = [
-        'negocio' => 'Nombre comercial del local', 'razon_social' => 'Razón social', 'ruc' => 'RUC del local',
-        'direccion_negocio' => 'Dirección del local', 'ciudad' => 'Ciudad', 'cliente' => 'Nombre del cliente',
+        'negocio' => 'Nombre comercial del negocio', 'razon_social' => 'Razón social', 'ruc' => 'RUC del negocio',
+        'direccion_negocio' => 'Dirección del negocio', 'ciudad' => 'Ciudad', 'cliente' => 'Nombre del cliente',
         'identificacion' => 'Cédula o RUC del cliente', 'telefono_cliente' => 'Celular del cliente', 'direccion_cliente' => 'Dirección del cliente',
         'evento' => 'Nombre del evento', 'tipo_evento' => 'Tipo de evento', 'fecha' => 'Fecha del evento (larga)',
         'hora_inicio' => 'Hora de inicio', 'hora_fin' => 'Hora de fin', 'espacios' => 'Espacios contratados', 'invitados' => 'Número de invitados',
@@ -38,7 +38,7 @@ final class Contratos
         return <<<TXT
 CONTRATO DE PRESTACIÓN DE SERVICIOS PARA EVENTO SOCIAL
 
-En la ciudad de {{ciudad}}, a {{fecha_contrato}}, comparecen por una parte {{razon_social}}, con RUC {{ruc}}, propietaria del local "{{negocio}}", ubicado en {{direccion_negocio}}, a quien en adelante se denominará "EL LOCAL"; y por otra parte {{cliente}}, con cédula/RUC {{identificacion}}, a quien en adelante se denominará "EL CLIENTE". Ambas partes acuerdan celebrar el presente contrato al tenor de las siguientes cláusulas:
+En la ciudad de {{ciudad}}, a {{fecha_contrato}}, comparecen por una parte {{razon_social}}, con RUC {{ruc}}, propietaria del negocio "{{negocio}}", ubicado en {{direccion_negocio}}, a quien en adelante se denominará "EL LOCAL"; y por otra parte {{cliente}}, con cédula/RUC {{identificacion}}, a quien en adelante se denominará "EL CLIENTE". Ambas partes acuerdan celebrar el presente contrato al tenor de las siguientes cláusulas:
 
 PRIMERA — OBJETO. EL LOCAL se compromete a prestar a EL CLIENTE los servicios para el evento "{{evento}}" ({{tipo_evento}}), el día {{fecha}}, desde las {{hora_inicio}} hasta las {{hora_fin}}, en {{espacios}}, para aproximadamente {{invitados}} invitados.
 
@@ -270,7 +270,7 @@ TXT;
         if (!$c) throw new RuntimeException('El enlace del contrato no es válido.');
         if ($c['estado'] === 'firmado') throw new RuntimeException('Este contrato ya fue firmado.');
         if ($c['estado'] !== 'enviado') throw new RuntimeException('Este contrato todavía no está listo para firmar (o fue reemplazado).');
-        if (!$c['integro']) throw new RuntimeException('El texto del contrato fue alterado. Pide al local un contrato nuevo.');
+        if (!$c['integro']) throw new RuntimeException('El texto del contrato fue alterado. Pide al negocio un contrato nuevo.');
         if (!$acepta) throw new RuntimeException('Marca la casilla para aceptar el contrato.');
         $nombre = trim($nombre);
         $identificacion = preg_replace('/\D+/', '', $identificacion);

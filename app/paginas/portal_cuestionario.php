@@ -25,7 +25,7 @@ $responderJson = function (array $datos, int $codigo = 200): never {
 if (!$ev || in_array($negocio['estado'], ['cancelado'], true)) {
     if ($ajax) $responderJson(['ok' => false, 'mensaje' => 'Este enlace no es válido.'], 404);
     http_response_code(404);
-    vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido o ya no existe. Pide uno nuevo al local donde contrataste tu evento.'], 'Formulario del evento · TuPlanner');
+    vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido o ya no existe. Pide uno nuevo al negocio donde contrataste tu evento.'], 'Formulario del evento · TuPlanner');
     return;
 }
 $nid = (int) $ev['negocio_id'];
@@ -43,7 +43,7 @@ if (es_post()) {
     $accion = (string) ($_POST['accion'] ?? 'guardar');
     try {
         if (!$form || !$form['total']) throw new RuntimeException('El formulario todavía no está disponible para tu evento.');
-        if (in_array($negocio['estado'], ['suspendido'], true)) throw new RuntimeException('Por ahora no se pueden guardar cambios. Escríbele al local.');
+        if (in_array($negocio['estado'], ['suspendido'], true)) throw new RuntimeException('Por ahora no se pueden guardar cambios. Escríbele al negocio.');
         $resp = is_array($_POST['r'] ?? null) ? $_POST['r'] : [];
         $presentes = is_array($_POST['en'] ?? null) ? array_slice($_POST['en'], 0, Cuestionarios::MAX_PREGUNTAS) : [];
         $form = $cues->guardarRespuestas($nid, $eid, $resp, $presentes, 'Cliente', true);

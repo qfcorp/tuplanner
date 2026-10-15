@@ -68,7 +68,7 @@ final class Metas
     }
 
     /**
-     * Guarda una meta. $vendedorId null = del local; $mes null = la de siempre.
+     * Guarda una meta. $vendedorId null = del negocio; $mes null = la de siempre.
      * Monto vacío (o 0) y sin número de eventos = se quita esa meta.
      */
     public function guardar(int $negocioId, ?int $vendedorId, ?string $mes, mixed $monto, mixed $eventos = null): void
@@ -127,7 +127,7 @@ final class Metas
 
     /**
      * Vendido por mes (y por vendedor) entre dos meses, con la misma regla de Reportes.
-     * @return array<string, array<string, array{valor: float, cantidad: int}>>  [mes][vendedor_id|'' => …] y [mes]['*'] = todo el local
+     * @return array<string, array<string, array{valor: float, cantidad: int}>>  [mes][vendedor_id|'' => …] y [mes]['*'] = todo el negocio
      */
     private function vendidoPorMes(int $negocioId, string $mesDesde, string $mesHasta): array
     {
@@ -156,7 +156,7 @@ final class Metas
     }
 
     /**
-     * Avance del mes de $hoy contra la meta (del local si $vendedorId es null). null si no hay meta.
+     * Avance del mes de $hoy contra la meta (del negocio si $vendedorId es null). null si no hay meta.
      * Incluye cuánto falta, los días que faltan y dónde "debería" ir a esta altura del mes.
      */
     public function progreso(int $negocioId, ?int $vendedorId, ?DateTimeImmutable $hoy = null): ?array
@@ -267,7 +267,7 @@ final class Metas
         $filas = [];
         if ($soloVendedor === null) {
             foreach ($r['meses'] as $f) {
-                $filas[] = ['Todo el local', ucfirst(Reportes::nombreMes($f['mes'])), $n($f['meta']), $f['meta_eventos'] ?? '', $n($f['vendido']), $f['cantidad'],
+                $filas[] = ['Todo el negocio', ucfirst(Reportes::nombreMes($f['mes'])), $n($f['meta']), $f['meta_eventos'] ?? '', $n($f['vendido']), $f['cantidad'],
                             $p($f['pct']), $n($f['anterior']), $f['anterior_cantidad'], $p($f['variacion'])];
             }
         }

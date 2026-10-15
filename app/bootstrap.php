@@ -309,7 +309,7 @@ function registrar_admin(string $accion, ?int $negocioId = null): void
 }
 
 /**
- * Funciones del plan Quinta: si el negocio está en plan Salón, muestra el candado y devuelve false.
+ * Funciones del plan Agencia: si el negocio está en plan Salón, muestra el candado y devuelve false.
  */
 function requiere_quinta(array $u, string $que, string $explicacion): bool
 {

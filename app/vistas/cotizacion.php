@@ -27,7 +27,7 @@ $formCrear = function (string $titulo, bool $hayAnterior) use ($paquetes, $ev): 
                 <span><strong>Copiar la versión anterior</strong><small>Para corregir precios, invitados o lo que pidió el cliente.</small></span></label>
             <?php endif; ?>
             <label class="opcion"><input type="radio" name="modo" value="vacia" <?= !$paquetes && !$hayAnterior ? 'checked' : '' ?> data-mostrar="doc-crear-paq">
-                <span><strong>En blanco</strong><small>Solo con el alquiler del espacio; tú agregas lo demás.</small></span></label>
+                <span><strong>En blanco</strong><small>Solo con el alquiler del lugar; tú agregas lo demás.</small></span></label>
         </div>
         <?php if ($paquetes): ?>
         <div class="campo doc-crear-paq" data-si="paquete" style="margin-top:12px">

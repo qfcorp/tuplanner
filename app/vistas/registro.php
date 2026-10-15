@@ -1,5 +1,5 @@
 <div class="acceso-marca">
-    <span class="marca-sello" aria-hidden="true">Te</span>
+    <span class="marca-sello" aria-hidden="true">TP</span>
     <div>
         <h1>Prueba TuPlanner gratis</h1>
         <p><?= (int) planes()->ajuste('dias_prueba') ?> días, sin tarjeta</p>
@@ -11,7 +11,7 @@
         <div class="aviso aviso-error" role="alert"><?php foreach ($errores as $err): ?><div><?= e($err) ?></div><?php endforeach; ?></div>
     <?php endif; ?>
     <div class="campo">
-        <label for="negocio">Nombre de tu salón, quinta o hacienda</label>
+        <label for="negocio">Nombre de tu negocio de eventos <small>(ej. Ana Pérez Wedding Planner)</small></label>
         <input type="text" id="negocio" name="negocio" value="<?= e($d['negocio']) ?>" required autofocus>
     </div>
     <div class="fila-campos">
@@ -44,13 +44,13 @@
         <div class="opciones">
             <label class="opcion">
                 <input type="radio" name="plan" value="quinta" <?= $d['plan'] === 'quinta' ? 'checked' : '' ?>>
-                <span><strong>Quinta · <?= precio_plan('quinta') ?> al mes</strong>
-                    <small>Todo: portal del cliente, invitados con QR, día del evento, mobiliario y boda en vivo.</small></span>
+                <span><strong>Agencia · <?= precio_plan('quinta') ?> al mes</strong>
+                    <small>Todo, para equipos: usuarios sin límite, invitados con QR, día del evento minuto a minuto, plano de mesas y boda en vivo.</small></span>
             </label>
             <label class="opcion">
                 <input type="radio" name="plan" value="salon" <?= $d['plan'] === 'salon' ? 'checked' : '' ?>>
-                <span><strong>Salón · <?= precio_plan('salon') ?> al mes</strong>
-                    <small>Calendario sin doble reserva, cotizaciones, contratos firmados y cobros. Hasta 2 espacios.</small></span>
+                <span><strong>Planner · <?= precio_plan('salon') ?> al mes</strong>
+                    <small>Tareas por meses, presupuesto con proveedores, honorarios y comisiones, contratos firmados, cobros y portal del cliente. Hasta 3 usuarios.</small></span>
             </label>
         </div>
     </fieldset>

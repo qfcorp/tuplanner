@@ -276,10 +276,10 @@ r=$(post "r=incidencias" --data-urlencode "accion=actualizar" --data-urlencode "
 get "r=incidencias" > /dev/null
 contiene "Resolver sin decir cómo: mensaje" "$TMP/pag.html" "cómo se resolvió"
 post "r=incidencias" --data-urlencode "accion=actualizar" --data-urlencode "incidencia_id=$INC" --data-urlencode "estado=resuelta" --data-urlencode "gravedad=grave" \
-  --data-urlencode "resolucion=Se usó el micrófono del local" --data-urlencode "descuento=50" --data-urlencode "compra_id=$C1" > /dev/null
+  --data-urlencode "resolucion=Se usó el micrófono del negocio" --data-urlencode "descuento=50" --data-urlencode "compra_id=$C1" > /dev/null
 check "Resuelta con descuento a la compra" "resuelta|50.00|$C1" "$(sql "SELECT estado||'|'||descuento||'|'||compra_id FROM incidencias WHERE id=$INC")"
 check "Incidencias (lista) abre" "200" "$(get "r=incidencias&estado=todas")"
-contiene "Lista con la resolución" "$TMP/pag.html" "micrófono del local"
+contiene "Lista con la resolución" "$TMP/pag.html" "micrófono del negocio"
 check "Hoja del evento con incidencias: PDF" "%PDF" "$(curl -s -b "$JAR" "$BASE/?r=pdf&tipo=hoja&id=$EVH" | head -c 4)"
 check "Ficha: pestaña de eventos" "200" "$(get "r=proveedor&id=$PDJ&ver=eventos")"
 contiene "Ficha: puntualidad en el evento" "$TMP/pag.html" "Tarde 25 min"
@@ -414,7 +414,7 @@ check "Otro negocio: estado de cuenta ajeno no sale" "0" "$(curl -s -b "$JAR" "$
 get "r=por_pagar" > /dev/null
 no_contiene "Otro negocio: por pagar sin datos ajenos" "$TMP/pag.html" "DJ Fiesta Total"
 get "r=incidencias&estado=todas" > /dev/null
-no_contiene "Otro negocio: sin incidencias ajenas" "$TMP/pag.html" "micrófono del local"
+no_contiene "Otro negocio: sin incidencias ajenas" "$TMP/pag.html" "micrófono del negocio"
 post "r=compra&id=$C1" --data-urlencode "accion=pago" --data-urlencode "monto=1" --data-urlencode "metodo=efectivo" > /dev/null
 check "Otro negocio: no paga compras ajenas" "413.65" "$(sql "SELECT sum(monto) FROM pagos_proveedor WHERE compra_id=$C1 AND estado='valido'")"
 post "r=incidencias" --data-urlencode "accion=actualizar" --data-urlencode "incidencia_id=$INC" --data-urlencode "estado=abierta" --data-urlencode "gravedad=leve" > /dev/null

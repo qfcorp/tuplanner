@@ -37,7 +37,7 @@ $pdf = url('firmar_anexo', ['t' => $token, 'pdf' => 1]);
 <?php elseif (!$k['firmable']): ?>
 <section class="bloque doc-pub-estado doc-pub-aviso">
     <h2>Este anexo ya no se firma</h2>
-    <p>El contrato de este anexo fue reemplazado: el contrato nuevo ya incluye los extras. Pide al local el enlace del contrato nuevo.</p>
+    <p>El contrato de este anexo fue reemplazado: el contrato nuevo ya incluye los extras. Pide al negocio el enlace del contrato nuevo.</p>
     <?php if ($waDudas): ?><a class="boton boton-wa boton-ancho" href="<?= e($waDudas) ?>" target="_blank" rel="noopener">Escribir por WhatsApp</a><?php endif; ?>
 </section>
 <?php else: ?>

@@ -4,7 +4,7 @@ use TuPlanner\Encuestas;
 /**
  * Encuesta de satisfacción (pública, con el enlace secreto de la encuesta): /?r=encuesta&t=<token_encuesta>
  *  - GET: la encuesta (o "gracias" si ya respondió). POST: guarda la respuesta (una sola por evento).
- *  - Al terminar: si recomienda con 9 o 10 y el local tiene enlace de reseñas, botón grande para dejar la reseña en Google.
+ *  - Al terminar: si recomienda con 9 o 10 y el negocio tiene enlace de reseñas, botón grande para dejar la reseña en Google.
  * Anti-abuso: campo trampa "sitio_web", una respuesta por evento y máximo 10 por hora desde la misma IP.
  */
 $token = (string) ($_GET['t'] ?? '');
@@ -12,7 +12,7 @@ $enc = new Encuestas(db());
 $ev = $enc->porToken($token);
 if (!$ev) {
     http_response_code(404);
-    vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido. Revisa que esté completo o pide uno nuevo al local de tu evento.'], 'Encuesta · TuPlanner');
+    vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido. Revisa que esté completo o pide uno nuevo al negocio de tu evento.'], 'Encuesta · TuPlanner');
     return;
 }
 $marca = ['nombre' => $ev['negocio'], 'color' => $ev['color'], 'slug' => $ev['slug'], 'logo' => $ev['logo']];

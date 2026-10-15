@@ -5,6 +5,7 @@
  */
 $pestanas = [
     'evento'       => 'Resumen',
+    'evento_plan'  => 'Planificación',
     'cotizacion'   => 'Cotización',
     'contrato'     => 'Contrato',
     'evento_pagos' => 'Pagos',
@@ -16,6 +17,7 @@ $soloQuinta = ['evento_dia', 'invitados'];
 $pestanas['evento_formulario'] = $u['rol'] === 'coordinador' ? 'Formulario' : 'Formulario y extras';   // portal del cliente (módulo 070)
 $pestanas['plano'] = 'Plano';      // plano del salón (módulo 080)
 $soloQuinta[] = 'plano';
+$pestanas['evento_ideas'] = 'Ideas';   // tablero de inspiración (módulo 100)
 ?>
 <div class="evento-cabeza">
     <div>
@@ -29,7 +31,7 @@ $soloQuinta[] = 'plano';
 <nav class="pestanas" aria-label="Secciones del evento">
     <?php foreach ($pestanas as $r => $txt): ?>
         <a href="<?= e(url($r, ['id' => $ev['id']])) ?>" class="<?= $tab === $r ? 'activa' : '' ?>" <?= $tab === $r ? 'aria-current="page"' : '' ?>>
-            <?= e($txt) ?><?= (in_array($r, $soloQuinta, true) && !es_quinta($u)) ? ' <span class="candado-mini" aria-label="plan Quinta">🔒</span>' : '' ?>
+            <?= e($txt) ?><?= (in_array($r, $soloQuinta, true) && !es_quinta($u)) ? ' <span class="candado-mini" aria-label="plan Agencia">🔒</span>' : '' ?>
         </a>
     <?php endforeach; ?>
 </nav>

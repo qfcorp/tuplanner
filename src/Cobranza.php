@@ -12,7 +12,7 @@ use RuntimeException;
  *  - Ganancia de cada evento: lo que se cobra sin IVA menos el costo estimado (cotización) y menos lo gastado de verdad
  *    (gastos del evento + pagos al personal).
  *  - Gastos por evento (proveedores, compras).
- *  - Garantía por daños: monto pedido y garantías que el local todavía tiene que devolver.
+ *  - Garantía por daños: monto pedido y garantías que el negocio todavía tiene que devolver.
  *  - Tablero de cobranza: comprobantes por revisar, cuotas vencidas y por vencer, cobrado del mes, por cobrar.
  *  - "Mensajes por WhatsApp de hoy": recordatorios listos para enviar con un toque, que se marcan como enviados
  *    (tabla mensajes_enviados de la migración 030) para no repetirlos.
@@ -203,7 +203,7 @@ final class Cobranza
         }
     }
 
-    /** Eventos que ya pasaron (o se cancelaron) y cuya garantía sigue en manos del local. */
+    /** Eventos que ya pasaron (o se cancelaron) y cuya garantía sigue en manos del negocio. */
     public function garantiasPorDevolver(int $negocioId, ?DateTimeImmutable $hoy = null): array
     {
         $hoy ??= new DateTimeImmutable('today');
@@ -291,7 +291,7 @@ final class Cobranza
 
     /**
      * Mensaje para mostrar después de registrar un pago: si la fecha quedó separada (o confirmada),
-     * o si se pagó la reserva pero no se pudo separar (otro evento tiene el espacio).
+     * o si se pagó la reserva pero no se pudo separar (otro evento tiene el lugar).
      */
     public function mensajeSeparacion(int $negocioId, int $eventoId, string $estadoAntes): ?string
     {

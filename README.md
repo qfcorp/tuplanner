@@ -1,12 +1,31 @@
 # TuPlanner
 
-Programa para **salones de eventos, quintas y haciendas** de Ecuador, de la marca Tukán Software.
+Programa para **wedding planners y organizadores de eventos** (bodas, quince años, pedidas de mano, baby showers, graduaciones, corporativos…) de Ecuador, de la marca Tukán Software.
+Nació como copia de TuEvento (qfcorp/tuevento, para salones y quintas) y se adaptó al organizador, que no tiene local: trabaja en las quintas, haciendas e iglesias de otros y lleva todo el evento.
 Dirección: **tuplanner.tukanec.com** (servidor qfcorp). Web de la marca: tukansoftware.com.
 
 - Plan, avance y pendientes: [BLOC_DE_NOTAS.md](BLOC_DE_NOTAS.md)
 - Cómo está hecho y reglas para programar: [docs/GUIA_DESARROLLO.md](docs/GUIA_DESARROLLO.md)
 
 ## Qué hace
+**Lo propio del organizador** (migración 100):
+- **Planificación** de cada evento (pestaña nueva):
+  - **Lista de tareas por meses** ("12 meses antes", "6 meses antes", …, "El último mes", "Después del evento"): lista típica de boda (28 tareas), de quince años (17) y general; cada tarea es **del organizador o del cliente** (el cliente marca las suyas en su portal).
+  - **Presupuesto por proveedor**: una partida por cada cosa que hay que contratar (lugar, banquete, fotos, flores, vestido…), con estimado, precio contratado, estado (idea, pidiendo precios, contratado, descartado), fecha para pagarle y **quién le paga**:
+    - *El cliente le paga directo* → se anotan sus pagos (el organizador o el cliente desde su portal) y se ve cuánto falta.
+    - *Va en nuestro contrato* (reventa) → el organizador lo cobra en su cotización y lo paga con Compras. **El cliente no ve ese costo.**
+  - **Repartir el presupuesto** del cliente con los porcentajes típicos de Ecuador (boda, quince años u otro) para arrancar en un clic.
+  - **Honorarios**: tarifa fija o **porcentaje del presupuesto**; un botón los pone en la cotización (reemplaza la línea anterior).
+  - **Comisiones de proveedores** (porcentaje o valor fijo, solo cuando la partida está contratada), lo cobrado y lo que falta; pantalla **Comisiones** con todo lo que te deben, recordatorio por WhatsApp y lo cobrado por periodo.
+  - **Dinero del evento**: presupuesto del cliente, costo total, cuánto queda o se pasa, lo pagado al organizador y a proveedores.
+- **Ideas** (pestaña nueva): tablero de inspiración con fotos del organizador y del cliente, "me encanta / no va", notas, **temática y paleta de colores**.
+- **Portal del cliente**: tarjetas "Tu planificación" (sus tareas, presupuesto, próximas reuniones) e "Ideas para tu evento" (sube fotos y marca las que le encantan); el lugar del evento sale con su dirección y mapa.
+- **Lugares** (antes "espacios"): las quintas, haciendas e iglesias donde trabaja, con dirección, mapa, contacto y tipo (ceremonia o recepción). Un evento puede quedar con **lugar por definir**.
+- **Máximo de eventos por día** del equipo: aviso en el evento y la página pública dice "quedan pocos cupos" o "sin cupo".
+- Tipos de evento nuevos: pedida de mano, baby shower y despedida de soltera/o. Categorías nuevas: honorarios, flores, pastel y postres, vestido y traje, maquillaje y peinado, invitaciones, transporte.
+- Planes: **Planner $39** (3 usuarios, todo lo del organizador) y **Agencia $69** (usuarios sin límite + invitados con QR, día del evento, plano de mesas, decoración y menaje, portal de proveedores y boda en vivo).
+
+**Heredado de TuEvento:**
 - Calendario por espacios **sin doble reserva** (la base de datos lo impide), con horas de montaje y desmontaje, fechas cerradas y "próximos sábados".
 - Embudo de ventas: consulta → cotizado → separado → confirmado → realizado, con seguimiento (llamadas, visitas, degustaciones) y tareas por evento.
 - Catálogo, paquetes y **cotizaciones** con IVA por producto, descuento, versiones, ganancia, enlace para que el cliente la acepte y PDF con QR.
@@ -80,8 +99,8 @@ Con el mismo ID y el mismo secreto, el panel central ve y maneja a los clientes 
 ## Tareas automáticas y respaldo
 El instalador deja programado:
 ```
-5 * * * * php /var/www/tuplanner/bin/tareas.php          (cada hora)
-25 3 * * * /var/www/tuplanner/deploy/respaldo.sh         (cada día 3:25, guarda 14 días en /var/backups/tuplanner)
+7 * * * * php /var/www/tuplanner/bin/tareas.php          (cada hora, minuto 7: no choca con TuEvento)
+35 3 * * * /var/www/tuplanner/deploy/respaldo.sh         (cada día 3:35, guarda 14 días en /var/backups/tuplanner)
 ```
 Tareas: vencer cotizaciones, avisar fechas retenidas que se liberan, cuotas por vencer, revisar precios, evento en 7 días, pasar a realizado, devolver garantías, reporte del mes, seguimientos del día, pagos a proveedores que vencen, documentos de proveedores por vencer y proveedores sin confirmar a 3 días del evento.
 
@@ -91,9 +110,9 @@ Telegram (opcional) en `config/.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNA
 Solo en bases de prueba (se borran y se vuelven a crear):
 
 ```bash
-# Lógica (2135 pruebas)
+# Lógica (2271 pruebas)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php
-# Pantallas de punta a punta (1803 pruebas; levanta un sitio de prueba solo)
+# Pantallas de punta a punta (1916 pruebas; levanta un sitio de prueba solo)
 PGPASSWORD=prueba bash tests/run_web.sh
 # Solo el conector con el Panel Tukán Central (v1 = logica_95/web_95, v2 = logica_96/web_96)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_9

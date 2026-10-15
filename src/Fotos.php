@@ -6,7 +6,7 @@ namespace TuPlanner;
 use RuntimeException;
 
 /**
- * Guardado seguro de imágenes (fotos de espacios, logos, comprobantes de pago, firmas).
+ * Guardado seguro de imágenes (fotos de lugares, logos, comprobantes de pago, firmas).
  * Se guardan fuera de la carpeta pública, se achican y se les quita la información oculta
  * (ubicación, etc.) porque se vuelven a guardar como JPG o PNG nuevos.
  */

@@ -44,6 +44,10 @@ array_push($privadas, 'proveedor', 'compras', 'compra', 'por_pagar', 'incidencia
 array_push($deCoordinador, 'proveedor', 'incidencias', 'proveedor_archivo');   // ficha sin dinero, incidencias y documentos
 // Cómo se calcula el puntaje de proveedores (091): el dueño lo cambia; los demás ven la explicación
 $privadas[] = 'puntaje_proveedores'; $deCoordinador[] = 'puntaje_proveedores';
+// Organizador de eventos (migración 100): planificación (tareas, presupuesto, honorarios), ideas, comisiones y su parte del portal
+array_push($publicas, 'portal_plan', 'portal_ideas');
+array_push($privadas, 'evento_plan', 'evento_ideas', 'comisiones');
+array_push($deCoordinador, 'evento_plan', 'evento_ideas');   // el coordinador ve y marca tareas e ideas (sin dinero)
 
 $ruta = (string) ($_GET['r'] ?? 'inicio');
 if (in_array($ruta, $deAdmin, true) && !superadmin()) {

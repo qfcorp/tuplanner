@@ -2,7 +2,7 @@
 use TuPlanner\{Eventos, Ventas};
 
 /**
- * Nuevo evento: cliente existente o nuevo, fecha, horas, invitados, espacios, montaje, presupuesto, vendedor.
+ * Nuevo evento: cliente existente o nuevo, fecha, horas, invitados, lugares, montaje, presupuesto, vendedor.
  * Muestra los choques en vivo (mod_ventas.js consulta la ruta "disponible") y avisa si los invitados superan la capacidad.
  *   /?r=evento_nuevo&fecha=2026-11-14&espacio=3&cliente_id=5
  */
@@ -43,11 +43,11 @@ if (es_post()) {
         if (!empty($datos['cliente_id']) && !$eventos->cliente($nid, (int) $datos['cliente_id'])) {
             throw new RuntimeException('No se encontró el cliente. Búscalo otra vez.');
         }
-        // Si el espacio ya está separado ese día, se pide confirmar (puede quedar como consulta en lista de espera)
+        // Si el lugar ya está separado ese día, se pide confirmar (puede quedar como consulta en lista de espera)
         if (Ventas::fechaValida($datos['fecha']) && $datos['espacios']) {
             $choquesForm = Ventas::separarChoques($eventos->choques($nid, $datos['fecha'], $datos['hora_inicio'], $datos['hora_fin'], $datos['espacios']));
             if ($choquesForm['bloqueados'] && empty($_POST['aceptar_choque'])) {
-                throw new RuntimeException('Ese espacio no está libre a esa hora. Cambia la fecha, la hora o el espacio. Si igual quieres guardarlo como consulta (por ejemplo, en lista de espera), marca la casilla de abajo.');
+                throw new RuntimeException('Ese lugar no está libre a esa hora. Cambia la fecha, la hora o el lugar. Si igual quieres guardarlo como consulta (por ejemplo, en lista de espera), marca la casilla de abajo.');
             }
         }
         $id = $eventos->crear($nid, $datos, (int) $u['id']);

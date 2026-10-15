@@ -3,7 +3,7 @@ use TuPlanner\{PanelTukan, WhatsApp};
 /** @var array $negocios @var string $filtro @var string $buscar @var string $plan @var array $listaPlanes */ ?>
 <div class="cabecera">
     <div><h1>Negocios (<?= count($negocios) ?>)</h1>
-        <p>Todos los salones, quintas y haciendas que usan TuPlanner.</p></div>
+        <p>Todos los organizadores y agencias de eventos que usan TuPlanner.</p></div>
     <a class="boton" href="<?= e(url('admin_nuevo')) ?>">+ Nuevo negocio</a>
 </div>
 
@@ -33,7 +33,7 @@ use TuPlanner\{PanelTukan, WhatsApp};
     <?php else: ?>
         <div class="desliza">
         <table class="tabla tabla-admin">
-            <thead><tr><th>Negocio</th><th>Dueño</th><th>Plan</th><th>Estado</th><th>Vence</th><th class="der">Eventos 30 días</th><th class="der">Espacios</th><th class="der">Usuarios</th><th>Última actividad</th><th></th></tr></thead>
+            <thead><tr><th>Negocio</th><th>Dueño</th><th>Plan</th><th>Estado</th><th>Vence</th><th class="der">Eventos 30 días</th><th class="der">Lugares</th><th class="der">Usuarios</th><th>Última actividad</th><th></th></tr></thead>
             <tbody>
             <?php foreach ($negocios as $n):
                 $vence = in_array($n['estado_cuenta'], ['prueba', 'prueba_vencida'], true) ? $n['prueba_hasta'] : $n['activo_hasta'];

@@ -39,7 +39,7 @@ if (es_post()) {
                     $mes = sprintf('%04d-%02d', $anio, $m);
                     $metas->guardar($nid, null, $mes, $_POST['mes_monto'][$mes] ?? '', $_POST['mes_eventos'][$mes] ?? '');
                 }
-                aviso('Metas del local guardadas.');
+                aviso('Metas del negocio guardadas.');
                 break;
             case 'vendedores':
                 foreach ($metas->vendedores($nid) as $v) {

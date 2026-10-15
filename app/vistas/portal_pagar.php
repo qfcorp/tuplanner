@@ -10,7 +10,7 @@
 </header>
 <section class="bloque cb-cajita" id="pagar">
     <h2>Pago con tarjeta: <?= dinero($payphone['amount'] / 100) ?></h2>
-    <p class="suave">Escribe los datos de tu tarjeta en el recuadro. El pago lo procesa Payphone de forma segura: el local no ve los datos de tu tarjeta.</p>
+    <p class="suave">Escribe los datos de tu tarjeta en el recuadro. El pago lo procesa Payphone de forma segura: el negocio no ve los datos de tu tarjeta.</p>
     <link rel="stylesheet" href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css">
     <script type="module" src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"></script>
     <div id="pp-button" class="cb-pp">Cargando la cajita de pago…</div>

@@ -12,7 +12,7 @@ use RuntimeException;
  *  - Los pagos confirmados se aplican a las cuotas en orden (primero la reserva).
  *  - El cliente puede subir la foto de su transferencia o DeUna desde su portal (queda "por revisar"),
  *    o pagar con tarjeta por Payphone (se confirma solo).
- *  - Cuando lo pagado cubre la reserva, el evento pasa solo a "separado" (si el espacio sigue libre).
+ *  - Cuando lo pagado cubre la reserva, el evento pasa solo a "separado" (si el lugar sigue libre).
  *  - La garantía por daños se lleva aparte: se recibe, se devuelve o se retiene por daños.
  */
 final class Pagos

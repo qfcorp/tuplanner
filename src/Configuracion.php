@@ -135,6 +135,19 @@ final class Configuracion
                      self::texto($d, 'condiciones', 5000),
                      $negocioId,
                  ]);
+        // Reglas del organizador (migración 100): solo si vienen en el formulario
+        if (isset($d['max_eventos_dia'])) {
+            $modo = (string) ($d['honorario_modo'] ?? 'fija');
+            if (!in_array($modo, ['fija', 'porcentaje'], true)) throw new RuntimeException('Elige cómo cobras tus honorarios.');
+            $this->db->prepare('UPDATE negocios SET max_eventos_dia = ?, honorario_modo = ?, honorario_pct = ?, comision_pct = ? WHERE id = ?')
+                     ->execute([
+                         (int) self::num($d, 'max_eventos_dia', 1, 50, 'el máximo de eventos por día'),
+                         $modo,
+                         self::num($d, 'honorario_pct', 1, 100, 'el porcentaje de tus honorarios'),
+                         self::num($d, 'comision_pct', 0, 100, 'la comisión de proveedores (%)'),
+                         $negocioId,
+                     ]);
+        }
     }
 
     /**
@@ -156,7 +169,7 @@ final class Configuracion
             if (($token === '') !== ($store === '')) {
                 throw new RuntimeException('Para Payphone necesitas las dos claves: el "Token" y el "Store ID". Las encuentras en Payphone Developer → Configuración.');
             }
-            if ($token !== '' && (strlen($token) < 20 || preg_match('/\s/', $token))) throw new RuntimeException('El token de Payphone parece incompleto. Cópialo otra vez completo, sin espacios.');
+            if ($token !== '' && (strlen($token) < 20 || preg_match('/\s/', $token))) throw new RuntimeException('El token de Payphone parece incompleto. Cópialo otra vez completo, sin lugares.');
             if ($store !== '' && !preg_match('/^[A-Za-z0-9-]{4,80}$/', $store)) throw new RuntimeException('El Store ID de Payphone no es válido. Cópialo otra vez.');
         }
         $this->db->prepare('UPDATE negocios SET pago_banco = ?, pago_deuna = ?, payphone_token = ?, payphone_store_id = ? WHERE id = ?')
@@ -209,15 +222,17 @@ final class Configuracion
         if ($dias < -60 || $dias > 400) throw new RuntimeException('Los días deben estar entre -60 (después del evento) y 400 (antes).');
         $tipo = (string) ($d['tipo_evento'] ?? '');
         if ($tipo !== '' && !isset(Eventos::TIPOS[$tipo])) throw new RuntimeException('Elige el tipo de evento.');
+        $asignado = (string) ($d['asignado'] ?? 'planner');
+        if (!isset(Planificacion::ASIGNADO[$asignado])) $asignado = 'planner';
         if ($id) {
-            $st = $this->db->prepare('UPDATE plantilla_tareas SET titulo = ?, dias_antes = ?, tipo_evento = ? WHERE id = ? AND negocio_id = ?');
-            $st->execute([mb_substr($titulo, 0, 150), $dias, $tipo ?: null, $id, $negocioId]);
+            $st = $this->db->prepare('UPDATE plantilla_tareas SET titulo = ?, dias_antes = ?, tipo_evento = ?, asignado = ? WHERE id = ? AND negocio_id = ?');
+            $st->execute([mb_substr($titulo, 0, 150), $dias, $tipo ?: null, $asignado, $id, $negocioId]);
             if ($st->rowCount() !== 1) throw new RuntimeException('No se encontró esa tarea.');
             return $id;
         }
-        $st = $this->db->prepare('INSERT INTO plantilla_tareas (negocio_id, tipo_evento, titulo, dias_antes, orden)
-                                  VALUES (?,?,?,?, (SELECT COALESCE(max(orden),0)+1 FROM plantilla_tareas WHERE negocio_id = ?)) RETURNING id');
-        $st->execute([$negocioId, $tipo ?: null, mb_substr($titulo, 0, 150), $dias, $negocioId]);
+        $st = $this->db->prepare('INSERT INTO plantilla_tareas (negocio_id, tipo_evento, titulo, dias_antes, asignado, orden)
+                                  VALUES (?,?,?,?,?, (SELECT COALESCE(max(orden),0)+1 FROM plantilla_tareas WHERE negocio_id = ?)) RETURNING id');
+        $st->execute([$negocioId, $tipo ?: null, mb_substr($titulo, 0, 150), $dias, $asignado, $negocioId]);
         return (int) $st->fetchColumn();
     }
 
@@ -248,7 +263,7 @@ final class Configuracion
             return (int) $st->fetchColumn();
         })();
         $eventos = $q('SELECT count(*) FROM eventos WHERE negocio_id = ?');
-        $espaciosCambiados = $q("SELECT count(*) FROM espacios WHERE negocio_id = ? AND (foto IS NOT NULL OR nombre NOT IN ('Salón principal','Jardín'))");
+        $espaciosCambiados = $q("SELECT count(*) FROM espacios WHERE negocio_id = ? AND (foto IS NOT NULL OR nombre NOT IN ('Hacienda La Herradura','Capilla del Valle'))");
         $st = $this->db->prepare('SELECT count(*) FROM usuarios WHERE id = ? AND telegram_chat_id IS NOT NULL');
         $st->execute([$usuarioId]);
         $telegram = (int) $st->fetchColumn() > 0;
@@ -257,7 +272,7 @@ final class Configuracion
              'enlace' => self::ruta('configuracion', ['tab' => 'datos']), 'hecho' => !empty($n['direccion']) && !empty($n['ruc']) && !empty($n['whatsapp'])],
             ['clave' => 'logo', 'texto' => 'Sube tu logo', 'ayuda' => 'Aparece en la cotización, el contrato y tu página pública.',
              'enlace' => self::ruta('configuracion', ['tab' => 'datos']) . '#logo', 'hecho' => !empty($n['logo'])],
-            ['clave' => 'precios', 'texto' => 'Revisa tus espacios y precios', 'ayuda' => 'Cargamos ejemplos: cambia los nombres, fotos y precios por los tuyos.',
+            ['clave' => 'precios', 'texto' => 'Revisa tus lugares y precios', 'ayuda' => 'Cargamos ejemplos: cambia los nombres, fotos y precios por los tuyos.',
              'enlace' => self::ruta('catalogo'), 'hecho' => (bool) $n['precios_revisados'] || $espaciosCambiados > 0],
             ['clave' => 'evento', 'texto' => 'Crea tu primer evento', 'ayuda' => 'Anota una consulta real y cotízala en 2 minutos.',
              'enlace' => self::ruta('evento_nuevo'), 'hecho' => $eventos > 0],

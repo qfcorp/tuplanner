@@ -6,8 +6,7 @@ use TuPlanner\{Cotizaciones, Extras};
  * @var array $pedidos @var float $ivaPct
  */
 $logo = $negocio['logo'] ? url('imagen_publica', ['tipo' => 'logo', 's' => $negocio['slug']]) : null;
-$iconos = ['espacio' => '🏛️', 'menu' => '🍽️', 'bebidas' => '🥂', 'decoracion' => '💐', 'musica' => '🎶', 'foto_video' => '📸',
-           'mobiliario' => '🪑', 'personal' => '🤵', 'transmision' => '🔴', 'otros' => '✨'];
+$iconos = \TuPlanner\Planificacion::ICONOS;
 $unidades = ['persona' => 'por persona', 'evento' => 'por evento', 'hora' => 'por hora', 'unidad' => 'cada uno'];
 $cant = fn(float $v) => rtrim(rtrim(number_format($v, 2, ',', ''), '0'), ',');
 $puedePedir = $motivo === null && $ofrecidos;
@@ -31,7 +30,7 @@ $etiquetas = ['pendiente' => 'por_revisar', 'aprobado' => 'pagada', 'rechazado' 
 <?php endif; ?>
 
 <?php if (!$ofrecidos): ?>
-    <section class="bloque pt-vacio"><p>Por ahora el local no tiene extras para pedir en línea. Si quieres agregar algo, escríbele por WhatsApp.</p></section>
+    <section class="bloque pt-vacio"><p>Por ahora el negocio no tiene extras para pedir en línea. Si quieres agregar algo, escríbele por WhatsApp.</p></section>
 <?php else: ?>
 <form method="post" action="<?= e(url('portal_extras', ['t' => $token])) ?>" class="pt-extras-form" data-pt-extras>
     <?= campo_csrf() ?>
@@ -75,8 +74,8 @@ $etiquetas = ['pendiente' => 'por_revisar', 'aprobado' => 'pagada', 'rechazado' 
         <div class="campo"><label for="pt-nota">¿Algo que debamos saber? <small>(opcional)</small></label>
             <textarea id="pt-nota" name="nota" rows="2" maxlength="400" placeholder="Ej.: la hora extra es para seguir bailando hasta las 3:00"><?= e($borrador['nota'] ?? '') ?></textarea></div>
         <p class="pt-total">Total aproximado: <strong data-pt-total>$0,00</strong></p>
-        <p class="suave pt-nota">El valor final lo confirma el local al aprobar tu pedido. No pagas nada todavía.</p>
-        <button class="boton boton-ancho" type="submit">Enviar pedido al local</button>
+        <p class="suave pt-nota">El valor final lo confirma el negocio al aprobar tu pedido. No pagas nada todavía.</p>
+        <button class="boton boton-ancho" type="submit">Enviar pedido al negocio</button>
     </div>
     <?php endif; ?>
 </form>

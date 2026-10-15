@@ -7,7 +7,7 @@ $insta = Ventas::enlaceInstagram($neg['instagram']);
 $face = Ventas::enlaceFacebook($neg['facebook']);
 $mapa = Ventas::enlaceSeguro($neg['mapa_url']);
 $tiposPub = array_intersect_key(Eventos::TIPOS, array_flip(Ventas::TIPOS_PUBLICOS));
-$iconosTipo = ['boda' => '💍', 'quince' => '👑', 'graduacion' => '🎓', 'bautizo' => '🕊️', 'primera_comunion' => '✝️',
+$iconosTipo = ['boda' => '💍', 'quince' => '👑', 'pedida' => '💐', 'baby_shower' => '🍼', 'despedida' => '🎉', 'graduacion' => '🎓', 'bautizo' => '🕊️', 'primera_comunion' => '✝️',
                'cumpleanos' => '🎂', 'corporativo' => '💼', 'aniversario' => '🥂'];
 $v = fn(string $k, string $def = '') => (string) ($d[$k] ?? $def);
 $maxCap = max(array_map(fn($e) => (int) $e['capacidad_banquete'], $espacios ?: [['capacidad_banquete' => 0]]));
@@ -24,7 +24,7 @@ $hoy = date('Y-m-d');
     <?php if ($neg['descripcion']): ?>
         <p class="sitio-desc"><?= nl2br(e($neg['descripcion'])) ?></p>
     <?php else: ?>
-        <p class="sitio-desc">Celebra tu boda, tus quince años o el evento de tu empresa con nosotros<?= $maxCap ? ', hasta ' . $maxCap . ' invitados' : '' ?>.</p>
+        <p class="sitio-desc">Organizamos tu boda, tus quince años o el evento de tu empresa de principio a fin: proveedores, presupuesto, decoración y el día del evento.</p>
     <?php endif; ?>
     <div class="acciones sitio-acciones">
         <a class="boton sitio-boton" href="#consulta">Consulta tu fecha</a>
@@ -42,7 +42,7 @@ $hoy = date('Y-m-d');
 <section class="bloque sitio-libre" id="libre" aria-labelledby="t-libre"
          data-disponible="<?= e(url('disponible', ['s' => $neg['slug']])) ?>">
     <h2 id="t-libre">¿Está libre tu fecha?</h2>
-    <p class="suave">Elige el día y te decimos al instante qué espacios están disponibles.</p>
+    <p class="suave">Elige el día y te decimos al instante si podemos organizar tu evento.</p>
     <div class="fila-en-linea">
         <label class="sr-only" for="fecha-libre">Fecha de tu evento</label>
         <input type="date" id="fecha-libre" min="<?= e($hoy) ?>" value="<?= e($fechaInicial) ?>">
@@ -54,7 +54,7 @@ $hoy = date('Y-m-d');
 
 <?php if ($espacios): ?>
 <section aria-labelledby="t-espacios" class="sitio-seccion">
-    <h2 id="t-espacios">Nuestros espacios</h2>
+    <h2 id="t-espacios">Lugares donde trabajamos</h2>
     <div class="pub-espacios">
         <?php foreach ($espacios as $es): ?>
             <article class="pub-espacio">
@@ -124,7 +124,7 @@ $hoy = date('Y-m-d');
             </div>
             <?php if (count($espacios) > 1): ?>
             <div class="campo ancho">
-                <label for="c-espacio">Espacio preferido</label>
+                <label for="c-espacio">Lugar preferido</label>
                 <select id="c-espacio" name="espacio_id">
                     <option value="">Sin preferencia</option>
                     <?php foreach ($espacios as $es): ?><option value="<?= (int) $es['id'] ?>" <?= (int) $v('espacio_id') === (int) $es['id'] ? 'selected' : '' ?>><?= e($es['nombre']) ?></option><?php endforeach; ?>

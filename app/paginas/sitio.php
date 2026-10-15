@@ -3,7 +3,7 @@ use TuPlanner\Ventas;
 
 /**
  * Página pública del negocio (para compartir en Instagram y WhatsApp): /?r=sitio&s=<slug>
- * Logo, descripción, ubicación, redes, espacios con foto y capacidad, tipos de evento,
+ * Logo, descripción, ubicación, redes, lugares con foto y capacidad, tipos de evento,
  * "¿Está libre mi fecha?" y formulario de consulta (va a /?r=consulta).
  */
 $ventas = new Ventas(db());
@@ -24,4 +24,4 @@ vista_publica('sitio', [
     'd' => $previo['datos'] ?? [], 'error' => $previo['error'] ?? null,
     'fechaInicial' => Ventas::fechaValida($_GET['fecha'] ?? null) ? (string) $_GET['fecha'] : '',
     'indexar' => true,
-], $neg['nombre'] . ' · ' . $neg['ciudad'] . ' — Salón de eventos', $marca);
+], $neg['nombre'] . ' · ' . $neg['ciudad'] . ' — Organización de bodas y eventos', $marca);

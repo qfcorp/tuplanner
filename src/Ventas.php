@@ -8,7 +8,7 @@ use PDO;
 use RuntimeException;
 
 /**
- * Ventas: calendario, próximos sábados, seguimiento comercial, clientes, espacios, fechas cerradas
+ * Ventas: calendario, próximos sábados, seguimiento comercial, clientes, lugares, fechas cerradas
  * y la página pública del negocio (consulta de disponibilidad y formulario de consulta).
  * Se apoya en Eventos (núcleo) para crear eventos, ver choques y disponibilidad.
  */
@@ -16,16 +16,16 @@ final class Ventas
 {
     /** Tipos de seguimiento que el usuario puede agregar (el tipo "sistema" lo pone el programa). */
     public const TIPOS_SEGUIMIENTO = [
-        'nota' => 'Nota', 'llamada' => 'Llamada', 'whatsapp' => 'WhatsApp', 'visita' => 'Visita al local',
+        'nota' => 'Nota', 'llamada' => 'Llamada', 'whatsapp' => 'WhatsApp', 'visita' => 'Visita al negocio',
         'degustacion' => 'Degustación', 'reunion' => 'Reunión', 'correo' => 'Correo',
     ];
-    /** Estados públicos de un espacio en una fecha (lo que ve un visitante de la página). */
+    /** Estados públicos de un lugar en una fecha (lo que ve un visitante de la página). */
     public const ESTADOS_PUBLICOS = ['libre' => 'Libre', 'consultar' => 'Por confirmar', 'ocupado' => 'Ocupada'];
     /** Columnas del tablero de ventas, en orden. */
     public const TABLERO = ['consulta', 'cotizado', 'separado', 'confirmado'];
     public const MAX_CONSULTAS_HORA = 5;
     /** Tipos de evento que se muestran en la página pública. */
-    public const TIPOS_PUBLICOS = ['boda', 'quince', 'graduacion', 'bautizo', 'primera_comunion', 'cumpleanos', 'corporativo', 'aniversario'];
+    public const TIPOS_PUBLICOS = ['boda', 'quince', 'pedida', 'baby_shower', 'despedida', 'graduacion', 'bautizo', 'primera_comunion', 'cumpleanos', 'corporativo', 'aniversario'];
 
     public function __construct(private PDO $db) {}
 
@@ -74,7 +74,7 @@ final class Ventas
 
     /**
      * Eventos (no perdidos ni cancelados) y días cerrados de un mes, agrupados por día.
-     * Con $espacioId solo se ven los eventos de ese espacio y los cierres que lo afectan.
+     * Con $espacioId solo se ven los eventos de ese lugar y los cierres que lo afectan.
      */
     public function calendario(int $negocioId, int $anio, int $mes, ?int $espacioId = null): array
     {
@@ -107,8 +107,8 @@ final class Ventas
     }
 
     /**
-     * Los próximos sábados (desde hoy) con el estado de cada espacio: libre, consulta, retenido, ocupado o cerrado.
-     * @return list<array{fecha:string, espacios:array, libres:int}>
+     * Los próximos sábados (desde hoy) con el estado de cada lugar: libre, consulta, retenido, ocupado o cerrado.
+     * @return list<array{fecha:string, lugares:array, libres:int}>
      */
     public function proximosSabados(int $negocioId, int $cuantos = 12, ?DateTimeImmutable $hoy = null): array
     {
@@ -128,7 +128,7 @@ final class Ventas
     }
 
     /**
-     * Lo que ve un visitante en la página pública: por espacio, libre / consultar / ocupado.
+     * Lo que ve un visitante en la página pública: por lugar, libre / consultar / ocupado.
      * Retenido y consulta = "consultar"; días cerrados = "ocupado". No muestra datos de otros clientes.
      * @return list<array{espacio:string, capacidad:?int, estado:string}>
      */
@@ -208,15 +208,13 @@ final class Ventas
         $mensaje = mb_substr(trim((string) ($d['mensaje'] ?? '')), 0, 1000);
 
         $espacios = $this->espaciosPublicos($negocioId);
-        if (!$espacios) throw new RuntimeException('Este local todavía no tiene espacios publicados. Escríbele por WhatsApp.');
         $preferido = null;
         $espacioId = (int) ($d['espacio_id'] ?? 0);
         foreach ($espacios as $es) {
             if ((int) $es['id'] === $espacioId) $preferido = $es;
         }
-        $usado = $preferido ?? $espacios[0];
-
-        $notas = 'Consulta desde la página web.' . "\n" . 'Espacio preferido: ' . ($preferido ? $preferido['nombre'] : 'sin preferencia');
+        // El organizador elige el lugar después: solo se pone si el cliente eligió uno
+        $notas = 'Consulta desde la página web.' . "\n" . 'Lugar preferido: ' . ($preferido ? $preferido['nombre'] : 'sin preferencia');
         if ($mensaje !== '') $notas .= "\nMensaje: " . $mensaje;
 
         $propia = !$this->db->inTransaction();
@@ -234,7 +232,7 @@ final class Ventas
             $eventos = new Eventos($this->db);
             $evId = $eventos->crear($negocioId, [
                 'cliente_id' => $clienteId, 'tipo' => $tipo, 'fecha' => $fecha, 'hora_inicio' => '18:00', 'hora_fin' => '02:00',
-                'invitados' => $invitados, 'espacios' => [(int) $usado['id']], 'origen' => 'pagina', 'notas' => $notas,
+                'invitados' => $invitados, 'espacios' => $preferido ? [(int) $preferido['id']] : [], 'origen' => 'pagina', 'notas' => $notas,
                 'nombre' => Eventos::TIPOS[$tipo] . ' de ' . $nombre,
             ], null, $hoy);
             $this->db->prepare("UPDATE eventos SET origen = 'pagina' WHERE id = ?")->execute([$evId]);
@@ -381,7 +379,7 @@ final class Ventas
         return $st->fetchAll();
     }
 
-    /** Visitas al local, degustaciones y reuniones agendadas de hoy a 7 días (hechas o no). */
+    /** Visitas al negocio, degustaciones y reuniones agendadas de hoy a 7 días (hechas o no). */
     public function agendaVisitas(int $negocioId, ?DateTimeImmutable $hoy = null): array
     {
         $hoy ??= new DateTimeImmutable('today');
@@ -576,7 +574,7 @@ final class Ventas
         if ($st->rowCount() !== 1) throw new RuntimeException('No se encontró el evento.');
     }
 
-    /** Capacidad de los espacios elegidos (de pie si el montaje es cóctel). null si no tienen capacidad escrita. */
+    /** Capacidad de los lugares elegidos (de pie si el montaje es cóctel). null si no tienen capacidad escrita. */
     public function capacidad(int $negocioId, array $espacioIds, ?string $montaje = null): ?int
     {
         $ids = array_values(array_filter(array_map('intval', $espacioIds)));
@@ -650,7 +648,7 @@ final class Ventas
     }
 
     // ------------------------------------------------------------------
-    // Espacios y fechas cerradas
+    // Lugares y fechas cerradas
     // ------------------------------------------------------------------
 
     public function espacios(int $negocioId, bool $incluirInactivos = true): array
@@ -671,7 +669,7 @@ final class Ventas
         return $st->fetch() ?: null;
     }
 
-    /** Máximo de espacios activos del plan (null = sin límite). */
+    /** Máximo de lugares activos del plan (null = sin límite). */
     public function maxEspacios(int $negocioId): ?int
     {
         $st = $this->db->prepare('SELECT p.max_espacios FROM negocios n JOIN planes p ON p.codigo = n.plan_codigo WHERE n.id = ?');
@@ -683,15 +681,15 @@ final class Ventas
     private function mensajeLimite(int $negocioId): string
     {
         $max = $this->maxEspacios($negocioId);
-        return "Tu plan permite hasta $max " . ($max === 1 ? 'espacio activo' : 'espacios activos')
-             . '. Desactiva uno o pasa al plan Quinta para tener espacios sin límite.';
+        return "Tu plan permite hasta $max " . ($max === 1 ? 'lugar activo' : 'lugares activos')
+             . '. Desactiva uno o pasa al plan Agencia para tener lugares sin límite.';
     }
 
-    /** Crea o edita un espacio. $d: nombre, descripcion, capacidad_banquete, capacidad_coctel, precio_base, color, orden. */
+    /** Crea o edita un lugar. $d: nombre, descripcion, capacidad_banquete, capacidad_coctel, precio_base, color, orden. */
     public function guardarEspacio(int $negocioId, array $d, ?int $id = null): int
     {
         $nombre = trim((string) ($d['nombre'] ?? ''));
-        if (mb_strlen($nombre) < 2) throw new RuntimeException('Escribe el nombre del espacio (ej. Salón principal, Jardín).');
+        if (mb_strlen($nombre) < 2) throw new RuntimeException('Escribe el nombre del lugar (ej. Hacienda La Herradura, Iglesia de Guápulo).');
         $num = static function (mixed $v, string $error, int $max): ?int {
             $v = trim((string) $v);
             if ($v === '') return null;
@@ -710,22 +708,36 @@ final class Ventas
         $color = (string) ($d['color'] ?? '#6B2D3C');
         if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $color)) $color = '#6B2D3C';
         $desc = mb_substr(trim((string) ($d['descripcion'] ?? '')), 0, 500) ?: null;
+        // Datos del lugar para el organizador (migración 100); si no vienen, se dejan como estaban
+        $extra = null;
+        if (array_key_exists('direccion', $d) || array_key_exists('tipo_lugar', $d)) {
+            $tipoL = (string) ($d['tipo_lugar'] ?? 'recepcion');
+            if (!in_array($tipoL, ['recepcion', 'ceremonia', 'ambos', 'otro'], true)) $tipoL = 'recepcion';
+            $mapa = trim((string) ($d['mapa_url'] ?? ''));
+            if ($mapa !== '' && self::enlaceSeguro($mapa) === null) throw new RuntimeException('El enlace del mapa debe empezar con https:// (cópialo de Google Maps).');
+            $extra = [mb_substr(trim((string) ($d['direccion'] ?? '')), 0, 250) ?: null, $mapa === '' ? null : mb_substr($mapa, 0, 400),
+                      mb_substr(trim((string) ($d['contacto'] ?? '')), 0, 100) ?: null, mb_substr(trim((string) ($d['telefono'] ?? '')), 0, 20) ?: null, $tipoL];
+        }
 
         $st = $this->db->prepare('SELECT 1 FROM espacios WHERE negocio_id = ? AND lower(nombre) = lower(?) AND (?::int IS NULL OR id <> ?::int)');
         $st->execute([$negocioId, $nombre, $id, $id]);
-        if ($st->fetchColumn()) throw new RuntimeException("Ya tienes un espacio llamado \"$nombre\".");
+        if ($st->fetchColumn()) throw new RuntimeException("Ya tienes un lugar llamado \"$nombre\".");
 
         if ($id === null) {
             if (!(new Planes($this->db))->puedeAgregarEspacio($negocioId)) throw new RuntimeException($this->mensajeLimite($negocioId));
             $st = $this->db->prepare('INSERT INTO espacios (negocio_id, nombre, descripcion, capacidad_banquete, capacidad_coctel, precio_base, color, orden)
                                       VALUES (?,?,?,?,?,?,?,?) RETURNING id');
             $st->execute([$negocioId, mb_substr($nombre, 0, 80), $desc, $banquete, $coctel, $precio, $color, $orden]);
-            return (int) $st->fetchColumn();
+            $nuevo = (int) $st->fetchColumn();
+            if ($extra) $this->db->prepare('UPDATE espacios SET direccion = ?, mapa_url = ?, contacto = ?, telefono = ?, tipo_lugar = ? WHERE id = ?')->execute([...$extra, $nuevo]);
+            return $nuevo;
         }
         $st = $this->db->prepare('UPDATE espacios SET nombre = ?, descripcion = ?, capacidad_banquete = ?, capacidad_coctel = ?, precio_base = ?, color = ?, orden = ?
                                    WHERE id = ? AND negocio_id = ?');
         $st->execute([mb_substr($nombre, 0, 80), $desc, $banquete, $coctel, $precio, $color, $orden, $id, $negocioId]);
-        if ($st->rowCount() !== 1) throw new RuntimeException('No se encontró el espacio.');
+        if ($st->rowCount() !== 1) throw new RuntimeException('No se encontró el lugar.');
+        if ($extra) $this->db->prepare('UPDATE espacios SET direccion = ?, mapa_url = ?, contacto = ?, telefono = ?, tipo_lugar = ? WHERE id = ? AND negocio_id = ?')
+                             ->execute([...$extra, $id, $negocioId]);
         return $id;
     }
 
@@ -733,17 +745,17 @@ final class Ventas
     public function ponerFotoEspacio(int $negocioId, int $id, ?string $archivo): ?string
     {
         $esp = $this->espacio($negocioId, $id);
-        if (!$esp) throw new RuntimeException('No se encontró el espacio.');
+        if (!$esp) throw new RuntimeException('No se encontró el lugar.');
         if ($archivo !== null && !Fotos::nombreValido($archivo)) throw new RuntimeException('La foto no es válida.');
         $this->db->prepare('UPDATE espacios SET foto = ? WHERE id = ? AND negocio_id = ?')->execute([$archivo, $id, $negocioId]);
         return $esp['foto'] ?: null;
     }
 
-    /** Activa o desactiva un espacio. No se desactiva si tiene eventos separados o confirmados a futuro. */
+    /** Activa o desactiva un lugar. No se desactiva si tiene eventos separados o confirmados a futuro. */
     public function activarEspacio(int $negocioId, int $id, bool $activo): void
     {
         $esp = $this->espacio($negocioId, $id);
-        if (!$esp) throw new RuntimeException('No se encontró el espacio.');
+        if (!$esp) throw new RuntimeException('No se encontró el lugar.');
         if ((bool) $esp['activo'] === $activo) return;
         if ($activo) {
             if (!(new Planes($this->db))->puedeAgregarEspacio($negocioId)) throw new RuntimeException($this->mensajeLimite($negocioId));
@@ -754,11 +766,11 @@ final class Ventas
             $n = (int) $st->fetchColumn();
             if ($n > 0) {
                 throw new RuntimeException("{$esp['nombre']} tiene $n " . ($n === 1 ? 'evento separado' : 'eventos separados')
-                    . ' a futuro. Cámbialos de espacio antes de desactivarlo.');
+                    . ' a futuro. Cámbialos de lugar antes de desactivarlo.');
             }
             $st = $this->db->prepare('SELECT count(*) FROM espacios WHERE negocio_id = ? AND activo');
             $st->execute([$negocioId]);
-            if ((int) $st->fetchColumn() <= 1) throw new RuntimeException('Debes tener al menos un espacio activo.');
+            if ((int) $st->fetchColumn() <= 1) throw new RuntimeException('Debes tener al menos un lugar activo.');
         }
         $this->db->prepare('UPDATE espacios SET activo = ? WHERE id = ? AND negocio_id = ?')->execute([$activo ? 'true' : 'false', $id, $negocioId]);
     }
@@ -773,7 +785,7 @@ final class Ventas
     }
 
     /**
-     * Cierra un día (todo el local si $espacioId es null). Devuelve los eventos activos de ese día que quedan afectados,
+     * Cierra un día (todo el negocio si $espacioId es null). Devuelve los eventos activos de ese día que quedan afectados,
      * para avisar (no se borran).
      */
     public function agregarFechaCerrada(int $negocioId, string $fecha, ?int $espacioId, string $motivo = '', ?DateTimeImmutable $hoy = null): array
@@ -783,7 +795,7 @@ final class Ventas
         if ($fecha < $hoy->format('Y-m-d')) throw new RuntimeException('Esa fecha ya pasó.');
         if ($espacioId) {
             $esp = $this->espacio($negocioId, $espacioId);
-            if (!$esp) throw new RuntimeException('No se encontró el espacio.');
+            if (!$esp) throw new RuntimeException('No se encontró el lugar.');
         }
         $st = $this->db->prepare('SELECT 1 FROM fechas_cerradas WHERE negocio_id = ? AND fecha = ?::date AND espacio_id IS NOT DISTINCT FROM ?::int');
         $st->execute([$negocioId, $fecha, $espacioId ?: null]);

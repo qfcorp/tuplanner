@@ -217,7 +217,7 @@ check('Vencido: días negativos', -10, $por[$V1]['fechas']['dias_para_vencer']);
 $x = $por[$A2];
 check('Forma del cliente (§4.3)', ['id', 'nombre', 'tipo', 'tipo_nombre', 'ciudad', 'plan', 'estado', 'estado_detalle', 'estado_texto', 'en_gracia', 'bloqueado',
       'fechas', 'dueno', 'ultima_actividad', 'pagos', 'mensual_estimado', 'origen', 'vendedor', 'uso', 'ir', 'ir_trabajar', 'actualizado'], array_keys($x));
-check('id como texto y plan', [(string) $A2, ['codigo' => 'salon', 'nombre' => 'Salón']], [$x['id'], $x['plan']]);
+check('id como texto y plan', [(string) $A2, ['codigo' => 'salon', 'nombre' => 'Planner']], [$x['id'], $x['plan']]);
 check('Dueño con WhatsApp normalizado', ['Dueño Salón Anual Al Día', '0990000000', '593990000000'], [$x['dueno']['nombre'], $x['dueno']['telefono'], $x['dueno']['whatsapp']]);
 check('Pagos (sin anulados) y mensual estimado', [390.0, 1, $d('today'), 390.0, 32.5], [$x['pagos']['total'], $x['pagos']['cantidad'], $x['pagos']['primer_pago'], $x['pagos']['ultimo_monto'], $x['mensual_estimado']]);
 check('El pago anulado no cuenta', [0.0, 0], [$por[$P1]['pagos']['total'], $por[$P1]['pagos']['cantidad']]);
@@ -279,13 +279,14 @@ $hastaA2 = $db->query("SELECT activo_hasta FROM negocios WHERE id = $A2")->fetch
 $desde = (new DateTimeImmutable($hastaA2))->modify('+1 day');
 check('cotizar: Quinta semestral = 5 × 69, recibe 6', [345.0, 6, false], [$r[1]['monto'], $r[1]['meses'], $r[1]['incluye_dominio']]);
 check('cotizar: desde el día después de lo pagado', [$desde->format('Y-m-d'), $desde->modify('+6 months -1 day')->format('Y-m-d')], [$r[1]['desde'], $r[1]['hasta']]);
-check('cotizar: detalle', 'Quinta semestral (paga 5, recibe 6)', $r[1]['detalle']);
+check('cotizar: detalle', 'Agencia semestral (paga 5, recibe 6)', $r[1]['detalle']);
 $r = $pedir('cotizar', ['cliente_id' => (string) $V1, 'periodo' => 'anual']);
 check('cotizar: vencido empieza hoy; anual con dominio; plan actual', [$d('today'), 390.0, true], [$r[1]['desde'], $r[1]['monto'], $r[1]['incluye_dominio']]);
 check('cotizar: período que no existe → 422', [422, 'periodo'], [$pedir('cotizar', ['cliente_id' => (string) $V1, 'periodo' => 'trimestral'])[0],
                                                                $pedir('cotizar', ['cliente_id' => (string) $V1, 'periodo' => 'trimestral'])[1]['campo']]);
 check('cotizar: meses libres no → 422 meses', 'meses', $pedir('cotizar', ['cliente_id' => (string) $V1, 'meses' => 2])[1]['campo']);
 check('cotizar: plan que no existe → 422', 'plan', $pedir('cotizar', ['cliente_id' => (string) $V1, 'plan' => 'oro', 'periodo' => 'mensual'])[1]['campo']);
+$db->exec("UPDATE planes SET max_espacios = 2 WHERE codigo = 'salon'");   // el plan Planner no tiene límite; se prueba el mecanismo
 $r = $pedir('planes')[1];
 check('planes: editable y 2 planes', [true, ['salon', 'quinta']], [$r['editable'], array_column($r['planes'], 'codigo')]);
 check('planes: precios de Salón', [39.0, 195.0, 390.0], array_column($r['planes'][0]['precios'], 'precio'));
@@ -344,7 +345,7 @@ $mesHoy = $hoy->format('Y-m');
 check('Este mes: 69 + 390 (+ los de este mes del resto)', $esperados[$mesHoy]['ingresos'], $porMes[$mesHoy]['ingresos']);
 check('Totales = suma de los meses', [array_sum(array_column($fz['meses'], 'ingresos')), array_sum(array_column($fz['meses'], 'pagos'))], [$fz['totales']['ingresos'], $fz['totales']['pagos']]);
 check('MRR = ingreso mensual del panel', [$panel->ingresoMensual($hoy), 170.5], [$fz['mrr'], $fz['mrr']]);
-check('Por plan en este mes', true, in_array(['plan' => 'salon', 'nombre' => 'Salón', 'monto' => 390.0, 'pagos' => 1], $porMes[$mesHoy]['por_plan'], true));
+check('Por plan en este mes', true, in_array(['plan' => 'salon', 'nombre' => 'Planner', 'monto' => 390.0, 'pagos' => 1], $porMes[$mesHoy]['por_plan'], true));
 check('Por período en este mes (anual 12 meses)', true, in_array(['periodo' => 'anual', 'meses' => 12, 'monto' => 390.0, 'pagos' => 1], $porMes[$mesHoy]['por_periodo'], true));
 check('Por forma de pago', 'Transferencia', $porMes[$mesHoy]['por_metodo'][0]['nombre']);
 check('Nuevos pagadores = primer pago en el mes', array_sum(array_column($fz['meses'], 'nuevos_pagadores')),
@@ -444,7 +445,7 @@ check('Entra con la clave devuelta (es la del dueño)', [true, 'dueno', $nid], [
 check('Clave temporal: la cambia al entrar', true, $u['clave_temporal']);
 $n = $db->query("SELECT * FROM negocios WHERE id = $nid")->fetch();
 check('Negocio en prueba, plan, ciudad y origen central', ['prueba', 'quinta', 'Cuenca', 'central', '0991234567'], [$n['estado'], $n['plan_codigo'], $n['ciudad'], $n['origen'], $n['whatsapp']]);
-check('Con datos de ejemplo (espacios, catálogo, paquetes, contrato)', [2, 18, 3, 1], [$cuenta("SELECT count(*) FROM espacios WHERE negocio_id = $nid"),
+check('Con datos de ejemplo (lugares, catálogo, paquetes, contrato)', [2, 25, 4, 1], [$cuenta("SELECT count(*) FROM espacios WHERE negocio_id = $nid"),
       $cuenta("SELECT count(*) FROM productos WHERE negocio_id = $nid"), $cuenta("SELECT count(*) FROM paquetes WHERE negocio_id = $nid"),
       $cuenta("SELECT count(*) FROM plantillas_contrato WHERE negocio_id = $nid")]);
 check('Enlace público y WhatsApp con los accesos', [true, true, true], [str_starts_with($res['enlace_publico'], 'https://tuplanner.prueba.ec/?r=sitio&s=quinta-demo-central'),
@@ -501,9 +502,9 @@ check('Suspender a un suspendido: ok sin cambios', [200, true], [$r[0], $r[1]['s
 $r = $ej('reactivar', [], $A2);
 check('Reactivar: vuelve a activo (tiene pagos)', [200, 'activo', 'activo'], [$r[0], $db->query("SELECT estado FROM negocios WHERE id = $A2")->fetchColumn(), $r[1]['resultado']['estado']]);
 check('Reactivar a un activo: sin cambios', true, $ej('reactivar', [], $A2)[1]['sin_cambios']);
-$r = $ej('cancelar', ['motivo' => 'Cerró el local'], $O1);
+$r = $ej('cancelar', ['motivo' => 'Cerró el negocio'], $O1);
 check('Cancelar', [200, 'cancelado'], [$r[0], $db->query("SELECT estado FROM negocios WHERE id = $O1")->fetchColumn()]);
-check('Cancelar otra vez: sin cambios', true, $ej('cancelar', ['motivo' => 'Cerró el local'], $O1)[1]['sin_cambios']);
+check('Cancelar otra vez: sin cambios', true, $ej('cancelar', ['motivo' => 'Cerró el negocio'], $O1)[1]['sin_cambios']);
 $ej('reactivar', [], $O1);
 check('Reactivar un cancelado sin pagos: vuelve a prueba', 'prueba', $db->query("SELECT estado FROM negocios WHERE id = $O1")->fetchColumn());
 check('Suspender sin motivo → 422', 'datos.motivo', $ej('suspender', [], $A1)[1]['campo']);

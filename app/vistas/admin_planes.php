@@ -16,7 +16,7 @@
                     <input type="number" id="p-<?= $c ?>" name="precio_mensual" value="<?= e($p['precio_mensual']) ?>" step="0.01" min="0" required></div>
             </div>
             <div class="fila-campos">
-                <div class="campo"><label for="e-<?= $c ?>">Máximo de espacios <small>(vacío = sin límite)</small></label>
+                <div class="campo"><label for="e-<?= $c ?>">Máximo de lugares <small>(vacío = sin límite)</small></label>
                     <input type="number" id="e-<?= $c ?>" name="max_espacios" value="<?= e($p['max_espacios'] ?? '') ?>" min="1"></div>
                 <div class="campo"><label for="u-<?= $c ?>">Máximo de usuarios <small>(vacío = sin límite)</small></label>
                     <input type="number" id="u-<?= $c ?>" name="max_usuarios" value="<?= e($p['max_usuarios'] ?? '') ?>" min="1"></div>

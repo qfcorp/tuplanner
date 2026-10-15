@@ -1,6 +1,6 @@
 {
     "name": "qfcorp/tuplanner",
-    "description": "TuPlanner — programa para salones de eventos, quintas y haciendas (Tukán Software)",
+    "description": "TuPlanner — programa para wedding planners y organizadores de eventos (Tukán Software)",
     "type": "project",
     "license": "proprietary",
     "require": {

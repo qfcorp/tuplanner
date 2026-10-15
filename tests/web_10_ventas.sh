@@ -7,11 +7,11 @@ echo "1. Crear evento con cliente nuevo"
 registrar quinta "Quinta Ventas $RANDOM"
 NID_A=$NID; EMAIL_A=$EMAIL
 SLUG=$(sql "SELECT slug FROM negocios WHERE id=$NID")
-SALON=$(sql "SELECT id FROM espacios WHERE negocio_id=$NID AND nombre='Salón principal'")
-JARDIN=$(sql "SELECT id FROM espacios WHERE negocio_id=$NID AND nombre='Jardín'")
+SALON=$(sql "SELECT id FROM espacios WHERE negocio_id=$NID AND nombre='Hacienda La Herradura'")
+JARDIN=$(sql "SELECT id FROM espacios WHERE negocio_id=$NID AND nombre='Capilla del Valle'")
 check "Formulario de nuevo evento" "200" "$(get "r=evento_nuevo&fecha=$FUT")"
 contiene "La fecha viene rellenada" "$TMP/pag.html" "value=\"$FUT\""
-contiene "Casillas de espacios con capacidad" "$TMP/pag.html" "250 sentados"
+contiene "Casillas de lugares con capacidad" "$TMP/pag.html" "250 sentados"
 contiene "Cómo nos conoció" "$TMP/pag.html" "Recomendación"
 r=$(post_desde "r=evento_nuevo" "r=evento_nuevo" --data-urlencode "modo_cliente=nuevo" --data-urlencode "cliente_nombre=Ana Torres" \
      --data-urlencode "cliente_telefono=0991112233" --data-urlencode "cliente_identificacion=1712345678" --data-urlencode "origen=instagram" \
@@ -87,7 +87,7 @@ post_desde "r=evento&id=$EV1" "r=evento&id=$EV1&accion=retener" --data-urlencode
 check "Extender retención 10 días" "$(date -d "+10 days" +%Y-%m-%d)" "$(sql "SELECT retenida_hasta FROM eventos WHERE id=$EV1")"
 post_desde "r=evento&id=$EV1" "r=evento&id=$EV1&accion=estado" --data-urlencode "estado=separado" > /dev/null
 check "Separar" "separado" "$(sql "SELECT estado FROM eventos WHERE id=$EV1")"
-check "El espacio queda bloqueado" "t" "$(sql "SELECT bloquea FROM evento_espacios WHERE evento_id=$EV1")"
+check "El lugar queda bloqueado" "t" "$(sql "SELECT bloquea FROM evento_espacios WHERE evento_id=$EV1")"
 # Otro evento el mismo día y espacio
 r=$(post_desde "r=evento_nuevo" "r=evento_nuevo" --data-urlencode "modo_cliente=nuevo" --data-urlencode "cliente_nombre=Luis Mora" \
      --data-urlencode "cliente_telefono=0982223344" --data-urlencode "tipo=quince" --data-urlencode "fecha=$FUT" \
@@ -122,10 +122,10 @@ get "r=evento&id=$EV1" > /dev/null
 contiene "Historial de cambios" "$TMP/pag.html" "Cambió el estado de Cotizado a Separado"
 
 echo "6. Actividad, tarea, coordinador, detalles, editar y duplicar"
-post_desde "r=evento&id=$EV1" "r=evento&id=$EV1&accion=actividad" --data-urlencode "tipo=visita" --data-urlencode "texto=Visita al local con los novios" \
+post_desde "r=evento&id=$EV1" "r=evento&id=$EV1&accion=actividad" --data-urlencode "tipo=visita" --data-urlencode "texto=Visita al negocio con los novios" \
      --data-urlencode "programada=$(date -d "+2 days" +%Y-%m-%d)T10:00" > /dev/null
-check "Actividad agendada" "visita|false" "$(sql "SELECT tipo||'|'||hecha FROM actividades WHERE evento_id=$EV1 AND texto LIKE 'Visita al local%'")"
-ACT=$(sql "SELECT id FROM actividades WHERE evento_id=$EV1 AND texto LIKE 'Visita al local%'")
+check "Actividad agendada" "visita|false" "$(sql "SELECT tipo||'|'||hecha FROM actividades WHERE evento_id=$EV1 AND texto LIKE 'Visita al negocio%'")"
+ACT=$(sql "SELECT id FROM actividades WHERE evento_id=$EV1 AND texto LIKE 'Visita al negocio%'")
 post_desde "r=evento&id=$EV1" "r=evento&id=$EV1&accion=actividad" --data-urlencode "tipo=llamada" --data-urlencode "texto=Llamé para confirmar" > /dev/null
 check "Nota sin fecha queda hecha" "t" "$(sql "SELECT hecha FROM actividades WHERE evento_id=$EV1 AND texto='Llamé para confirmar'")"
 post_desde "r=evento&id=$EV1" "r=evento&id=$EV1&accion=tarea" --data-urlencode "titulo=Prueba de vestido de la novia" --data-urlencode "vence=$(date -d "+20 days" +%Y-%m-%d)" > /dev/null
@@ -154,7 +154,7 @@ check "Copia en consulta en la nueva fecha" "consulta|$FUT2" "$(sql "SELECT esta
 
 echo "7. Seguimiento"
 check "Pantalla de seguimiento" "200" "$(get "r=seguimiento")"
-contiene "Visita en la agenda de la semana" "$TMP/pag.html" "Visita al local con los novios"
+contiene "Visita en la agenda de la semana" "$TMP/pag.html" "Visita al negocio con los novios"
 contiene "Copia sin atender aún no (recién creada)" "$TMP/pag.html" "Consultas sin atender"
 sql "UPDATE eventos SET creado_en = now() - interval '5 days' WHERE id=$EV3" > /dev/null
 get "r=seguimiento" > /dev/null
@@ -189,9 +189,9 @@ check "Ficha editada" "Ana Torres Vega|ana@correo.ec|referido" "$(sql "SELECT no
 r=$(post_desde "r=cliente&id=$CLI_A" "r=cliente&id=$CLI_A&accion=guardar" --data-urlencode "nombre=Ana" --data-urlencode "email=malo")
 contiene "Error en la ficha" "$TMP/post.html" "correo del cliente no es válido"
 
-echo "9. Espacios y fechas cerradas"
+echo "9. Lugares y fechas cerradas"
 check "Pantalla de espacios" "200" "$(get "r=espacios")"
-contiene "Lista los espacios" "$TMP/pag.html" "Jardín"
+contiene "Lista los espacios" "$TMP/pag.html" "Capilla del Valle"
 check "Editar espacio" "200" "$(get "r=espacios&editar=$JARDIN")"
 FOTO="$TMP/foto_jardin.jpg"
 php -r '$i=imagecreatetruecolor(320,200); imagefill($i,0,0,imagecolorallocate($i,60,140,90)); imagejpeg($i,$argv[1]);' "$FOTO"
@@ -199,18 +199,18 @@ get "r=espacios&editar=$JARDIN" > /dev/null; T=$(csrf)
 r=$(curl -s -b "$JAR" -c "$JAR" -o "$TMP/post.html" -w "%{http_code} %{redirect_url}" -F "csrf=$T" -F "id=$JARDIN" -F "nombre=Jardín de los Arrayanes" \
      -F "capacidad_banquete=220" -F "capacidad_coctel=320" -F "precio_base=1300" -F "color=#3E7C59" -F "orden=2" -F "descripcion=Ceremonias al aire libre" \
      -F "foto=@$FOTO;type=image/jpeg" "$BASE/?r=espacios&accion=guardar")
-check "Guardar espacio con foto" "302 $BASE/?r=espacios" "$r"
-check "Espacio editado" "Jardín de los Arrayanes|220" "$(sql "SELECT nombre||'|'||capacidad_banquete FROM espacios WHERE id=$JARDIN")"
+check "Guardar lugar con foto" "302 $BASE/?r=espacios" "$r"
+check "Lugar editado" "Jardín de los Arrayanes|220" "$(sql "SELECT nombre||'|'||capacidad_banquete FROM espacios WHERE id=$JARDIN")"
 check "Tiene foto" "1" "$(sql "SELECT count(*) FROM espacios WHERE id=$JARDIN AND foto ~ '^[a-f0-9]{32}\.jpg$'")"
 check "Foto privada" "200" "$(curl -s -o /dev/null -w '%{http_code}' -b "$JAR" "$BASE/?r=archivo&tipo=espacio&id=$JARDIN")"
 check "Foto pública" "200" "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/?r=imagen_publica&tipo=espacio&id=$JARDIN")"
 r=$(post_desde "r=espacios" "r=espacios&accion=guardar" --data-urlencode "nombre=Terraza" --data-urlencode "capacidad_banquete=60")
 check "Plan Quinta: crea un tercer espacio" "Terraza" "$(sql "SELECT nombre FROM espacios WHERE negocio_id=$NID AND nombre='Terraza'")"
 r=$(post_desde "r=espacios" "r=espacios&accion=guardar" --data-urlencode "nombre=Terraza")
-contiene "Nombre repetido" "$TMP/post.html" "Ya tienes un espacio llamado"
+contiene "Nombre repetido" "$TMP/post.html" "Ya tienes un lugar llamado"
 FC=$(date -d "+30 days" +%Y-%m-%d)
 post_desde "r=espacios" "r=espacios&accion=cerrar" --data-urlencode "fecha=$FC" --data-urlencode "espacio_id=" --data-urlencode "motivo=Mantenimiento" > /dev/null
-check "Fecha cerrada (todo el local)" "1" "$(sql "SELECT count(*) FROM fechas_cerradas WHERE negocio_id=$NID AND fecha='$FC' AND espacio_id IS NULL")"
+check "Fecha cerrada (todo el negocio)" "1" "$(sql "SELECT count(*) FROM fechas_cerradas WHERE negocio_id=$NID AND fecha='$FC' AND espacio_id IS NULL")"
 get "r=espacios" > /dev/null
 contiene "Se ve en la lista" "$TMP/pag.html" "Mantenimiento"
 get "r=calendario&a=$(date -d "$FC" +%Y)&m=$(date -d "$FC" +%-m)" > /dev/null
@@ -226,7 +226,7 @@ post_desde "r=espacios" "r=espacios&accion=desactivar" --data-urlencode "id=$TER
 check "Desactivar espacio" "f" "$(sql "SELECT activo FROM espacios WHERE id=$TERRAZA")"
 post_desde "r=espacios" "r=espacios&accion=desactivar" --data-urlencode "id=$SALON" > /dev/null
 get "r=espacios" > /dev/null
-contiene "No desactiva con eventos separados" "$TMP/pag.html" "Cámbialos de espacio antes de desactivarlo"
+contiene "No desactiva con eventos separados" "$TMP/pag.html" "Cámbialos de lugar antes de desactivarlo"
 
 echo "10. Página pública, disponibilidad y consulta"
 get "r=salir" > /dev/null; rm -f "$JAR"
@@ -234,21 +234,21 @@ sql "UPDATE negocios SET descripcion='La quinta más bonita del valle', instagra
 check "Página pública" "200" "$(get "r=sitio&s=$SLUG")"
 contiene "Nombre del negocio" "$TMP/pag.html" "Quinta Ventas"
 contiene "Descripción" "$TMP/pag.html" "La quinta más bonita del valle"
-contiene "Espacio con foto pública" "$TMP/pag.html" "r=imagen_publica&amp;tipo=espacio&amp;id=$JARDIN"
+contiene "Lugar con foto pública" "$TMP/pag.html" "r=imagen_publica&amp;tipo=espacio&amp;id=$JARDIN"
 contiene "Capacidad" "$TMP/pag.html" "220</strong> sentados"
 contiene "Instagram" "$TMP/pag.html" "instagram.com/quinta.ventas"
 contiene "WhatsApp del negocio" "$TMP/pag.html" "wa.me/593987654321"
 contiene "Formulario de consulta" "$TMP/pag.html" 'name="sitio_web"'
 no_contiene "Sí se indexa en Google" "$TMP/pag.html" 'name="robots"'
-no_contiene "No muestra espacios desactivados" "$TMP/pag.html" ">Terraza<"
+no_contiene "No muestra lugares desactivados" "$TMP/pag.html" ">Terraza<"
 check "JSON público" "200" "$(get "r=disponible&s=$SLUG&fecha=$FUT")"
-contiene "Separado = ocupado" "$TMP/pag.html" '"estado":"ocupado"'
+contiene "Un evento separado de 2 por día = quedan pocos cupos" "$TMP/pag.html" '"estado":"consultar"'
 no_contiene "No muestra datos de clientes" "$TMP/pag.html" "Ana"
 no_contiene "Ni códigos de evento" "$TMP/pag.html" "EV-"
 get "r=disponible&s=$SLUG&fecha=$FC" > /dev/null
 no_contiene "Día cerrado: nada libre" "$TMP/pag.html" '"estado":"libre"'
 get "r=disponible&s=$SLUG&fecha=$FUT2" > /dev/null
-contiene "Con consulta = por confirmar" "$TMP/pag.html" '"estado":"consultar"'
+contiene "Una consulta no ocupa cupo = libre" "$TMP/pag.html" '"estado":"libre"'
 check "Slug inexistente en JSON" "404" "$(get "r=disponible&s=no-existe-xyz&fecha=$FUT")"
 check "Sin sesión, el modo interno no responde" "401" "$(get "r=disponible&fecha=$FUT&espacios[]=$SALON")"
 ANTES=$(sql "SELECT count(*) FROM notificaciones WHERE negocio_id=$NID_A")
@@ -258,7 +258,7 @@ r=$(post_desde "r=sitio&s=$SLUG" "r=consulta&s=$SLUG" --data-urlencode "nombre=M
 check "Consulta lleva a la página de gracias" "302 $BASE/?r=consulta&s=$SLUG" "$r"
 EVW=$(sql "SELECT id FROM eventos WHERE negocio_id=$NID_A ORDER BY id DESC LIMIT 1")
 check "Crea el evento en consulta desde la página" "consulta|pagina|quince" "$(sql "SELECT estado||'|'||origen||'|'||tipo FROM eventos WHERE id=$EVW")"
-check "Con el espacio preferido" "$JARDIN" "$(sql "SELECT espacio_id FROM evento_espacios WHERE evento_id=$EVW")"
+check "Con el lugar preferido" "$JARDIN" "$(sql "SELECT espacio_id FROM evento_espacios WHERE evento_id=$EVW")"
 check "Crea el cliente" "pagina" "$(sql "SELECT c.origen FROM eventos e JOIN clientes c ON c.id=e.cliente_id WHERE e.id=$EVW")"
 check "Actividad para responder" "1" "$(sql "SELECT count(*) FROM actividades WHERE evento_id=$EVW AND NOT hecha")"
 check "Aviso al negocio" "$((ANTES+1))" "$(sql "SELECT count(*) FROM notificaciones WHERE negocio_id=$NID_A")"
@@ -304,7 +304,7 @@ check "Coordinador no ve seguimiento" "302" "$(get "r=seguimiento")"
 r=$(post_desde "r=evento&id=$EV1" "r=evento&id=$EV1&accion=estado" --data-urlencode "estado=cotizado")
 check "Coordinador no cambia el estado (403)" "403 " "$r"
 check "El estado sigue igual" "separado" "$(sql "SELECT estado FROM eventos WHERE id=$EV1")"
-check "Coordinador ve espacios (solo mirar)" "200" "$(get "r=espacios")"
+check "Coordinador ve lugares (solo mirar)" "200" "$(get "r=espacios")"
 no_contiene "Sin botones de editar espacios" "$TMP/pag.html" "accion=desactivar"
 # Consulta (solo ver)
 sql "INSERT INTO usuarios (negocio_id, nombre, email, password_hash, rol) VALUES ($NID_A, 'Contador', 'consulta$NID_A@prueba.ec', '$(php -r 'echo password_hash("claveSegura1", PASSWORD_DEFAULT);')', 'consulta')" > /dev/null
@@ -326,19 +326,21 @@ check "Otro negocio no cambia el estado" "separado" "$(sql "SELECT estado FROM e
 get "r=calendario&a=$ANIO&m=$MES" > /dev/null
 no_contiene "Su calendario no muestra mis eventos" "$TMP/pag.html" "Ana y Luis"
 get "r=disponible&fecha=$FUT&espacios[]=$SALON" > /dev/null
-contiene "Con mis espacios en su consulta: sin choques" "$TMP/pag.html" '"choques":\[\]'
+contiene "Con mis lugares en su consulta: sin choques" "$TMP/pag.html" '"choques":\[\]'
 r=$(post_desde "r=espacios" "r=espacios&accion=guardar" --data-urlencode "id=$JARDIN" --data-urlencode "nombre=Robado")
-check "No edita espacios de otro" "Jardín de los Arrayanes" "$(sql "SELECT nombre FROM espacios WHERE id=$JARDIN")"
+check "No edita lugares de otro" "Jardín de los Arrayanes" "$(sql "SELECT nombre FROM espacios WHERE id=$JARDIN")"
 check "No ve la foto privada de otro" "404" "$(curl -s -o /dev/null -w '%{http_code}' -b "$JAR" "$BASE/?r=archivo&tipo=espacio&id=$JARDIN")"
 
-echo "12. Plan Salón: límite de espacios"
+echo "12. Plan Planner: límite de lugares (el plan no tiene; se prueba el mecanismo con 2)"
+sql "UPDATE planes SET max_espacios = 2 WHERE codigo = 'salon'" > /dev/null
 registrar salon "Salón Chico $RANDOM"
 get "r=espacios" > /dev/null
-contiene "Explica el límite" "$TMP/pag.html" "permite 2 espacios activos"
+contiene "Explica el límite" "$TMP/pag.html" "permite 2 lugares activos"
 no_contiene "Sin botón de nuevo espacio" "$TMP/pag.html" "nuevo=1"
 r=$(post_desde "r=espacios" "r=espacios&accion=guardar" --data-urlencode "nombre=Terraza")
-contiene "Mensaje para pasar al plan Quinta" "$TMP/post.html" "pasa al plan Quinta"
+contiene "Mensaje para pasar al plan Agencia" "$TMP/post.html" "pasa al plan Agencia"
 check "No se creó" "2" "$(sql "SELECT count(*) FROM espacios WHERE negocio_id=$NID")"
+sql "UPDATE planes SET max_espacios = NULL WHERE codigo = 'salon'" > /dev/null
 check "Calendario vacío también abre" "200" "$(get "r=calendario")"
 check "Lista vacía" "200" "$(get "r=eventos")"
 contiene "Estado vacío útil" "$TMP/pag.html" "Todavía no tienes eventos"

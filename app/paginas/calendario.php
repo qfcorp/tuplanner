@@ -3,7 +3,7 @@ use TuPlanner\{Eventos, Ventas};
 
 /**
  * Calendario: vista del mes (lunes a domingo) con los eventos por estado, días cerrados y hoy;
- * al tocar un día se ve la disponibilidad por espacio. Vista "Próximos sábados" para vender.
+ * al tocar un día se ve la disponibilidad por lugar. Vista "Próximos sábados" para vender.
  *   /?r=calendario&a=2026&m=11&espacio=3&dia=2026-11-14   ·   /?r=calendario&vista=sabados
  */
 $nid = (int) $u['negocio_id'];

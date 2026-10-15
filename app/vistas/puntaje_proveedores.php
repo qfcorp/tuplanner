@@ -17,7 +17,7 @@ $ayudaPeso = [
     <div>
         <p class="evento-sub" style="margin:0"><a href="<?= e(url('proveedores')) ?>">Proveedores</a> · <a href="<?= e(url('proveedores', ['ver' => 'ranking'])) ?>">Ranking</a></p>
         <h1>Cómo se calcula el puntaje</h1>
-        <p>Cada local mide a sus proveedores a su manera. <?= $dueno ? 'Aquí decides qué pesa más.' : 'Esto lo decide el dueño del local.' ?></p>
+        <p>Cada local mide a sus proveedores a su manera. <?= $dueno ? 'Aquí decides qué pesa más.' : 'Esto lo decide el dueño del negocio.' ?></p>
     </div>
     <?php if ($recomendada): ?><span class="pv-chip pv-chip-verde">Valores recomendados</span><?php else: ?><span class="pv-chip pv-chip-amarillo">Configuración propia</span><?php endif; ?>
 </div>

@@ -53,10 +53,10 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
 <?php if ($u): ?>
 <aside class="lateral" aria-label="Menú principal">
     <a class="marca" href="<?= e(url('inicio')) ?>">
-        <span class="marca-sello" aria-hidden="true">Te</span>
+        <span class="marca-sello" aria-hidden="true">TP</span>
         <span class="marca-texto">
             <strong><?= e($u['negocio']) ?></strong>
-            <small>Plan <?= $u['plan_codigo'] === 'quinta' ? 'Quinta' : 'Salón' ?></small>
+            <small>Plan <?= $u['plan_codigo'] === 'quinta' ? 'Agencia' : 'Planner' ?></small>
         </span>
     </a>
     <div class="buscar-lateral solo-ancho">
@@ -83,12 +83,13 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
         <a href="<?= e(url('paquetes')) ?>">Paquetes</a>
         <a href="<?= e(url('extras')) ?>">Extras del portal</a>
         <?php endif; ?>
-        <a href="<?= e(url('espacios')) ?>">Espacios</a>
+        <a href="<?= e(url('espacios')) ?>">Lugares</a>
         <a href="<?= e(url('personal')) ?>">Personal</a>
         <a href="<?= e(url('proveedores')) ?>">Proveedores</a>
         <?php if ($u['rol'] !== 'coordinador'): ?><a href="<?= e(url('por_pagar')) ?>">Por pagar</a><?php endif; ?>
+        <?php if (es_comercial($u)): ?><a href="<?= e(url('comisiones')) ?>">Comisiones</a><?php endif; ?>
         <a href="<?= e(url('incidencias')) ?>">Incidencias</a>
-        <a href="<?= e(url('mobiliario')) ?>">Mobiliario</a>
+        <a href="<?= e(url('mobiliario')) ?>">Decoración y menaje</a>
         <?php if ($u['rol'] !== 'coordinador'): ?>
         <a href="<?= e(url('reportes')) ?>">Reportes</a>
         <?php endif; ?>

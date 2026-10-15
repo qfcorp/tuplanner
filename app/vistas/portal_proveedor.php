@@ -27,7 +27,7 @@ $sinFactura = array_filter($ordenes, fn($c) => in_array($c['estado'], Compras::A
     <div class="acciones">
         <?php if ($mapa): ?><a class="boton boton-claro" href="<?= e($mapa) ?>" target="_blank" rel="noopener">Ver en el mapa</a><?php endif; ?>
         <?php if ($wa = WhatsApp::enlace($contactoGeneral, 'Hola, soy ' . $p['nombre'] . ' (proveedor).')): ?>
-            <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Escribir al local</a><?php endif; ?>
+            <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Escribir al negocio</a><?php endif; ?>
     </div>
 </section>
 

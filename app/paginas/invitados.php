@@ -2,7 +2,7 @@
 use TuPlanner\{DiaEvento, Eventos, Invitados};
 
 /**
- * Invitados del evento (plan Quinta): lista, pegar lista, mesas, invitaciones por WhatsApp,
+ * Invitados del evento (plan Agencia): lista, pegar lista, mesas, invitaciones por WhatsApp,
  * enlace del modo puerta, PDF y CSV.  /?r=invitados&id=<evento>&ver=lista|mesas|invitacion  ·  &csv=1
  */
 $nid = (int) $u['negocio_id'];

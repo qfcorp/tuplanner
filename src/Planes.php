@@ -9,7 +9,7 @@ use RuntimeException;
 
 /**
  * Planes, prueba gratis y suscripciones de TuPlanner (mismas reglas que la familia Tukán).
- *  - Salón $39 / Quinta $69 al mes (se cambian en el panel de Tukán)
+ *  - Planner $39 / Agencia $69 al mes (se cambian en el panel de Tukán)
  *  - Semestral: paga 5, recibe 6
  *  - Anual: paga 10, recibe 12 + dominio propio (a nombre de Tukán)
  *  - Prueba gratis: 7 días
@@ -93,7 +93,7 @@ final class Planes
     {
         if (mb_strlen(trim($nombre)) < 2) throw new RuntimeException('Escribe el nombre del plan.');
         if ($precio < 0 || $precio > 10000) throw new RuntimeException('Precio no válido.');
-        if ($maxEspacios !== null && $maxEspacios < 1) throw new RuntimeException('El máximo de espacios debe ser 1 o más (vacío = sin límite).');
+        if ($maxEspacios !== null && $maxEspacios < 1) throw new RuntimeException('El máximo de lugares debe ser 1 o más (vacío = sin límite).');
         if ($maxUsuarios !== null && $maxUsuarios < 1) throw new RuntimeException('El máximo de usuarios debe ser 1 o más (vacío = sin límite).');
         $st = $this->db->prepare('UPDATE planes SET nombre = ?, precio_mensual = ?, max_espacios = ?, max_usuarios = ?, descripcion = ? WHERE codigo = ?');
         $st->execute([trim($nombre), round($precio, 2), $maxEspacios, $maxUsuarios, trim($descripcion) ?: null, $codigo]);
@@ -200,7 +200,7 @@ final class Planes
                  ->execute([$negocioId, $negocioId]);
     }
 
-    /** ¿El plan permite otro espacio activo? */
+    /** ¿El plan permite otro lugar activo? */
     public function puedeAgregarEspacio(int $negocioId): bool
     {
         return $this->dentroDelLimite($negocioId, 'max_espacios', 'SELECT count(*) FROM espacios WHERE negocio_id = ? AND activo');

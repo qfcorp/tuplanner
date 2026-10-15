@@ -5,10 +5,12 @@ $nombres = ['mensual' => 'Cada mes', 'semestral' => 'Cada 6 meses', 'anual' => '
 $wa = fn(string $plan, string $periodo, float $monto) => 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode(
     "Hola, quiero contratar TuPlanner plan $plan ($periodo, " . dinero($monto) . ") para \"{$u['negocio']}\" ({$u['email']}). ¿Cómo hago el pago?");
 $incluye = [
-    'salon' => ['Calendario sin doble reserva (lo impide el sistema)', 'Cotizaciones con paquetes, IVA y descuento', 'Contrato que el cliente firma en su celular',
-                'Plan de pagos, cuotas y recordatorios por WhatsApp', 'Página pública para recibir consultas', 'Reportes de ventas, cobros y ganancia', 'Avisos por Telegram'],
-    'quinta' => ['Todo lo del plan Salón, sin límite de espacios ni usuarios', 'Portal del cliente: paga y sube comprobantes', 'Invitados con QR y control de ingreso en la puerta',
-                 'Día del evento: cronograma, personal, proveedores', 'Mobiliario y menaje (lo que sale y lo que se daña)', 'Boda en vivo con QF Producciones'],
+    'salon' => ['Lista de tareas por meses (tuyas y del cliente)', 'Presupuesto por proveedor: lo que paga el cliente directo y lo que va en tu contrato',
+                'Honorarios fijos o por porcentaje, y comisiones de proveedores', 'Cotizaciones y contrato que el cliente firma en su celular',
+                'Plan de pagos, cuotas y recordatorios por WhatsApp', 'Portal del cliente: tareas, presupuesto, ideas y pagos', 'Página pública para recibir consultas', 'Hasta 3 usuarios'],
+    'quinta' => ['Todo lo del plan Planner, con usuarios sin límite', 'Invitados con QR y control de ingreso en la puerta',
+                 'Día del evento: cronograma minuto a minuto, personal y proveedores', 'Plano de mesas', 'Decoración y menaje propio (lo que sale y lo que se daña)',
+                 'Portal de proveedores', 'Boda en vivo con QF Producciones'],
 ];
 $estadoTxt = PanelTukan::ESTADOS[$estadoCuenta] ?? $estadoCuenta;
 $hasta = $u['estado'] === 'prueba' ? $u['prueba_hasta'] : $u['activo_hasta'];
@@ -23,11 +25,11 @@ $ahorro = function (array $c, array $mensual): int {
 
 <section class="bloque g-estado-cuenta">
     <div>
-        <p style="margin:0">Tu plan: <strong><?= $u['plan_codigo'] === 'quinta' ? 'Quinta' : 'Salón' ?></strong>
+        <p style="margin:0">Tu plan: <strong><?= $u['plan_codigo'] === 'quinta' ? 'Agencia' : 'Planner' ?></strong>
             <span class="etq est-<?= e($estadoCuenta) ?>"><?= e($estadoTxt) ?></span></p>
         <p class="suave" style="margin:4px 0 0">
             <?php if ($hasta): ?><?= $u['estado'] === 'prueba' ? 'Prueba gratis hasta el ' : 'Pagado hasta el ' ?><strong><?= e((new DateTimeImmutable($hasta))->format('d/m/Y')) ?></strong> · <?php endif; ?>
-            <?= (int) $uso['espacios'] ?> espacios y <?= (int) $uso['usuarios'] ?> usuarios activos</p>
+            <?= (int) $uso['espacios'] ?> lugares y <?= (int) $uso['usuarios'] ?> usuarios activos</p>
     </div>
     <a class="boton boton-wa" href="https://wa.me/<?= e(whatsapp_ventas()) ?>?text=<?= e(rawurlencode('Hola, tengo una pregunta sobre mi plan de TuPlanner (' . $u['negocio'] . ').')) ?>" target="_blank" rel="noopener">Preguntar por WhatsApp</a>
 </section>
@@ -64,7 +66,7 @@ $ahorro = function (array $c, array $mensual): int {
         <li>Te enviamos los datos para pagar por <strong>transferencia, DeUna o tarjeta</strong>.</li>
         <li>Envíanos la foto del comprobante y te activamos el plan el mismo día. Tus datos se mantienen.</li>
     </ol>
-    <p class="g-nota" style="margin-top:8px">El plan anual incluye un dominio propio para tu página (ej. tuquinta.com) a nombre de Tukán mientras tengas el plan.</p>
+    <p class="g-nota" style="margin-top:8px">El plan anual incluye un dominio propio para tu página (ej. anaperezplanner.com) a nombre de Tukán mientras tengas el plan.</p>
 </section>
 
 <section class="bloque">

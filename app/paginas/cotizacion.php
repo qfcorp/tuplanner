@@ -84,7 +84,7 @@ if (es_post()) {
                 if ($modo === 'paquete' && !$paq) throw new RuntimeException('Elige el paquete.');
                 $nueva = $cot->crear($nid, $id, $paq ?: null, (int) $u['id']);
                 if ($modo === 'vacia') {
-                    // En blanco: solo el alquiler de los espacios del evento
+                    // En blanco: solo el alquiler de los lugares del evento
                     $st = db()->prepare('SELECT es.nombre, es.precio_base FROM evento_espacios ee JOIN espacios es ON es.id = ee.espacio_id WHERE ee.evento_id = ? ORDER BY es.orden');
                     $st->execute([$id]);
                     $lineas = array_map(fn($e) => ['categoria' => 'espacio', 'descripcion' => 'Alquiler de ' . $e['nombre'], 'unidad' => 'evento',

@@ -1,12 +1,12 @@
 <?php
-use TuPlanner\{Eventos, Ventas};
+use TuPlanner\{Eventos, Planificacion, Ventas};
 
 /**
  * Disponibilidad en JSON.
  *  - Público (página del negocio): /?r=disponible&s=<slug>&fecha=Y-m-d
- *      -> {fecha, espacios: [{espacio, capacidad, estado: libre|ocupado|consultar}]}  (sin datos de otros clientes)
+ *      -> {fecha, estado: libre|consultar|ocupado}  (cupo del equipo ese día, sin datos de otros clientes)
  *  - Interno (con sesión, sin s): /?r=disponible&fecha&hora_inicio&hora_fin&espacios[]&excluir
- *      -> {fecha, choques: [{nivel, texto, codigo, nombre, espacio, evento_id}], bloqueado: bool}
+ *      -> {fecha, choques: [{nivel, texto, codigo, nombre, lugar, evento_id}], bloqueado: bool}
  */
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -31,7 +31,8 @@ if (isset($_GET['s'])) {
         $salida(['error' => 'Esa fecha ya pasó. Elige una fecha desde hoy.', 'fecha' => $fecha, 'espacios' => []], 200);
         return;
     }
-    $salida(['fecha' => $fecha, 'espacios' => $ventas->disponibilidadPublica((int) $neg['id'], $fecha)]);
+    // El organizador va a cualquier lugar: lo que cuenta es si a su equipo le queda cupo ese día
+    $salida(['fecha' => $fecha, 'estado' => (new Planificacion(db()))->disponibilidadPublica((int) $neg['id'], $fecha)]);
     return;
 }
 

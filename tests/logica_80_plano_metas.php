@@ -1,6 +1,6 @@
 <?php
 /**
- * Plano visual del salón (plantillas por espacio, plano del evento unido a las mesas de invitados, validación,
+ * Plano visual del salón (plantillas por lugar, plano del evento unido a las mesas de invitados, validación,
  * ocupación, aislamiento entre negocios, PDF) y metas de ventas (meta de siempre + meses distintos, avance del mes,
  * comparación con el año anterior, por vendedor, CSV).
  */
@@ -10,9 +10,9 @@ $db = base_limpia();
 $hoy = new DateTimeImmutable('2026-10-13');
 [$nid, $dueno] = negocio_prueba($db);
 [$nid2, $dueno2] = negocio_prueba($db, 'quinta', 'Hacienda Ajena');
-$salon = espacio_id($db, $nid, 'Salón principal');
-$jardin = espacio_id($db, $nid, 'Jardín');
-$salonAjeno = espacio_id($db, $nid2, 'Salón principal');
+$salon = espacio_id($db, $nid, 'Hacienda La Herradura');
+$jardin = espacio_id($db, $nid, 'Capilla del Valle');
+$salonAjeno = espacio_id($db, $nid2, 'Hacienda La Herradura');
 $pl = new Planos($db);
 $ev = new Eventos($db);
 $inv = new Invitados($db);
@@ -37,7 +37,7 @@ check('Texto de las mesas siempre derecho', -45, Planos::giroTexto('redonda', 45
 
 titulo('2. Plantillas de distribución por espacio');
 check_error('Sin nombre', 'Ponle un nombre', fn() => $pl->crearPlantilla($nid, $salon, '', 20, 30));
-check_error('Espacio de otro negocio', 'No se encontró el espacio', fn() => $pl->crearPlantilla($nid, $salonAjeno, 'Boda', 20, 30));
+check_error('Espacio de otro negocio', 'No se encontró el lugar', fn() => $pl->crearPlantilla($nid, $salonAjeno, 'Boda', 20, 30));
 check_error('Ejemplo que no existe', 'cómo empezar', fn() => $pl->crearPlantilla($nid, $salon, 'Boda', 20, 30, null, 'otro'));
 $db->prepare('UPDATE espacios SET capacidad_banquete = 150 WHERE id = ?')->execute([$salon]);
 $t1 = $pl->crearPlantilla($nid, $salon, 'Boda 150 redondas', '20', '30', (int) $dueno['id'], 'boda');
@@ -94,7 +94,7 @@ check_error('No es una lista', 'incompleto', fn() => $pl->guardar($nid, $t3, 'ho
 check_error('Máximo 300 elementos', 'hasta 300 elementos', fn() => $pl->guardar($nid, $t3, array_fill(0, 301, $mesa('columna', 4, 4, '', null))));
 $r3 = $pl->guardar($nid, $t3, [array_merge($mesa('redonda', 4, 4, '', 10), ['al' => 3]), array_merge($mesa('texto', 4, 6, "Novios\x00 <b>aquí</b>", null), ['etq' => "  Novios\x07 <b>aquí</b>  "])]);
 check('Redonda: alto = ancho', 1.8, $r3['elementos'][0]['al']);
-check('Texto sin caracteres raros ni espacios de más', 'Novios <b>aquí</b>', $r3['elementos'][1]['etq']);
+check('Texto sin caracteres raros ni lugares de más', 'Novios <b>aquí</b>', $r3['elementos'][1]['etq']);
 check('El SVG escapa el texto', true, str_contains(Planos::svg($pl->datos($nid, $t3)), 'Novios &lt;b&gt;aquí&lt;/b&gt;'));
 $con300 = array_fill(0, 300, $mesa('columna', 4, 4, '', null));
 check('300 elementos sí se pueden', 300, count($pl->guardar($nid, $t3, $con300)['elementos']));
@@ -315,7 +315,7 @@ check('Vaciar un mes lo vuelve a la de siempre', 6000.0, $met->metaDe($nid, null
 $met->guardar($nid, $carla, null, '3000');
 $met->guardar($nid, $carla, '2026-10', '3500', '2');
 check('Meta de un vendedor (con su mes distinto)', [3000.0, 3500.0], [$met->metaDe($nid, $carla, '2026-09')['monto'], $met->metaDe($nid, $carla, '2026-10')['monto']]);
-check('La meta del vendedor no cambia la del local', 4000.0, $met->metaDe($nid, null, '2026-10')['monto']);
+check('La meta del vendedor no cambia la del negocio', 4000.0, $met->metaDe($nid, null, '2026-10')['monto']);
 check('Otro vendedor sin meta', null, $met->metaDe($nid, $diego, '2026-10'));
 check('Otro negocio no ve estas metas', null, $met->metaDe($nid2, null, '2026-10'));
 check('Lista de quienes venden: dueño y vendedores', 3, count($met->vendedores($nid)));
@@ -383,9 +383,9 @@ check('Máximo 36 meses', 36, count(Metas::meses('2020-01-01', '2029-12-31')));
 titulo('12. Metas para Excel');
 [$enc, $filas] = $met->exportar($nid, '2026-09-01', '2026-10-31', null, $hoy);
 check('Encabezados', ['Quién', 'Mes', 'Meta'], array_slice($enc, 0, 3));
-check('Filas: 2 meses del local + 2 meses por cada persona', 2 + 2 * count($r['vendedores']), count($filas));
-check('Fila de octubre del local', ['Todo el local', 'Octubre 2026', '4000,00', 5, '4830,00', 3, '120 %', '3105,00', 2, '56 %'], $filas[1]);
+check('Filas: 2 meses del negocio + 2 meses por cada persona', 2 + 2 * count($r['vendedores']), count($filas));
+check('Fila de octubre del negocio', ['Todo el negocio', 'Octubre 2026', '4000,00', 5, '4830,00', 3, '120 %', '3105,00', 2, '56 %'], $filas[1]);
 $csv = Reportes::csv($enc, $filas);
-check('CSV con BOM y punto y coma', true, str_starts_with($csv, "\xEF\xBB\xBF") && str_contains($csv, '"Todo el local";"Octubre 2026";4000,00;5;4830,00'));
+check('CSV con BOM y punto y coma', true, str_starts_with($csv, "\xEF\xBB\xBF") && str_contains($csv, '"Todo el negocio";"Octubre 2026";4000,00;5;4830,00'));
 [, $filasCarla] = $met->exportar($nid, '2026-09-01', '2026-10-31', $carla, $hoy);
 check('El vendedor descarga solo lo suyo', ['Carla Vendedora'], array_values(array_unique(array_column($filasCarla, 0))));

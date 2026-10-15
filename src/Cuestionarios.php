@@ -13,9 +13,9 @@ use RuntimeException;
  *    texto corto, texto largo, una opción, varias opciones, sí/no, número, fecha u hora. Se crean plantillas de ejemplo
  *    la primera vez (negocios.cuestionarios_listos) y el dueño las cambia.
  *  - Cada evento recibe una COPIA de la plantilla de su tipo (o la de "Otro"): si después se cambia la plantilla,
- *    los formularios ya copiados no cambian. El local puede agregar o quitar preguntas en cada evento.
+ *    los formularios ya copiados no cambian. El negocio puede agregar o quitar preguntas en cada evento.
  *  - El cliente lo llena desde su portal (se guarda solo) hasta X días antes del evento (negocios.cuestionario_dias_cierre).
- *    Al tocar "Listo" se avisa al local. El local ve y corrige las respuestas en el evento (pestaña "Formulario y extras").
+ *    Al tocar "Listo" se avisa al negocio. El negocio ve y corrige las respuestas en el evento (pestaña "Formulario y extras").
  *  - Recordatorio por WhatsApp en "Mensajes de hoy" (Cobranza, tipo 'cuestionario') desde Y días antes (cuestionario_dias_aviso).
  */
 final class Cuestionarios
@@ -374,7 +374,7 @@ final class Cuestionarios
             if (!in_array($ev['estado'], self::ESTADOS_CLIENTE, true)) throw new RuntimeException('El formulario todavía no está disponible para este evento.');
             if (!$this->abiertoParaCliente($ev, $hoy)) {
                 $cierre = (new DateTimeImmutable($ev['fecha']))->modify('-' . (int) $ev['cuestionario_dias_cierre'] . ' days');
-                throw new RuntimeException('El formulario se cerró el ' . $cierre->format('d/m/Y') . '. Si necesitas cambiar algo, escríbele al local.');
+                throw new RuntimeException('El formulario se cerró el ' . $cierre->format('d/m/Y') . '. Si necesitas cambiar algo, escríbele al negocio.');
             }
         }
         $preguntas = [];
@@ -411,7 +411,7 @@ final class Cuestionarios
     }
 
     /**
-     * El cliente toca "Listo, enviar al local": revisa las obligatorias, marca la fecha y avisa al equipo (solo la primera vez).
+     * El cliente toca "Listo, enviar al negocio": revisa las obligatorias, marca la fecha y avisa al equipo (solo la primera vez).
      * Devuelve true si es la primera vez.
      */
     public function terminar(int $negocioId, int $eventoId, ?DateTimeImmutable $hoy = null): bool
@@ -420,7 +420,7 @@ final class Cuestionarios
         $ev = $this->evento($negocioId, $eventoId);
         $f = $this->deEvento($negocioId, $eventoId, false, $hoy);
         if (!$f || !$f['total']) throw new RuntimeException('Este evento no tiene formulario.');
-        if (!$f['abierto']) throw new RuntimeException('El formulario se cerró el ' . (new DateTimeImmutable($f['cierre']))->format('d/m/Y') . '. Si necesitas cambiar algo, escríbele al local.');
+        if (!$f['abierto']) throw new RuntimeException('El formulario se cerró el ' . (new DateTimeImmutable($f['cierre']))->format('d/m/Y') . '. Si necesitas cambiar algo, escríbele al negocio.');
         if ($f['faltan_obligatorias']) {
             $txt = implode(', ', array_map(fn($p) => '"' . $p['texto'] . '"', array_slice($f['faltan_obligatorias'], 0, 3)));
             throw new RuntimeException('Te falta responder: ' . $txt . (count($f['faltan_obligatorias']) > 3 ? ' y ' . (count($f['faltan_obligatorias']) - 3) . ' más' : '') . '.');
@@ -437,7 +437,7 @@ final class Cuestionarios
         return true;
     }
 
-    /** El local agrega una pregunta solo para este evento. */
+    /** El negocio agrega una pregunta solo para este evento. */
     public function agregarPreguntaEvento(int $negocioId, int $eventoId, array $d, ?array $usuario = null): int
     {
         $this->evento($negocioId, $eventoId);
@@ -584,7 +584,7 @@ final class Cuestionarios
         ];
         $p = match ($tipo) {
             'boda' => array_merge([
-                ['Ceremonia', 'Tipo de ceremonia', 'opcion', "Religiosa\nCivil\nSimbólica\nNo habrá ceremonia en el local"],
+                ['Ceremonia', 'Tipo de ceremonia', 'opcion', "Religiosa\nCivil\nSimbólica\nNo habrá ceremonia en el negocio"],
                 ['Ceremonia', 'Canción de entrada de la novia', 'corto'],
                 ['Música', 'Canción del primer baile', 'corto'],
                 ['Música', 'Canción del vals', 'corto'],
@@ -595,7 +595,7 @@ final class Cuestionarios
             ], $decoracion, [
                 ['Decoración', 'Mesa de los novios', 'opcion', "Mesa de honor con padres y padrinos\nMesa solo para los novios\nSin mesa especial"],
             ], $comida, $ninos, $proveedores, [
-                ['El día del evento', '¿A qué hora llegan los novios al local?', 'hora'],
+                ['El día del evento', '¿A qué hora llegan los novios al negocio?', 'hora'],
             ], $dia),
             'quince' => array_merge([
                 ['La quinceañera', 'Nombre de la quinceañera', 'corto', null, true],
@@ -609,7 +609,7 @@ final class Cuestionarios
             'bautizo', 'primera_comunion' => array_merge([
                 ['El festejado', 'Nombre del niño o la niña', 'corto', null, true],
                 ['El festejado', 'Nombres de los padrinos', 'corto'],
-                ['Ceremonia', 'Hora y lugar de la ceremonia religiosa', 'corto', null, false, 'Para coordinar la llegada de los invitados al local.'],
+                ['Ceremonia', 'Hora y lugar de la ceremonia religiosa', 'corto', null, false, 'Para coordinar la llegada de los invitados al lugar.'],
                 ['Decoración', 'Colores o temática', 'corto'],
             ], $ninos, [
                 ['Invitados', '¿Quieren animación o juegos para los niños?', 'sino'],

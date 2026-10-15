@@ -21,7 +21,7 @@ if (es_post()) {
             session_regenerate_id(true);
             $_SESSION['usuario_id'] = $alta['usuario_id'];
             $dias = (int) planes()->ajuste('dias_prueba');
-            aviso("¡Listo! Tu negocio está creado con datos de ejemplo (espacios, catálogo, paquetes y contrato). Tienes $dias días gratis para probar todo.");
+            aviso("¡Listo! Tu negocio está creado con datos de ejemplo (lugares, catálogo, paquetes y contrato). Tienes $dias días gratis para probar todo.");
             redirigir('inicio');
         } catch (RuntimeException $e) {
             $errores[] = $e->getMessage();

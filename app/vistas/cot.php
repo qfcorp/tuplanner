@@ -32,7 +32,7 @@ $nombre = trim(explode(' ', trim((string) $c['cliente']))[0]);
 <?php elseif ($c['estado'] === 'reemplazada'): ?>
 <section class="bloque doc-pub-estado doc-pub-aviso">
     <h2>Esta cotización fue actualizada</h2>
-    <p><?= $hayNueva ? 'El local te preparó una versión más nueva.' : 'El local está preparando una versión nueva.' ?> Pídeles el enlace actualizado para verla y aceptarla.</p>
+    <p><?= $hayNueva ? 'El negocio te preparó una versión más nueva.' : 'El negocio está preparando una versión nueva.' ?> Pídeles el enlace actualizado para verla y aceptarla.</p>
     <?php if ($waDudas): ?><a class="boton boton-wa boton-ancho" href="<?= e($waDudas) ?>" target="_blank" rel="noopener">Pedir la cotización nueva por WhatsApp</a><?php endif; ?>
 </section>
 <?php elseif ($c['estado'] === 'rechazada'): ?>
@@ -66,7 +66,7 @@ $nombre = trim(explode(' ', trim((string) $c['cliente']))[0]);
 <form method="post" action="<?= e(url('cot', ['t' => $token])) ?>" class="bloque doc-pub-aceptar" id="aceptar">
     <?= campo_csrf() ?>
     <h2>¿Todo bien? Acepta tu cotización</h2>
-    <p class="suave">Al aceptar, el local prepara tu plan de pagos. La fecha queda separada cuando pagues la reserva.</p>
+    <p class="suave">Al aceptar, el negocio prepara tu plan de pagos. La fecha queda separada cuando pagues la reserva.</p>
     <div class="campo"><label for="anombre">Tu nombre completo</label>
         <input type="text" id="anombre" name="nombre" required minlength="3" maxlength="150" value="<?= e($c['cliente']) ?>" autocomplete="name"></div>
     <label class="opcion" style="margin-bottom:14px"><input type="checkbox" name="acepto" value="1" required>

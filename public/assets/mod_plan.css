@@ -1,0 +1,91 @@
+/* Organizador (migración 100): planificación (pn-), ideas (id-). Celular primero. */
+
+/* ---------- Avisos y cifras ---------- */
+.pn-carga { margin-bottom: 14px; }
+.pn-cifras { margin-bottom: 12px; }
+.pn-rojo { color: var(--rojo); font-weight: 600; }
+.pn-ok { color: #1C5A31; }
+.pn-reparto { display: grid; gap: 10px; margin: 6px 0 12px; }
+.pn-reparto > div { background: var(--verde-claro); border-radius: var(--radio); padding: 10px 12px; }
+.pn-reparto h3 { font-size: .9rem; margin: 0 0 2px; color: var(--verde-oscuro); }
+.pn-reparto p { margin: 0; font-size: .95rem; }
+@media (min-width: 720px) { .pn-reparto { grid-template-columns: repeat(3, 1fr); } }
+
+/* ---------- Formularios en línea ---------- */
+.pn-en-linea { display: grid; gap: 0 12px; align-items: end; margin: 8px 0 4px; }
+.pn-en-linea .boton { margin-bottom: 14px; }
+@media (min-width: 720px) { .pn-en-linea { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); } }
+.pn-form { margin-top: 10px; }
+.pn-check { display: flex; gap: 8px; align-items: center; margin: 0 0 14px; font-size: .95rem; }
+.pn-check input { width: 20px; height: 20px; }
+.pn-sub { font-size: .95rem; margin: 16px 0 6px; }
+.pn-borrar { margin-top: 14px; }
+.pn-lista-tipica { margin: 6px 0 10px; }
+.pn-periodos { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.pn-cobrar { margin-top: 6px; }
+
+/* ---------- Partidas del presupuesto ---------- */
+.pn-partidas { list-style: none; margin: 0 0 12px; padding: 0; }
+.pn-partida { border-bottom: 1px solid var(--linea); padding: 12px 0; }
+.pn-partida:last-child { border-bottom: 0; }
+.pn-partida-cab { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: start; }
+.pn-icono { font-size: 1.4rem; line-height: 1; padding-top: 2px; }
+.pn-partida-txt { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pn-partida-txt strong { overflow-wrap: anywhere; }
+.pn-partida-num { text-align: right; display: flex; flex-direction: column; gap: 1px; max-width: 42vw; }
+.pn-partida-txt small, .pn-partida-num small { overflow-wrap: anywhere; }
+.pn-partida-num small { font-size: .78rem; }
+.pn-cancelado .pn-partida-txt strong, .pn-cancelado .pn-partida-num strong { text-decoration: line-through; color: var(--tinta-suave); }
+.pn-etiquetas { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.pn-etq { display: inline-block; font-size: .72rem; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: #EFEAEB; color: var(--tinta-suave); }
+.pn-etq-contratado { background: var(--ok-claro); color: #1C5A31; }
+.pn-etq-cotizando { background: #FFF3D6; color: #7A5300; }
+.pn-etq-cancelado { background: #EEE; color: #777; }
+.pn-etq-cliente { background: #E6EEFB; color: #24477E; }
+.pn-etq-planner { background: var(--verde-claro); color: var(--verde-oscuro); }
+.pn-detalle { margin-top: 8px; }
+.pn-detalle > summary { cursor: pointer; color: var(--verde); font-weight: 600; font-size: .9rem; min-height: 32px; display: inline-flex; align-items: center; }
+.pn-nueva { margin-top: 12px; }
+.pn-nueva > summary { list-style: none; display: inline-flex; }
+.pn-nueva > summary::-webkit-details-marker { display: none; }
+
+/* ---------- Tareas por meses ---------- */
+.pn-mes { font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; color: var(--tinta-suave); margin: 18px 0 4px; }
+.pn-tareas { list-style: none; margin: 0; padding: 0; }
+.pn-tareas li { display: grid; grid-template-columns: 40px 1fr; gap: 8px; align-items: start; padding: 8px 0; border-bottom: 1px solid var(--linea); }
+.pn-tareas li:last-child { border-bottom: 0; }
+.pn-marcar { margin: 0; }
+.pn-caja {
+    width: 32px; height: 32px; border: 2px solid var(--verde); border-radius: 8px; background: #fff;
+    color: #fff; font-size: 1.1rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0; line-height: 1;
+}
+.pn-hecha .pn-caja { background: var(--verde); }
+.pn-hecha .pn-tarea-txt > span { text-decoration: line-through; color: var(--tinta-suave); }
+.pn-tarea-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.pn-tarea-txt small { font-size: .8rem; }
+.pn-nueva-tarea { margin-top: 16px; border-top: 1px solid var(--linea); padding-top: 12px; }
+.pn-planner-avance { margin-top: 14px; background: var(--verde-claro); border-radius: var(--radio); padding: 10px 12px; }
+
+/* ---------- Ideas: temática, colores y tablero ---------- */
+.id-tematica { font-size: 1.05rem; font-weight: 600; }
+.id-paleta { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; padding: 0; }
+.id-paleta li { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--linea); }
+.id-paleta-hero li { box-shadow: 0 0 0 1px rgba(255,255,255,.6); }
+.id-colores { border: 0; padding: 0; margin: 0 0 14px; display: flex; flex-wrap: wrap; gap: 12px; }
+.id-colores legend { font-weight: 600; margin-bottom: 6px; font-size: .95rem; }
+.id-color { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: .85rem; }
+.id-color input[type=color] { width: 48px; height: 48px; border: 1px solid var(--linea); border-radius: 10px; padding: 2px; background: #fff; }
+.id-tablero { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 720px) { .id-tablero { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .id-tablero { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.id-foto { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); overflow: hidden; display: flex; flex-direction: column; }
+.id-foto img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; background: #EFEAEB; }
+.id-si { border-color: #D27A93; box-shadow: 0 0 0 2px #F2C5D1; }
+.id-no img { opacity: .45; }
+.id-pie { padding: 8px; display: flex; flex-direction: column; gap: 4px; font-size: .85rem; }
+.id-pie p { margin: 0; overflow-wrap: anywhere; }
+.id-botones { display: flex; flex-wrap: wrap; gap: 4px; }
+.id-botones form { margin: 0; }
+.id-botones .boton-chico { min-height: 32px; padding: 4px 8px; font-size: .8rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }

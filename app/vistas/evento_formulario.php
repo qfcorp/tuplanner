@@ -41,9 +41,9 @@ $f = $borradorPregunta ?? [];
         <?php if (!in_array($ev['estado'], Cuestionarios::ESTADOS_CLIENTE, true)): ?>
             El cliente lo verá en su portal cuando la fecha esté separada (al pagar la reserva).
         <?php elseif ($form['abierto']): ?>
-            El cliente lo llena desde su portal hasta el <strong><?= e(fecha_corta($form['cierre'])) ?></strong>. Después solo el local puede cambiarlo.
+            El cliente lo llena desde su portal hasta el <strong><?= e(fecha_corta($form['cierre'])) ?></strong>. Después solo el negocio puede cambiarlo.
         <?php else: ?>
-            Se cerró para el cliente el <?= e(fecha_corta($form['cierre'])) ?>. El local todavía puede corregir las respuestas.
+            Se cerró para el cliente el <?= e(fecha_corta($form['cierre'])) ?>. El negocio todavía puede corregir las respuestas.
         <?php endif; ?>
     </p>
     <?php if ($comercial && in_array($ev['estado'], Cuestionarios::ESTADOS_CLIENTE, true) && $form['total']): ?>

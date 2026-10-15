@@ -19,6 +19,6 @@ try {
     exit;
 } catch (RuntimeException $e) {
     http_response_code(400);
-    vista_publica('error_publico', ['mensaje' => 'No reconocimos este pago. Si se te cobró, escríbele al local con la captura de Payphone para que lo revisen.'],
+    vista_publica('error_publico', ['mensaje' => 'No reconocimos este pago. Si se te cobró, escríbele al negocio con la captura de Payphone para que lo revisen.'],
                   'Pago · TuPlanner');
 }

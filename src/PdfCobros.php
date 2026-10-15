@@ -123,7 +123,7 @@ final class PdfCobros
         $pdf->SetFillColor(251, 240, 211);
         $pdf->SetTextColor(106, 77, 13);
         $pdf->SetFont('dejavusans', 'B', 8.5);
-        $pdf->MultiCell(0, 6, 'Este recibo no reemplaza a la factura. Si necesitas factura, pídela al local con tus datos.', 0, 'C', true);
+        $pdf->MultiCell(0, 6, 'Este recibo no reemplaza a la factura. Si necesitas factura, pídela al negocio con tus datos.', 0, 'C', true);
         $pdf->SetTextColor(30, 26, 28);
         $pdf->SetFont('dejavusans', '', 7.5);
         $pdf->SetX(15);
@@ -199,7 +199,7 @@ final class PdfCobros
         }
         $revisar = array_filter($pagos, fn($p) => $p['estado'] === 'por_revisar');
         if ($revisar) {
-            $html .= '<p style="font-size:8.5pt;color:#7A5300">Comprobantes en revisión por el local: ' . count($revisar) . ' por '
+            $html .= '<p style="font-size:8.5pt;color:#7A5300">Comprobantes en revisión por el negocio: ' . count($revisar) . ' por '
                 . Pdf::dinero(array_sum(array_map(fn($p) => (float) $p['monto'], $revisar))) . ' (no se suman hasta que se confirmen).</p>';
         }
 
@@ -211,7 +211,7 @@ final class PdfCobros
                 . '<tr><td ' . $td . '>Recibida</td><td align="right" ' . $td . '>' . Pdf::dinero($gar['recibida']) . '</td></tr>'
                 . ($gar['devuelta'] > 0 ? '<tr><td ' . $td . '>Devuelta</td><td align="right" ' . $td . '>' . Pdf::dinero($gar['devuelta']) . '</td></tr>' : '')
                 . ($gar['retenida'] > 0 ? '<tr><td ' . $td . '>Retenida por daños</td><td align="right" ' . $td . '>' . Pdf::dinero($gar['retenida']) . '</td></tr>' : '')
-                . '<tr><td ' . $td . '><b>En manos del local</b></td><td align="right" ' . $td . '><b>' . Pdf::dinero($gar['saldo']) . '</b></td></tr></table>'
+                . '<tr><td ' . $td . '><b>En manos del negocio</b></td><td align="right" ' . $td . '><b>' . Pdf::dinero($gar['saldo']) . '</b></td></tr></table>'
                 . '<p style="font-size:8pt;color:#665A5E">La garantía no forma parte del valor del evento: se devuelve después del evento si no hay daños.</p>';
         }
 

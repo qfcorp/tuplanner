@@ -1,6 +1,6 @@
 -- =====================================================================
 -- TuPlanner — Esquema de base de datos (PostgreSQL 16)
--- Programa para salones de eventos, quintas y haciendas (marca Tukán).
+-- Programa para wedding planners y organizadores de eventos (marca Tukán).
 -- Un solo sistema para muchos negocios: cada tabla lleva negocio_id.
 -- =====================================================================
 
@@ -21,8 +21,8 @@ CREATE TABLE planes (
     descripcion           VARCHAR(300)
 );
 INSERT INTO planes (codigo, nombre, precio_mensual, max_espacios, max_usuarios, descripcion) VALUES
-    ('salon',  'Salón',  39.00, 2, 3,    'Para salones de recepciones: calendario sin doble reserva, cotizaciones, contratos firmados, cuotas y cobros.'),
-    ('quinta', 'Quinta', 69.00, NULL, NULL, 'Para quintas y haciendas: todo lo del plan Salón + portal del cliente, invitados con QR, día del evento, mobiliario y boda en vivo.');
+    ('salon',  'Planner', 39.00, NULL, 3,    'Para el organizador independiente: eventos, lista de tareas por meses, presupuesto con proveedores, honorarios y comisiones, cotizaciones, contratos firmados y cobros.'),
+    ('quinta', 'Agencia', 69.00, NULL, NULL, 'Para agencias con equipo: todo lo del plan Planner + usuarios sin límite, invitados con QR, día del evento, plano de mesas, decoración y menaje, portal de proveedores y boda en vivo.');
 
 CREATE TABLE negocios (
     id                    SERIAL PRIMARY KEY,

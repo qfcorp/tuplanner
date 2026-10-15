@@ -246,7 +246,7 @@ final class Invitados
         return ['agregados' => $agregados, 'repetidos' => $repetidos, 'errores' => $errores];
     }
 
-    /** Nombre comparable: sin tildes, sin mayúsculas, sin espacios dobles. */
+    /** Nombre comparable: sin tildes, sin mayúsculas, sin lugares dobles. */
     private static function clave(string $nombre): string
     {
         $s = mb_strtolower(trim(preg_replace('/\s+/u', ' ', $nombre)));

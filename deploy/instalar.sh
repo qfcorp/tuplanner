@@ -31,7 +31,7 @@ else
   if sudo git clone -q "$REPO" "$APP"; then echo "   bajado"; else echo "   ERROR: no se pudo bajar $REPO"; exit 1; fi
 fi
 sudo chown -R "$YO":www-data "$APP"
-sudo mkdir -p "$APP/uploads/espacios" "$APP/uploads/logos" "$APP/uploads/comprobantes" "$APP/uploads/firmas" "$APP/config"
+sudo mkdir -p "$APP/uploads/espacios" "$APP/uploads/logos" "$APP/uploads/comprobantes" "$APP/uploads/firmas" "$APP/uploads/ideas" "$APP/config"
 sudo chown -R www-data:www-data "$APP/uploads" && sudo chmod -R 750 "$APP/uploads"
 sudo chown "$YO":www-data "$APP/config" && sudo chmod 750 "$APP/config"
 chmod +x "$APP/deploy/respaldo.sh" "$APP/deploy/conectar_central.sh" 2>/dev/null || true
@@ -131,9 +131,9 @@ else
   echo "   (nginx no esta instalado: se omite)"
 fi
 
-echo "== 6. Tareas automaticas (cada hora) y respaldo (cada dia 3:25)"
-(crontab -l 2>/dev/null | grep -v "tuplanner/bin/tareas"; echo "5 * * * * php $APP/bin/tareas.php >> \$HOME/tuplanner-tareas.log 2>&1") | crontab -
-(sudo crontab -l 2>/dev/null | grep -v "tuplanner/deploy/respaldo"; echo "25 3 * * * APP=$APP $APP/deploy/respaldo.sh >> /var/log/tuplanner-respaldo.log 2>&1") | sudo crontab -
+echo "== 6. Tareas automaticas (cada hora) y respaldo (cada dia 3:35)"
+(crontab -l 2>/dev/null | grep -v "tuplanner/bin/tareas"; echo "7 * * * * php $APP/bin/tareas.php >> \$HOME/tuplanner-tareas.log 2>&1") | crontab -
+(sudo crontab -l 2>/dev/null | grep -v "tuplanner/deploy/respaldo"; echo "35 3 * * * APP=$APP $APP/deploy/respaldo.sh >> /var/log/tuplanner-respaldo.log 2>&1") | sudo crontab -
 echo "   listo"
 
 echo

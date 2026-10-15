@@ -43,7 +43,7 @@ contiene "Aviso del recibo" "$TMP/pag.html" "Pago registrado (recibo N.º 1)"
 contiene "Sugiere lo que falta de la reserva" "$TMP/pag.html" 'value="400,00"'
 r=$(post_desde "r=evento_pagos&id=$EV" "r=evento_pagos&id=$EV&accion=pago" --data-urlencode "monto=400" --data-urlencode "metodo=efectivo")
 check "Al completar la reserva: SEPARADO" "separado" "$(sql "SELECT estado FROM eventos WHERE id = $EV")"
-check "El espacio queda bloqueado" "t" "$(sql "SELECT bloquea FROM evento_espacios WHERE evento_id = $EV")"
+check "El lugar queda bloqueado" "t" "$(sql "SELECT bloquea FROM evento_espacios WHERE evento_id = $EV")"
 get "r=evento_pagos&id=$EV" > /dev/null
 contiene "Mensaje: la fecha quedó separada" "$TMP/pag.html" "Reserva pagada: la fecha quedó separada."
 contiene "30 % pagado" "$TMP/pag.html" "30 % pagado"
@@ -103,7 +103,7 @@ contiene "Recibos públicos" "$TMP/pag.html" "r=portal&amp;t=$TOKEN&amp;recibo="
 contiene "Plan Quinta: invitados" "$TMP/pag.html" "r=portal_invitados&amp;t=$TOKEN"
 contiene "Plan Quinta: cronograma" "$TMP/pag.html" "Cronograma del evento"
 no_contiene "Sin datos de pago: no muestra el formulario" "$TMP/pag.html" 'name="comprobante"'
-contiene "Sin datos de pago: pide escribir al local" "$TMP/pag.html" "te enviará los datos"
+contiene "Sin datos de pago: pide escribir al negocio" "$TMP/pag.html" "te enviará los datos"
 check "Portal con token falso: 404" "404" "$(get "r=portal&t=abcdef0123456789abcdef0123456789abcdef0123456789")"
 contiene "Token falso: mensaje amable" "$TMP/pag.html" "no es válido"
 check "Portal sin token: 404" "404" "$(get "r=portal")"
@@ -205,7 +205,7 @@ contiene "Retener sin decir qué se dañó: error" "$TMP/pag.html" "Escribe qué
 r=$(post_desde "r=evento_pagos&id=$EV" "r=evento_pagos&id=$EV&accion=garantia_retener" --data-urlencode "monto=30" --data-urlencode "notas=2 copas rotas")
 r=$(post_desde "r=evento_pagos&id=$EV" "r=evento_pagos&id=$EV&accion=garantia_devolver" --data-urlencode "monto=170" --data-urlencode "metodo=transferencia")
 get "r=evento_pagos&id=$EV" > /dev/null
-contiene "Garantía: queda 0 en manos del local" "$TMP/pag.html" "<dt>En manos del local</dt><dd><strong>\$0,00</strong>"
+contiene "Garantía: queda 0 en manos del negocio" "$TMP/pag.html" "<dt>En manos del negocio</dt><dd><strong>\$0,00</strong>"
 r=$(post_desde "r=evento_pagos&id=$EV" "r=evento_pagos&id=$EV&accion=gasto" --data-urlencode "concepto=Flores de la ceremonia" \
      --data-urlencode "monto=250,50" --data-urlencode "categoria=decoracion" --data-urlencode "fecha=$(date +%F)")
 check "Gasto registrado" "250.50" "$(sql "SELECT monto FROM gastos WHERE evento_id = $EV")"

@@ -33,7 +33,7 @@ $tarjeta = function (array $p) use ($vistas, $puedeArmar, $ev): string {
 
     <?php if ($plantillas): ?>
     <section class="bloque">
-        <h2>Usar una distribución de tus espacios</h2>
+        <h2>Usar una distribución de tus lugares</h2>
         <p class="suave">Se copia para este evento: lo que cambies aquí no cambia la distribución original.</p>
         <div class="pl-tarjetas">
             <?php foreach ($delEvento as $p) echo $tarjeta($p); ?>
@@ -54,7 +54,7 @@ $tarjeta = function (array $p) use ($vistas, $puedeArmar, $ev): string {
         </div>
         <button class="boton" type="submit">Empezar plano vacío</button>
         <?php if (!$plantillas && es_dueno($u)): ?>
-            <p class="suave" style="margin-top:10px"><small>Consejo: arma una vez la distribución de cada espacio en <a href="<?= e(url('plano')) ?>">Planos del salón</a> y úsala en cada evento.</small></p>
+            <p class="suave" style="margin-top:10px"><small>Consejo: arma una vez la distribución de cada lugar en <a href="<?= e(url('plano')) ?>">Planos del salón</a> y úsala en cada evento.</small></p>
         <?php endif; ?>
     </form>
 <?php endif; ?>

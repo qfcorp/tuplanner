@@ -51,11 +51,10 @@ $sugeridoTxt = number_format($sugerido, 2, ',', '');
     <dl class="ficha-datos cb-ficha">
         <dt>Fecha</dt><dd><?= e(ucfirst(fecha_larga($ev['fecha']))) ?></dd>
         <dt>Hora</dt><dd><?= e(hora_corta($ev['hora_inicio'])) ?> a <?= e(hora_corta($ev['hora_fin'])) ?></dd>
-        <?php if ($ev['espacios_texto']): ?><dt>Lugar</dt><dd><?= e($ev['espacios_texto']) ?></dd><?php endif; ?>
+        <dt>Lugar</dt><dd><?php if (!$lugares): ?>Por definir<?php endif; ?><?php foreach ($lugares as $i => $lg): ?><?= $i ? '<br>' : '' ?><strong><?= e($lg['nombre']) ?></strong><?= $lg['direccion'] ? ' · ' . e($lg['direccion']) : '' ?>
+            <?php if (\TuPlanner\Ventas::enlaceSeguro($lg['mapa_url'])): ?> · <a href="<?= e(\TuPlanner\Ventas::enlaceSeguro($lg['mapa_url'])) ?>" target="_blank" rel="noopener">Ver en el mapa</a><?php endif; ?><?php endforeach; ?></dd>
         <dt>Invitados</dt><dd><?= (int) $ev['invitados'] ?></dd>
         <dt>Código</dt><dd><?= e($ev['codigo']) ?></dd>
-        <?php if ($negocio['direccion']): ?><dt>Dirección</dt><dd><?= e($negocio['direccion']) ?><?= $negocio['ciudad'] ? ', ' . e($negocio['ciudad']) : '' ?>
-            <?php if ($negocio['mapa_url']): ?><br><a href="<?= e($negocio['mapa_url']) ?>" target="_blank" rel="noopener">Ver en el mapa</a><?php endif; ?></dd><?php endif; ?>
     </dl>
 </section>
 
@@ -99,7 +98,7 @@ $sugeridoTxt = number_format($sugerido, 2, ',', '');
         </div>
         <div class="barra" role="progressbar" aria-valuenow="<?= (int) $res['pct'] ?>" aria-valuemin="0" aria-valuemax="100" aria-label="Avance de pagos"><span style="width:<?= (int) $res['pct'] ?>%"></span></div>
         <p class="suave cb-pct"><?= (int) $res['pct'] ?> % pagado<?= $res['saldo'] <= 0 ? ' · ¡Gracias, tu evento está pagado por completo!' : '' ?></p>
-        <?php if ($porRevisar): ?><p class="aviso aviso-ok">✅ Recibimos tu comprobante de <?= dinero(array_sum(array_map(fn($p) => (float) $p['monto'], $porRevisar))) ?>. El local lo está revisando; cuando lo confirme, se suma a lo pagado.</p><?php endif; ?>
+        <?php if ($porRevisar): ?><p class="aviso aviso-ok">✅ Recibimos tu comprobante de <?= dinero(array_sum(array_map(fn($p) => (float) $p['monto'], $porRevisar))) ?>. El negocio lo está revisando; cuando lo confirme, se suma a lo pagado.</p><?php endif; ?>
 
         <?php if ($res['cuotas']): ?>
         <h3>Plan de pagos</h3>
@@ -168,7 +167,7 @@ $sugeridoTxt = number_format($sugerido, 2, ',', '');
                 <?php if ($p['estado'] === 'confirmado' && $p['numero_recibo']): ?><br><a class="enlace-chico" href="<?= e(url('portal', ['t' => $token, 'recibo' => $p['id']])) ?>" target="_blank">Recibo PDF</a><?php endif; ?></div></li>
         <?php endforeach; ?>
     </ul>
-    <?php if (array_filter($historial, fn($p) => $p['estado'] === 'rechazado')): ?><p class="suave">Si un comprobante no se pudo validar, revisa los datos y sube otro, o escríbele al local.</p><?php endif; ?>
+    <?php if (array_filter($historial, fn($p) => $p['estado'] === 'rechazado')): ?><p class="suave">Si un comprobante no se pudo validar, revisa los datos y sube otro, o escríbele al negocio.</p><?php endif; ?>
 </section>
 <?php endif; ?>
 
@@ -204,9 +203,9 @@ $sugeridoTxt = number_format($sugerido, 2, ',', '');
         <ol class="cb-cronograma">
             <?php foreach ($cronograma as $c): ?><li><span class="hora"><?= e(hora_corta($c['hora'])) ?></span><span><?= e($c['actividad']) ?> <small class="suave">· <?= (int) $c['duracion_min'] ?> min</small></span></li><?php endforeach; ?>
         </ol>
-        <p class="suave">¿Quieres cambiar algo? Escríbele al local.</p>
+        <p class="suave">¿Quieres cambiar algo? Escríbele al negocio.</p>
     <?php else: ?>
-        <p class="vacio">El local está preparando el cronograma (ceremonia, cóctel, entrada, vals, cena, baile…). Aparecerá aquí.</p>
+        <p class="vacio">El negocio está preparando el cronograma (ceremonia, cóctel, entrada, vals, cena, baile…). Aparecerá aquí.</p>
     <?php endif; ?>
 </section>
 

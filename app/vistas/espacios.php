@@ -5,21 +5,21 @@ $activosLista = array_filter($espacios, fn($e) => $e['activo']);
 ?>
 <div class="cabecera">
     <div>
-        <h1>Espacios</h1>
+        <h1>Lugares</h1>
         <p>Salones, jardines, capillas, terrazas… Cada uno se reserva por separado: nunca se vende dos veces el mismo a la misma hora.</p>
     </div>
     <?php if ($puedeEditar && !$form): ?>
         <?php if ($puedeAgregar): ?>
-            <a class="boton" href="<?= e(url('espacios', ['nuevo' => 1])) ?>">Nuevo espacio</a>
+            <a class="boton" href="<?= e(url('espacios', ['nuevo' => 1])) ?>">Nuevo lugar</a>
         <?php endif; ?>
     <?php endif; ?>
 </div>
 
 <?php if ($max !== null): ?>
     <p class="<?= !$puedeAgregar ? 'aviso aviso-alerta' : 'suave' ?>">
-        Tu plan Salón permite <?= $max ?> <?= $max === 1 ? 'espacio activo' : 'espacios activos' ?> (tienes <?= $activos ?>).
-        <?php if (!$puedeAgregar): ?>Para agregar más, desactiva uno o pasa al <strong>plan Quinta</strong>: espacios sin límite.
-            <?php if (es_dueno($u)): ?><a href="<?= e(url('planes')) ?>">Ver el plan Quinta</a><?php endif; ?>
+        Tu plan Salón permite <?= $max ?> <?= $max === 1 ? 'lugar activo' : 'lugares activos' ?> (tienes <?= $activos ?>).
+        <?php if (!$puedeAgregar): ?>Para agregar más, desactiva uno o pasa al <strong>plan Agencia</strong>: lugares sin límite.
+            <?php if (es_dueno($u)): ?><a href="<?= e(url('planes')) ?>">Ver el plan Agencia</a><?php endif; ?>
         <?php endif; ?>
     </p>
 <?php endif; ?>
@@ -34,10 +34,10 @@ $activosLista = array_filter($espacios, fn($e) => $e['activo']);
         <div class="rejilla-form">
             <div class="campo">
                 <label for="nombre">Nombre</label>
-                <input type="text" id="nombre" name="nombre" value="<?= e($form['nombre']) ?>" required maxlength="80" placeholder="Ej. Salón Cristal, Jardín de los Arrayanes">
+                <input type="text" id="nombre" name="nombre" value="<?= e($form['nombre']) ?>" required maxlength="80" placeholder="Ej. Hacienda La Herradura, Iglesia de Guápulo">
             </div>
             <div class="campo">
-                <label for="precio_base">Alquiler del espacio <small>(precio base, opcional)</small></label>
+                <label for="precio_base">Alquiler del lugar <small>(precio base, opcional)</small></label>
                 <input type="text" id="precio_base" name="precio_base" inputmode="decimal"
                        value="<?= e(($form['precio_base'] ?? '') !== '' && (float) $form['precio_base'] > 0 ? rtrim(rtrim(number_format((float) $form['precio_base'], 2, '.', ''), '0'), '.') : '') ?>" placeholder="Ej. 1500">
             </div>
@@ -48,6 +48,30 @@ $activosLista = array_filter($espacios, fn($e) => $e['activo']);
             <div class="campo">
                 <label for="capacidad_coctel">Capacidad de pie <small>(cóctel)</small></label>
                 <input type="number" id="capacidad_coctel" name="capacidad_coctel" min="0" max="20000" value="<?= e((string) $form['capacidad_coctel']) ?>">
+            </div>
+            <div class="campo">
+                <label for="tipo_lugar">Tipo</label>
+                <select id="tipo_lugar" name="tipo_lugar">
+                    <?php foreach (['recepcion' => 'Recepción o fiesta', 'ceremonia' => 'Ceremonia (iglesia, capilla)', 'ambos' => 'Ceremonia y recepción', 'otro' => 'Otro'] as $k => $t): ?>
+                        <option value="<?= $k ?>" <?= ($form['tipo_lugar'] ?? 'recepcion') === $k ? 'selected' : '' ?>><?= e($t) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="campo">
+                <label for="direccion">Dirección</label>
+                <input type="text" id="direccion" name="direccion" maxlength="250" value="<?= e((string) ($form['direccion'] ?? '')) ?>" placeholder="Ej. Vía a Tumbaco km 5">
+            </div>
+            <div class="campo">
+                <label for="mapa_url">Enlace de Google Maps <small>(opcional)</small></label>
+                <input type="url" id="mapa_url" name="mapa_url" maxlength="400" value="<?= e((string) ($form['mapa_url'] ?? '')) ?>" placeholder="https://maps.app.goo.gl/…">
+            </div>
+            <div class="campo">
+                <label for="contacto">Contacto del lugar <small>(opcional)</small></label>
+                <input type="text" id="contacto" name="contacto" maxlength="100" value="<?= e((string) ($form['contacto'] ?? '')) ?>" placeholder="Ej. Sra. Martha (administración)">
+            </div>
+            <div class="campo">
+                <label for="telefono">Celular del contacto</label>
+                <input type="tel" id="telefono" name="telefono" maxlength="20" value="<?= e((string) ($form['telefono'] ?? '')) ?>" placeholder="0991234567" inputmode="tel">
             </div>
             <div class="campo ancho">
                 <label for="descripcion">Descripción <small>(sale en tu página pública)</small></label>
@@ -88,7 +112,7 @@ $activosLista = array_filter($espacios, fn($e) => $e['activo']);
     <?php if (!$esNuevo && !empty($form['foto'])): ?>
         <form method="post" action="<?= e(url('espacios', ['accion' => 'quitar_foto'])) ?>" style="margin-top:10px">
             <?= campo_csrf() ?><input type="hidden" name="id" value="<?= (int) $form['id'] ?>">
-            <button class="boton boton-peligro boton-chico" type="submit" data-confirmar="¿Quitar la foto de este espacio?">Quitar foto</button>
+            <button class="boton boton-peligro boton-chico" type="submit" data-confirmar="¿Quitar la foto de este lugar?">Quitar foto</button>
         </form>
     <?php endif; ?>
 </section>
@@ -96,9 +120,9 @@ $activosLista = array_filter($espacios, fn($e) => $e['activo']);
 
 <?php if (!$espacios): ?>
     <section class="bloque vacio">
-        <p><strong>Todavía no tienes espacios.</strong></p>
+        <p><strong>Todavía no tienes lugares.</strong></p>
         <p>Crea al menos uno (por ejemplo "Salón principal") para empezar a registrar eventos.</p>
-        <?php if ($puedeEditar): ?><a class="boton" href="<?= e(url('espacios', ['nuevo' => 1])) ?>">Crear el primer espacio</a><?php endif; ?>
+        <?php if ($puedeEditar): ?><a class="boton" href="<?= e(url('espacios', ['nuevo' => 1])) ?>">Crear el primer lugar</a><?php endif; ?>
     </section>
 <?php else: ?>
 <div class="esp-lista">
@@ -146,7 +170,7 @@ $activosLista = array_filter($espacios, fn($e) => $e['activo']);
         <div class="campo">
             <label for="cerrar-espacio">¿Qué se cierra?</label>
             <select id="cerrar-espacio" name="espacio_id">
-                <option value="">Todo el local</option>
+                <option value="">Todo el negocio</option>
                 <?php foreach ($activosLista as $es): ?><option value="<?= (int) $es['id'] ?>">Solo <?= e($es['nombre']) ?></option><?php endforeach; ?>
             </select>
         </div>
@@ -163,7 +187,7 @@ $activosLista = array_filter($espacios, fn($e) => $e['activo']);
     <ul class="filas">
         <?php foreach ($cerradas as $c): ?>
             <li>
-                <span><strong><?= e(fecha_corta($c['fecha'])) ?></strong> · <?= e($c['espacio'] ?? 'Todo el local') ?>
+                <span><strong><?= e(fecha_corta($c['fecha'])) ?></strong> · <?= e($c['espacio'] ?? 'Todo el negocio') ?>
                     <?= $c['motivo'] ? '<small class="suave" style="display:block">' . e($c['motivo']) . '</small>' : '' ?></span>
                 <?php if ($puedeEditar): ?>
                 <form method="post" action="<?= e(url('espacios', ['accion' => 'abrir'])) ?>" class="derecha">

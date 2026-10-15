@@ -12,8 +12,8 @@ $fecha = $hoy->modify('+60 days')->format('Y-m-d');
 $ev = new Eventos($db);
 $dia = new DiaEvento($db);
 $inv = new Invitados($db);
-$salon = espacio_id($db, $nid, 'Salón principal');
-$jardin = espacio_id($db, $nid, 'Jardín');
+$salon = espacio_id($db, $nid, 'Hacienda La Herradura');
+$jardin = espacio_id($db, $nid, 'Capilla del Valle');
 
 $e1 = $ev->crear($nid, ['cliente' => ['nombre' => 'Ana Torres', 'telefono' => '0991112233'], 'tipo' => 'boda', 'fecha' => $fecha,
     'hora_inicio' => '18:00', 'hora_fin' => '02:00', 'invitados' => 150, 'espacios' => [$salon]], (int) $dueno['id'], $hoy);
@@ -180,7 +180,7 @@ check('Otro día está todo libre', 250, array_column($dia->disponibilidadMobili
 $dia->reservarMobiliario($nid, $e2, [$mesaR => 0]);
 check('Cantidad 0 quita el ítem', 1, count($dia->mobiliarioDeEvento($nid, $e2)));
 $eAjeno = $ev->crear($nid2, ['cliente' => ['nombre' => 'Cliente Ajeno', 'telefono' => '0960000000'], 'tipo' => 'boda', 'fecha' => $fecha, 'invitados' => 50,
-    'espacios' => [espacio_id($db, $nid2, 'Salón principal')]], null, $hoy);
+    'espacios' => [espacio_id($db, $nid2, 'Hacienda La Herradura')]], null, $hoy);
 check_error('No se reserva mobiliario de otro negocio', 'no existe', fn() => $dia->reservarMobiliario($nid2, $eAjeno, [$silla => 1]));
 check_error('Otro negocio no ve la disponibilidad de mi evento', 'No se encontró el evento', fn() => $dia->mobiliarioDeEvento($nid2, $e1));
 $valor = $dia->registrarDanados($nid, $e1, [$copa => 6, $silla => 1], $dueno);

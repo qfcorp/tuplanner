@@ -14,7 +14,7 @@ if (es_post()) {
             $precio = (float) str_replace(',', '.', $precioTxt);
             $planes->guardarPlan((string) ($_POST['codigo'] ?? ''), (string) ($_POST['nombre'] ?? ''), $precio,
                 $maxE === '' ? null : (int) $maxE, $maxU === '' ? null : (int) $maxU, (string) ($_POST['descripcion'] ?? ''));
-            registrar_admin('Plan ' . $_POST['codigo'] . ' actualizado: ' . dinero($precio) . ' al mes · espacios ' . ($maxE ?: 'sin límite') . ' · usuarios ' . ($maxU ?: 'sin límite'));
+            registrar_admin('Plan ' . $_POST['codigo'] . ' actualizado: ' . dinero($precio) . ' al mes · lugares ' . ($maxE ?: 'sin límite') . ' · usuarios ' . ($maxU ?: 'sin límite'));
             aviso('Plan guardado. Los precios nuevos se aplican a los próximos pagos.');
         } else {
             $planes->guardarAjustes($_POST);

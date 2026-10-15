@@ -34,7 +34,7 @@ $accion = fn(string $a) => e(url('admin_negocio', ['id' => $n['id'], 'accion' =>
 <div class="rejilla rejilla-4">
     <div class="bloque"><div class="cifra"><?= (int) $n['eventos_30'] ?></div><p class="cifra-nombre">Eventos en 30 días · <?= (int) $n['eventos_total'] ?> en total</p></div>
     <div class="bloque"><div class="cifra"><?= (int) $n['vendidos'] ?></div><p class="cifra-nombre">Eventos vendidos</p></div>
-    <div class="bloque"><div class="cifra"><?= (int) $n['espacios'] ?> · <?= (int) $n['usuarios'] ?></div><p class="cifra-nombre">Espacios · usuarios activos</p></div>
+    <div class="bloque"><div class="cifra"><?= (int) $n['espacios'] ?> · <?= (int) $n['usuarios'] ?></div><p class="cifra-nombre">Lugares · usuarios activos</p></div>
     <div class="bloque"><div class="cifra cifra-chica"><?= $n['ultima_actividad'] ? date('d/m/Y', strtotime($n['ultima_actividad'])) : '—' ?></div><p class="cifra-nombre">Última actividad</p></div>
 </div>
 

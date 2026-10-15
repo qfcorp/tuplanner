@@ -1,7 +1,7 @@
 <?php
 /**
  * Módulo de ventas: calendario, próximos sábados, disponibilidad pública, consulta desde la web,
- * seguimiento, clientes, tablero, espacios (límite del plan) y fechas cerradas.
+ * seguimiento, clientes, tablero, lugares (límite del plan) y fechas cerradas.
  */
 use TuPlanner\{Eventos, Ventas, Cotizaciones};
 
@@ -10,8 +10,8 @@ $hoy = new DateTimeImmutable('today');
 [$nid, $dueno] = negocio_prueba($db);
 $ev = new Eventos($db);
 $ve = new Ventas($db);
-$salon = espacio_id($db, $nid, 'Salón principal');
-$jardin = espacio_id($db, $nid, 'Jardín');
+$salon = espacio_id($db, $nid, 'Hacienda La Herradura');
+$jardin = espacio_id($db, $nid, 'Capilla del Valle');
 
 titulo('1. Semanas del mes y fechas');
 $sem = Ventas::semanasDelMes(2026, 11);   // noviembre 2026 empieza domingo
@@ -51,9 +51,9 @@ check('El primero es el próximo sábado (o hoy si es sábado)', ((int) $hoy->fo
 $s4 = array_values(array_filter($sabados, fn($s) => $s['fecha'] === $f))[0] ?? null;
 check('El sábado del evento aparece', true, $s4 !== null);
 $porEsp = array_column($s4['espacios'], 'estado', 'espacio');
-check('Salón con una consulta', 'consulta', $porEsp['Salón principal']);
-check('Jardín libre (el otro se perdió)', 'libre', $porEsp['Jardín']);
-check('1 espacio libre ese sábado', 1, $s4['libres']);
+check('Salón con una consulta', 'consulta', $porEsp['Hacienda La Herradura']);
+check('Jardín libre (el otro se perdió)', 'libre', $porEsp['Capilla del Valle']);
+check('1 lugar libre ese sábado', 1, $s4['libres']);
 check('…pero los 2 se pueden vender (el otro solo tiene consulta)', 2, $s4['vendibles']);
 
 titulo('4. Disponibilidad pública (sin datos de otros clientes)');
@@ -84,7 +84,7 @@ $cid = $ve->crearConsultaWeb($nid, ['nombre' => 'María Pérez', 'telefono' => '
 $C = $ev->obtener($nid, $cid);
 check('Evento en consulta', 'consulta', $C['estado']);
 check('Origen: página web', 'pagina', $C['origen']);
-check('Usa el espacio preferido', 'Jardín', $C['espacios_texto']);
+check('Usa el lugar preferido', 'Capilla del Valle', $C['espacios_texto']);
 check('Nombre del evento', 'Boda de María Pérez', $C['nombre']);
 check('Las notas guardan el mensaje', true, str_contains((string) $C['notas'], 'ceremonia en el jardín'));
 check('Cliente nuevo con origen página', 'pagina', $ev->cliente($nid, (int) $C['cliente_id'])['origen']);
@@ -94,7 +94,7 @@ check('Historial: lo hizo el cliente', 'Cliente', $db->query("SELECT quien FROM 
 $cid2 = $ve->crearConsultaWeb($nid, ['nombre' => 'Mari P.', 'telefono' => '+593 99 777 6655', 'tipo' => 'cumpleanos', 'fecha' => $fc, 'invitados' => 40], '10.0.0.1', $hoy);
 check('Mismo celular: reutiliza el cliente', (int) $C['cliente_id'], (int) $ev->obtener($nid, $cid2)['cliente_id']);
 check('…sin cambiarle el nombre', 'María Pérez', $ev->cliente($nid, (int) $C['cliente_id'])['nombre']);
-check('Sin preferencia: el primer espacio', 'Salón principal', $ev->obtener($nid, $cid2)['espacios_texto']);
+check('Sin preferencia: lugar por definir', 'Lugar por definir', $ev->obtener($nid, $cid2)['espacios_texto']);
 check_error('Campo trampa (robot)', 'No se pudo enviar', fn() => $ve->crearConsultaWeb($nid, ['sitio_web' => 'http://spam', 'nombre' => 'Robot', 'telefono' => '0991111111', 'tipo' => 'boda', 'fecha' => $fc, 'invitados' => 10], '10.0.0.9', $hoy));
 check_error('Pide el celular', 'celular', fn() => $ve->crearConsultaWeb($nid, ['nombre' => 'Sin Cel', 'telefono' => '12', 'tipo' => 'boda', 'fecha' => $fc, 'invitados' => 10], '10.0.0.9', $hoy));
 check_error('Fecha pasada', 'ya pasó', fn() => $ve->crearConsultaWeb($nid, ['nombre' => 'Pasado', 'telefono' => '0991111111', 'tipo' => 'boda', 'fecha' => $hoy->modify('-1 day')->format('Y-m-d'), 'invitados' => 10], '10.0.0.9', $hoy));
@@ -112,7 +112,7 @@ titulo('7. Seguimiento');
 $db->exec("DELETE FROM actividades WHERE negocio_id = $nid");
 $ayer = $hoy->modify('-1 day')->format('Y-m-d 10:00');
 $a1 = $ev->agregarActividad($nid, $e1, null, 'llamada', 'Llamar para la degustación', $ayer, (int) $dueno['id']);
-$a2 = $ev->agregarActividad($nid, $e1, null, 'visita', 'Visita al local', $hoy->format('Y-m-d 23:00'), (int) $dueno['id']);
+$a2 = $ev->agregarActividad($nid, $e1, null, 'visita', 'Visita al negocio', $hoy->format('Y-m-d 23:00'), (int) $dueno['id']);
 $a3 = $ev->agregarActividad($nid, $e1, null, 'degustacion', 'Degustación', $hoy->modify('+3 days')->format('Y-m-d 11:00'), (int) $dueno['id']);
 $ev->agregarActividad($nid, $e1, null, 'llamada', 'Lejos', $hoy->modify('+20 days')->format('Y-m-d 11:00'), (int) $dueno['id']);
 $g = $ve->pendientesAgrupados($nid, null, $hoy);
@@ -208,27 +208,28 @@ $ev2 = $ev->crear($nid, $d, (int) $dueno['id'], $hoy);
 $ve->cambiarCliente($nid, $ev2, $cli);
 check('Cambiar el cliente del evento', $cli, (int) $ev->obtener($nid, $ev2)['cliente_id']);
 
-titulo('13. Espacios y límite del plan');
+titulo('13. Lugares y límite del plan');
+$db->exec("UPDATE planes SET max_espacios = 2 WHERE codigo = 'salon'");   // el plan Planner no tiene límite; se prueba el mecanismo
 [$nidS, $duenoS] = negocio_prueba($db, 'salon', 'Salón Las Rosas');
-check('Plan Salón: 2 espacios máximo', 2, $ve->maxEspacios($nidS));
-check_error('No deja crear el tercero', 'plan Quinta', fn() => $ve->guardarEspacio($nidS, ['nombre' => 'Terraza']));
-$jardinS = espacio_id($db, $nidS, 'Jardín');
+check('Plan Salón: 2 lugares máximo', 2, $ve->maxEspacios($nidS));
+check_error('No deja crear el tercero', 'plan Agencia', fn() => $ve->guardarEspacio($nidS, ['nombre' => 'Terraza']));
+$jardinS = espacio_id($db, $nidS, 'Capilla del Valle');
 $ve->activarEspacio($nidS, $jardinS, false);
 $terraza = $ve->guardarEspacio($nidS, ['nombre' => 'Terraza', 'capacidad_banquete' => '80', 'capacidad_coctel' => '120', 'precio_base' => '600,50', 'color' => '#22457A', 'orden' => '3']);
 $T = $ve->espacio($nidS, $terraza);
 check('Con uno desactivado, sí crea', 'Terraza', $T['nombre']);
 check('Precio con coma', 600.5, (float) $T['precio_base']);
-check_error('No reactiva por encima del límite', 'plan Quinta', fn() => $ve->activarEspacio($nidS, $jardinS, true));
+check_error('No reactiva por encima del límite', 'plan Agencia', fn() => $ve->activarEspacio($nidS, $jardinS, true));
 check_error('Nombre repetido', 'Ya tienes', fn() => $ve->guardarEspacio($nidS, ['nombre' => 'terraza']));
 check_error('Capacidad con letras', 'capacidad', fn() => $ve->guardarEspacio($nidS, ['nombre' => 'Patio', 'capacidad_banquete' => 'cien'], $terraza));
 $ve->guardarEspacio($nidS, ['nombre' => 'Terraza Norte', 'capacidad_banquete' => '90', 'color' => 'rojo'], $terraza);
 check('Edita el nombre', 'Terraza Norte', $ve->espacio($nidS, $terraza)['nombre']);
 check('Color inválido -> el de siempre', '#6B2D3C', $ve->espacio($nidS, $terraza)['color']);
 check_error('Otro negocio no edita mis espacios', 'No se encontró', fn() => $ve->guardarEspacio($nid, ['nombre' => 'Robado'], $terraza));
-$salonS = espacio_id($db, $nidS, 'Salón principal');
+$salonS = espacio_id($db, $nidS, 'Hacienda La Herradura');
 $ve->activarEspacio($nidS, $terraza, false);
-check_error('Siempre queda al menos uno activo', 'al menos un espacio', fn() => $ve->activarEspacio($nidS, $salonS, false));
-check_error('No desactiva un espacio con eventos separados', 'separado', fn() => $ve->activarEspacio($nid, $salon, false));
+check_error('Siempre queda al menos uno activo', 'al menos un lugar', fn() => $ve->activarEspacio($nidS, $salonS, false));
+check_error('No desactiva un lugar con eventos separados', 'separado', fn() => $ve->activarEspacio($nid, $salon, false));
 check('Foto: nombre inválido', true, (function () use ($ve, $nidS, $salonS) {
     try { $ve->ponerFotoEspacio($nidS, $salonS, '../../etc/passwd'); return false; } catch (RuntimeException) { return true; }
 })());
@@ -242,13 +243,19 @@ $afect = $ve->agregarFechaCerrada($nid, $fx, null, 'Feriado propio', $hoy);
 check('Sin eventos afectados', 0, count($afect));
 check_error('No se repite', 'ya estaba cerrada', fn() => $ve->agregarFechaCerrada($nid, $fx, null, '', $hoy));
 check_error('Fecha pasada', 'ya pasó', fn() => $ve->agregarFechaCerrada($nid, $hoy->modify('-2 days')->format('Y-m-d'), null, '', $hoy));
-check_error('Espacio de otro negocio', 'No se encontró el espacio', fn() => $ve->agregarFechaCerrada($nid, $fx, $salonS, '', $hoy));
+check_error('Espacio de otro negocio', 'No se encontró el lugar', fn() => $ve->agregarFechaCerrada($nid, $fx, $salonS, '', $hoy));
 $afect = $ve->agregarFechaCerrada($nid, $fc, $salon, '', $hoy);
 check('Avisa los eventos de ese día en ese espacio', true, count($afect) >= 1);
 $lista = $ve->fechasCerradas($nid, $hoy->format('Y-m-d'));
 check('Lista de cerradas (3)', 3, count($lista));
-check('Todo el local', null, $lista[array_search($fx, array_column($lista, 'fecha'), true)]['espacio']);
+check('Todo el negocio', null, $lista[array_search($fx, array_column($lista, 'fecha'), true)]['espacio']);
+// Sin lugar (por definir) el cierre de UN lugar no lo frena; con el lugar cerrado, sí
+$db->exec("INSERT INTO evento_espacios (negocio_id, evento_id, espacio_id, periodo) SELECT $nid, $cid2, $salon, tsrange('$fc 18:00', '$fc 23:00')");
 check_error('Separar en día cerrado', 'cerrada', fn() => $ev->cambiarEstado($nid, $cid2, 'separado', [], $dueno, $hoy));
+$db->exec("DELETE FROM evento_espacios WHERE evento_id = $cid2");
+$ve->agregarFechaCerrada($nid, $fc, null, 'Vacaciones', $hoy);
+check_error('Sin lugar: día cerrado para todo el negocio', 'cerrada para todo el negocio', fn() => $ev->cambiarEstado($nid, $cid2, 'separado', [], $dueno, $hoy));
+$db->exec("DELETE FROM fechas_cerradas WHERE negocio_id = $nid AND fecha = '$fc' AND espacio_id IS NULL");
 $idFx = (int) $lista[array_search($fx, array_column($lista, 'fecha'), true)]['id'];
 $ve->borrarFechaCerrada($nid, $idFx);
 check('Borrada', 2, count($ve->fechasCerradas($nid, $hoy->format('Y-m-d'))));

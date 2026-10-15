@@ -10,7 +10,7 @@ $con = new Contratos(db());
 $k = $con->porToken($token);
 if (!$k) {
     http_response_code(404);
-    vista_publica('error_publico', ['mensaje' => 'Este enlace de firma no existe o está mal copiado. Pide al local que te lo vuelva a enviar.'], 'Firma del contrato · TuPlanner');
+    vista_publica('error_publico', ['mensaje' => 'Este enlace de firma no existe o está mal copiado. Pide al negocio que te lo vuelva a enviar.'], 'Firma del contrato · TuPlanner');
     return;
 }
 $st = db()->prepare('SELECT * FROM negocios WHERE id = ?');

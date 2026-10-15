@@ -12,15 +12,15 @@ $fecha = $hoy->modify('+120 days')->format('Y-m-d');
 titulo('1. Alta del negocio con datos de ejemplo');
 [$nid, $dueno] = negocio_prueba($db);
 check('Negocio en prueba gratis 7 días', $hoy->modify('+7 days')->format('Y-m-d'), $db->query("SELECT prueba_hasta FROM negocios WHERE id = $nid")->fetchColumn());
-check('2 espacios de ejemplo', 2, (int) $db->query("SELECT count(*) FROM espacios WHERE negocio_id = $nid")->fetchColumn());
-check('18 productos en el catálogo', 18, (int) $db->query("SELECT count(*) FROM productos WHERE negocio_id = $nid")->fetchColumn());
-check('3 paquetes', 3, (int) $db->query("SELECT count(*) FROM paquetes WHERE negocio_id = $nid")->fetchColumn());
+check('2 lugares de ejemplo', 2, (int) $db->query("SELECT count(*) FROM espacios WHERE negocio_id = $nid")->fetchColumn());
+check('25 productos en el catálogo', 25, (int) $db->query("SELECT count(*) FROM productos WHERE negocio_id = $nid")->fetchColumn());
+check('4 paquetes', 4, (int) $db->query("SELECT count(*) FROM paquetes WHERE negocio_id = $nid")->fetchColumn());
 check('Plantilla de contrato predeterminada', 1, (int) $db->query("SELECT count(*) FROM plantillas_contrato WHERE negocio_id = $nid AND predeterminada")->fetchColumn());
-check('Mobiliario de ejemplo', 8, (int) $db->query("SELECT count(*) FROM mobiliario WHERE negocio_id = $nid")->fetchColumn());
+check('Mobiliario de ejemplo', 12, (int) $db->query("SELECT count(*) FROM mobiliario WHERE negocio_id = $nid")->fetchColumn());
 check_error('No se repite el correo', 'Ya existe una cuenta', fn() => (new Altas($db))->crearNegocioConDueno('Otro local', 'Xavier', '', $dueno['email'], 'claveSegura1', 'salon'));
 
-$salon = espacio_id($db, $nid, 'Salón principal');
-$jardin = espacio_id($db, $nid, 'Jardín');
+$salon = espacio_id($db, $nid, 'Hacienda La Herradura');
+$jardin = espacio_id($db, $nid, 'Capilla del Valle');
 $ev = new Eventos($db);
 $cot = new Cotizaciones($db);
 $pag = new Pagos($db);
@@ -34,13 +34,15 @@ $E1 = $ev->obtener($nid, $e1);
 check('Código EV-año-0001', 'EV-' . $hoy->format('Y') . '-0001', $E1['codigo']);
 check('Estado consulta', 'consulta', $E1['estado']);
 check('Nombre automático', 'Boda de Ana Torres', $E1['nombre']);
-check('Tareas creadas desde la plantilla (boda)', 14, count($ev->tareas($e1)));
-check('El espacio no está bloqueado todavía', false, (bool) $E1['espacios'][0]['bloquea']);
+check('Tareas creadas desde la plantilla (boda)', count(\TuPlanner\Planificacion::LISTA_TIPICA['boda']), count($ev->tareas($e1)));
+check('El lugar no está bloqueado todavía', false, (bool) $E1['espacios'][0]['bloquea']);
 check('Ocupa desde 3 horas antes (montaje)', "$fecha 15:00:00", $E1['espacios'][0]['desde']);
 check('Termina al día siguiente + 1 hora (desmontaje)', (new DateTimeImmutable($fecha))->modify('+1 day')->format('Y-m-d') . ' 03:00:00', $E1['espacios'][0]['hasta']);
 $mismoCliente = $ev->guardarCliente($nid, ['nombre' => 'Ana T.', 'telefono' => '+593 99 111 2233']);
 check('No duplica el cliente (mismo celular)', (int) $E1['cliente_id'], $mismoCliente);
-check_error('Pide al menos un espacio', 'al menos un espacio', fn() => $ev->crear($nid, ['cliente_id' => $E1['cliente_id'], 'fecha' => $fecha, 'invitados' => 10, 'espacios' => []]));
+$sinLugar = $ev->crear($nid, ['cliente_id' => $E1['cliente_id'], 'fecha' => $fecha, 'invitados' => 10, 'espacios' => []]);
+check('Sin lugar: queda "por definir"', 'Lugar por definir', $ev->obtener($nid, $sinLugar)['espacios_texto']);
+$db->exec("DELETE FROM eventos WHERE id = $sinLugar");
 
 titulo('3. Cotización con el Paquete Boda Oro');
 $paqOro = (int) $db->query("SELECT id FROM paquetes WHERE negocio_id = $nid AND nombre = 'Paquete Boda Oro'")->fetchColumn();
@@ -90,7 +92,7 @@ check('Con $1.000 todavía no se separa', 'cotizado', $ev->obtener($nid, $e1)['e
 $pag->registrar($nid, $e1, ['monto' => '2277,50', 'metodo' => 'deuna'], $dueno);
 $E1 = $ev->obtener($nid, $e1);
 check('Al completar la reserva queda SEPARADO', 'separado', $E1['estado']);
-check('El espacio queda bloqueado', true, (bool) $E1['espacios'][0]['bloquea']);
+check('El lugar queda bloqueado', true, (bool) $E1['espacios'][0]['bloquea']);
 $r = $pag->resumen($e1, $hoy);
 check('Pagado 3.277,50', 3277.5, $r['pagado']);
 check('Saldo 7.647,50', 7647.5, $r['saldo']);
@@ -107,7 +109,7 @@ check('El evento 2 sigue sin bloquear', false, (bool) $db->query("SELECT bloquea
 $e3 = $ev->crear($nid, ['cliente' => ['nombre' => 'Empresa XYZ', 'telefono' => '0977777777'], 'tipo' => 'corporativo', 'fecha' => $fecha,
     'hora_inicio' => '19:00', 'hora_fin' => '23:00', 'invitados' => 80, 'espacios' => [$jardin]], null, $hoy);
 $ev->cambiarEstado($nid, $e3, 'separado', [], $dueno, $hoy);
-check('Otro espacio el mismo día: sí se puede', 'separado', $ev->obtener($nid, $e3)['estado']);
+check('Otro lugar el mismo día: sí se puede', 'separado', $ev->obtener($nid, $e3)['estado']);
 $e4 = $ev->crear($nid, ['cliente' => ['nombre' => 'Bautizo Pérez', 'telefono' => '0966666666'], 'tipo' => 'bautizo', 'fecha' => $fecha,
     'hora_inicio' => '09:00', 'hora_fin' => '13:00', 'invitados' => 60, 'espacios' => [$salon]], null, $hoy);
 $ev->cambiarEstado($nid, $e4, 'separado', [], $dueno, $hoy);
@@ -160,7 +162,7 @@ $pag->registrar($nid, $e1, ['monto' => 250, 'metodo' => 'efectivo', 'tipo' => 'd
 $pag->registrar($nid, $e1, ['monto' => 50, 'metodo' => 'efectivo', 'tipo' => 'cargo_danos', 'notas' => '2 copas rotas'], $dueno);
 $g = $pag->garantia($e1);
 check('Garantía recibida 300', 300.0, $g['recibida']);
-check('Garantía: queda 0 en manos del local', 0.0, $g['saldo']);
+check('Garantía: queda 0 en manos del negocio', 0.0, $g['saldo']);
 check('La garantía NO cuenta como pago del evento', 3777.5, $pag->resumen($e1, $hoy)['pagado']);
 check_error('No se devuelve más garantía de la que hay', 'garantía', fn() => $pag->registrar($nid, $e1, ['monto' => 10, 'metodo' => 'efectivo', 'tipo' => 'devolucion_garantia'], $dueno));
 $db->prepare("UPDATE negocios SET payphone_token = 'tok', payphone_store_id = 'store' WHERE id = ?")->execute([$nid]);
@@ -187,7 +189,7 @@ $pag->guardarPlan($nid, $e1, [['concepto' => 'Reserva', 'vence' => $hoy->format(
 check('Plan a mano con 2 pagos', 2, count($pag->cuotas($e1)));
 check('Se vuelve a aplicar lo pagado', 2877.5, (float) $pag->cuotas($e1)[0]['pagado']);
 $c2 = $cot->crear($nid, $e3, null, null, $hoy);
-check('Primera cotización sin paquete arranca con el alquiler del espacio', 'Alquiler de Jardín', $cot->obtener($nid, $c2)['items'][0]['descripcion']);
+check('Primera cotización sin paquete arranca con el alquiler del espacio', 'Alquiler de Capilla del Valle', $cot->obtener($nid, $c2)['items'][0]['descripcion']);
 $c3 = $cot->crear($nid, $e3, null, null, $hoy);
 check('Nueva versión copia las líneas', 1, count($cot->obtener($nid, $c3)['items']));
 check('Versión 2', 2, (int) $cot->obtener($nid, $c3)['version']);
@@ -196,10 +198,11 @@ check('Letras: 21.000', 'veintiún mil dólares con 00/100', Letras::dolares(210
 check('Letras: 1.250,75', 'mil doscientos cincuenta dólares con 75/100', Letras::dolares(1250.75));
 
 titulo('11. Límites del plan Salón');
+$db->exec("UPDATE planes SET max_espacios = 2 WHERE codigo = 'salon'");   // el plan Planner no tiene límite; se prueba el mecanismo
 [$nid2] = negocio_prueba($db, 'salon', 'Salón Las Palmas');
 $planes = new Planes($db);
-check('Plan Salón: ya tiene 2 espacios, no puede agregar otro', false, $planes->puedeAgregarEspacio($nid2));
-check('Plan Quinta: espacios ilimitados', true, $planes->puedeAgregarEspacio($nid));
+check('Plan Salón: ya tiene 2 lugares, no puede agregar otro', false, $planes->puedeAgregarEspacio($nid2));
+check('Plan Quinta: lugares ilimitados', true, $planes->puedeAgregarEspacio($nid));
 check('Precio plan Salón', 39.0, $planes->cotizar('salon', 'mensual')['monto']);
 check('Quinta anual: paga 10', 690.0, $planes->cotizar('quinta', 'anual')['monto']);
 check('Un negocio no ve los eventos del otro', null, $ev->obtener($nid2, $e1));

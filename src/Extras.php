@@ -9,8 +9,8 @@ use RuntimeException;
 
 /**
  * Extras que el cliente pide desde su portal (migración 070): hora extra, barra libre, fotocabina, mesa de dulces...
- *  - El local marca en su catálogo qué productos se pueden pedir desde el portal (productos.en_portal), con texto y foto.
- *  - El cliente elige cantidades y envía el pedido: queda "pendiente" con los precios de ese momento y se avisa al local.
+ *  - El negocio marca en su catálogo qué productos se pueden pedir desde el portal (productos.en_portal), con texto y foto.
+ *  - El cliente elige cantidades y envía el pedido: queda "pendiente" con los precios de ese momento y se avisa al negocio.
  *  - Un vendedor o el dueño lo aprueba o lo rechaza (con nota). El cliente ve la respuesta en su portal.
  *
  * Cómo entra al valor del evento al APROBAR (todo en una transacción, el pedido se bloquea: no se aprueba dos veces):
@@ -119,7 +119,7 @@ final class Extras
         $e = $this->q('SELECT e.estado, e.fecha, n.estado AS cuenta FROM eventos e JOIN negocios n ON n.id = e.negocio_id WHERE e.id = ? AND e.negocio_id = ?',
                       [$eventoId, $negocioId])->fetch();
         if (!$e) return 'No se encontró el evento.';
-        if (in_array($e['cuenta'], ['suspendido', 'cancelado'], true)) return 'Por ahora el local no recibe pedidos en línea. Escríbele por WhatsApp.';
+        if (in_array($e['cuenta'], ['suspendido', 'cancelado'], true)) return 'Por ahora el negocio no recibe pedidos en línea. Escríbele por WhatsApp.';
         if (!in_array($e['estado'], self::ESTADOS_EVENTO, true)) return 'Los extras se pueden pedir mientras el evento está activo y todavía no se realiza.';
         if ($e['fecha'] < $hoy->format('Y-m-d')) return 'El evento ya pasó.';
         $acept = $this->q("SELECT 1 FROM cotizaciones WHERE evento_id = ? AND estado = 'aceptada' LIMIT 1", [$eventoId])->fetchColumn();
@@ -150,7 +150,7 @@ final class Extras
         if ($motivo) throw new RuntimeException($motivo);
         $pend = (int) $this->q("SELECT count(*) FROM extras_pedidos WHERE evento_id = ? AND negocio_id = ? AND estado = 'pendiente'", [$eventoId, $negocioId])->fetchColumn();
         if ($pend >= self::MAX_PENDIENTES) {
-            throw new RuntimeException('Ya tienes ' . $pend . ' pedidos esperando respuesta. Espera a que el local los revise o cancela uno.');
+            throw new RuntimeException('Ya tienes ' . $pend . ' pedidos esperando respuesta. Espera a que el negocio los revise o cancela uno.');
         }
         $ofrecidos = [];
         foreach ($this->ofrecidos($negocioId) as $p) $ofrecidos[(int) $p['id']] = $p;
@@ -216,12 +216,12 @@ final class Extras
     {
         $st = $this->q("UPDATE extras_pedidos SET estado = 'cancelado', respondido_en = now()
                          WHERE id = ? AND evento_id = ? AND negocio_id = ? AND estado = 'pendiente'", [$pedidoId, $eventoId, $negocioId]);
-        if ($st->rowCount() !== 1) throw new RuntimeException('Ese pedido ya fue respondido por el local o no existe.');
+        if ($st->rowCount() !== 1) throw new RuntimeException('Ese pedido ya fue respondido por el negocio o no existe.');
         $this->historial($negocioId, $eventoId, null, 'Cliente', 'Canceló su pedido de extras N.º ' . $pedidoId);
     }
 
     // ------------------------------------------------------------------
-    // El local responde
+    // El negocio responde
     // ------------------------------------------------------------------
 
     private function pedidoParaResponder(int $negocioId, int $pedidoId): array
@@ -283,7 +283,7 @@ final class Extras
             $this->q("UPDATE cotizaciones SET estado = 'reemplazada' WHERE evento_id = ? AND id <> ? AND estado IN ('borrador','enviada','aceptada')", [$eventoId, $nueva]);
             $cliente = (string) $this->q('SELECT nombre FROM clientes WHERE id = ?', [$ev['cliente_id']])->fetchColumn();
             $this->q("UPDATE cotizaciones SET estado = 'aceptada', aceptada_en = now(), aceptada_por = ? WHERE id = ?",
-                     [mb_substr($cliente . ' (extras del portal, aprobó ' . ($usuario['nombre'] ?? 'el local') . ')', 0, 150), $nueva]);
+                     [mb_substr($cliente . ' (extras del portal, aprobó ' . ($usuario['nombre'] ?? 'el negocio') . ')', 0, 150), $nueva]);
 
             // 2) Nuevo valor del evento
             $monto = round($tot['total'] - (float) $acept['total'], 2);

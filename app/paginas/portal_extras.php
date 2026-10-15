@@ -3,7 +3,7 @@ use TuPlanner\{Eventos, Extras, Fotos};
 
 /**
  * Extras que el cliente pide desde su portal (público, con el enlace del portal): /?r=portal_extras&t=<token_cliente>
- *  - GET: los extras que ofrece el local (foto, texto, precio con IVA) y el estado de sus pedidos.  &foto=<producto_id>: la foto.
+ *  - GET: los extras que ofrece el negocio (foto, texto, precio con IVA) y el estado de sus pedidos.  &foto=<producto_id>: la foto.
  *  - POST accion=pedir (cant[<producto_id>]=cantidad, nota) o accion=cancelar (pedido_id).
  * Freno: máximo 3 pedidos esperando respuesta por evento (Extras::MAX_PENDIENTES) y 10 envíos por hora por sesión.
  */
@@ -17,7 +17,7 @@ if ($ev) {
 }
 if (!$ev || $negocio['estado'] === 'cancelado') {
     http_response_code(404);
-    vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido o ya no existe. Pide uno nuevo al local donde contrataste tu evento.'], 'Extras · TuPlanner');
+    vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido o ya no existe. Pide uno nuevo al negocio donde contrataste tu evento.'], 'Extras · TuPlanner');
     return;
 }
 $nid = (int) $ev['negocio_id'];
@@ -40,7 +40,7 @@ if (es_post()) {
     try {
         if ($accion === 'pedir') {
             $recientes = array_values(array_filter($_SESSION['extras_pedidos'] ?? [], fn($t) => $t > time() - 3600));
-            if (count($recientes) >= 10) throw new RuntimeException('Enviaste varios pedidos seguidos. Espera un momento o escríbele al local por WhatsApp.');
+            if (count($recientes) >= 10) throw new RuntimeException('Enviaste varios pedidos seguidos. Espera un momento o escríbele al negocio por WhatsApp.');
             $cant = is_array($_POST['cant'] ?? null) ? array_slice($_POST['cant'], 0, 100, true) : [];
             $extras->pedir($nid, $eid, $cant, campo('nota'), ip_visitante());
             $recientes[] = time();

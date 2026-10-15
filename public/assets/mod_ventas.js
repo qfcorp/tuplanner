@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const cap = elegidos.reduce((s, c) => s + Number(coctel ? c.dataset.coctel : c.dataset.banquete || 0), 0);
             const n = Number(invitados.value || 0);
             if (elegidos.length && cap > 0 && n > cap) {
-                avisoCap.textContent = `Ojo: ${n} invitados superan la capacidad de ${cap} ${coctel ? 'de pie' : 'sentados'} de lo que elegiste. Agrega otro espacio o revisa el número.`;
+                avisoCap.textContent = `Ojo: ${n} invitados superan la capacidad de ${cap} ${coctel ? 'de pie' : 'sentados'} de lo que elegiste. Agrega otro lugar o revisa el número.`;
                 avisoCap.hidden = false;
             } else {
                 avisoCap.hidden = true;
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     caja.innerHTML = '';
                     const choques = d.choques || [];
                     if (!choques.length) {
-                        caja.appendChild(crear('p', 'aviso choque-libre', '✓ Libre: no hay otros eventos en ese espacio a esa hora.'));
+                        caja.appendChild(crear('p', 'aviso choque-libre', '✓ Libre: no hay otros eventos en ese lugar a esa hora.'));
                         return;
                     }
                     const av = crear('div', 'aviso ' + (d.bloqueado ? 'aviso-error' : 'aviso-alerta'));
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         av.appendChild(fila);
                     });
-                    if (d.bloqueado) av.appendChild(crear('div', '', 'Elige otra fecha, otra hora u otro espacio.'));
+                    if (d.bloqueado) av.appendChild(crear('div', '', 'Elige otra fecha, otra hora u otro lugar.'));
                     else av.appendChild(crear('div', '', 'Se puede guardar: el primero que pague la reserva se queda con la fecha.'));
                     caja.appendChild(av);
                 } catch (e) { /* sin conexión: no se muestra nada */ }
@@ -126,11 +126,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const boton = libre.querySelector('#ver-libre');
         const res = libre.querySelector('#resultado-libre');
         const fechaForm = document.querySelector('#c-fecha');
-        const textos = { libre: 'Libre', consultar: 'Por confirmar', ocupado: 'Ocupada' };
+        const textos = { libre: 'Libre', consultar: 'Quedan pocos cupos', ocupado: 'Sin cupo' };
         const ayudas = {
-            libre: 'Está disponible. ¡Pide información antes de que la separen!',
-            consultar: 'Otra persona preguntó por esta fecha, pero aún no la separa. Escríbenos pronto.',
-            ocupado: 'Esta fecha ya no está disponible en este espacio.',
+            libre: 'Tenemos disponibilidad para organizar tu evento ese día. ¡Escríbenos antes de que se llene!',
+            consultar: 'Nos queda un solo cupo para ese día. Escríbenos pronto para separarlo.',
+            ocupado: 'Ese día ya tenemos la agenda llena. Prueba con otra fecha o escríbenos.',
         };
         const ver = async () => {
             if (!entrada.value) { res.textContent = 'Elige una fecha.'; return; }
@@ -141,19 +141,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 res.innerHTML = '';
                 if (d.error) { res.appendChild(crear('p', 'aviso aviso-error', d.error)); return; }
                 const lista = crear('ul');
-                let hayLibre = false;
-                (d.espacios || []).forEach(x => {
-                    const li = crear('li', 'r-' + x.estado);
-                    const izq = crear('span');
-                    izq.appendChild(crear('strong', '', x.espacio));
-                    izq.appendChild(crear('small', '', (x.capacidad ? 'Hasta ' + x.capacidad + ' sentados · ' : '') + ayudas[x.estado]));
-                    li.appendChild(izq);
-                    li.appendChild(crear('span', 'r-estado', textos[x.estado] || x.estado));
-                    lista.appendChild(li);
-                    if (x.estado !== 'ocupado') hayLibre = true;
-                });
+                const li = crear('li', 'r-' + d.estado);
+                const izq = crear('span');
+                izq.appendChild(crear('strong', '', 'Tu fecha'));
+                izq.appendChild(crear('small', '', ayudas[d.estado] || ''));
+                li.appendChild(izq);
+                li.appendChild(crear('span', 'r-estado', textos[d.estado] || d.estado));
+                lista.appendChild(li);
                 res.appendChild(lista);
-                if (hayLibre) {
+                if (d.estado !== 'ocupado') {
                     const nota = crear('p', 'r-nota');
                     const a = crear('a', 'boton boton-chico', 'Pedir información para esta fecha');
                     a.href = '#consulta';

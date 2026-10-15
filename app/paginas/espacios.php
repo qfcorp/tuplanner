@@ -2,7 +2,7 @@
 use TuPlanner\{Fotos, Ventas};
 
 /**
- * Espacios (salón, jardín, terraza…) y fechas cerradas.
+ * Lugares (salón, jardín, terraza…) y fechas cerradas.
  * Acciones (POST ?accion=): guardar (crear/editar, con foto), quitar_foto, activar, desactivar, cerrar, abrir.
  *   /?r=espacios&editar=<id>   ·   /?r=espacios&nuevo=1
  * Lo cambia el dueño; los demás solo ven.
@@ -15,7 +15,7 @@ $editarId = (int) ($_GET['editar'] ?? 0);
 $form = null;
 
 if (es_post()) {
-    exigir($puedeEditar, 'Solo el dueño puede cambiar los espacios y las fechas cerradas.');
+    exigir($puedeEditar, 'Solo el dueño puede cambiar los lugares y las fechas cerradas.');
     verificar_csrf();
     $accion = (string) ($_GET['accion'] ?? '');
     $id = (int) ($_POST['id'] ?? 0) ?: null;
@@ -31,7 +31,7 @@ if (es_post()) {
                         $vieja = $ventas->ponerFotoEspacio($nid, $id, $nombre);
                         if ($vieja) Fotos::borrar('espacios', $vieja);
                     } catch (RuntimeException $e) {
-                        aviso('El espacio se guardó, pero la foto no: ' . $e->getMessage(), 'error');
+                        aviso('El lugar se guardó, pero la foto no: ' . $e->getMessage(), 'error');
                         redirigir('espacios', ['editar' => $id]);
                     }
                 }

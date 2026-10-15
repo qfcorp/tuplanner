@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Plano del salón (distribuciones por espacio, plano del evento unido a las mesas de invitados, guardar JSON con CSRF,
+# Plano del salón (distribuciones por lugar, plano del evento unido a las mesas de invitados, guardar JSON con CSRF,
 # PDF, portal de los novios, permisos por rol, plan Salón con candado, aislamiento) y metas de ventas (pantalla,
 # avance en el Inicio, Reportes → Metas, CSV).
 P80_FECHA=$(date -d '+50 days' +%Y-%m-%d)
@@ -32,7 +32,7 @@ get "r=plano" > /dev/null
 contiene "La lista muestra la distribución con su dibujo" "$TMP/pag.html" "pl-mini-svg"
 contiene "Cuenta mesas y puestos" "$TMP/pag.html" "puestos"
 get "r=espacios" > /dev/null
-contiene "Espacios enlaza a sus planos" "$TMP/pag.html" "r=plano&amp;espacio=$P80_ESP"
+contiene "Lugares enlaza a sus planos" "$TMP/pag.html" "r=plano&amp;espacio=$P80_ESP"
 
 echo "2. Guardar desde el editor (JSON con CSRF)"
 P80_EL='[{"tipo":"redonda","x":3,"y":3,"an":1.8,"al":1.8,"rot":0,"etq":"Mesa 1","puestos":10},{"tipo":"pista","x":10,"y":10,"an":6,"al":6,"rot":0,"etq":""},{"tipo":"barra","x":18,"y":15,"an":4,"al":0.8,"rot":90,"etq":"Barra"}]'
@@ -173,10 +173,10 @@ get "r=pdf&tipo=plano&id=$P80_P" > /dev/null
 contiene "Otro negocio no saca el PDF ajeno" "$TMP/pag.html" "No se encontró el plano"
 registrar salon "Salón Chico $RANDOM"
 check "Plan Salón: candado en planos" "200" "$(get "r=plano")"
-contiene "Plan Salón: es del plan Quinta" "$TMP/pag.html" "es del plan Quinta"
+contiene "Plan Salón: es del plan Agencia" "$TMP/pag.html" "es del plan Agencia"
 P80_EVS=$(crear_evento_sql "$P80_FECHA" consulta)
 get "r=plano&id=$P80_EVS" > /dev/null
-contiene "Plan Salón: candado en la pestaña del evento" "$TMP/pag.html" "Plano del salón es del plan Quinta"
+contiene "Plan Salón: candado en la pestaña del evento" "$TMP/pag.html" "Plano del salón es del plan Agencia"
 r=$(post "r=plano" --data-urlencode "accion=crear_plantilla" --data-urlencode "espacio_id=$(sql "SELECT id FROM espacios WHERE negocio_id=$NID LIMIT 1")" --data-urlencode "nombre=No" --data-urlencode "ancho=10" --data-urlencode "largo=10")
 check "Plan Salón no crea planos" "0" "$(sql "SELECT count(*) FROM planos WHERE negocio_id=$NID")"
 entrar "$P80_EMAIL" "claveSegura1"; NID=$P80_NID
@@ -230,7 +230,7 @@ contiene "Reportes: por vendedor" "$TMP/pag.html" "Vera Vendedora"
 contiene "Reportes: descargar metas" "$TMP/pag.html" "r=metas&amp;csv=1"
 P80_D=$(date +%Y-%m-01); P80_H=$(date -d "$P80_D +1 month -1 day" +%Y-%m-%d)
 check "CSV de metas" "200" "$(get "r=metas&csv=1&desde=$P80_D&hasta=$P80_H")"
-contiene "CSV: fila del local" "$TMP/pag.html" '"Todo el local"'
+contiene "CSV: fila del negocio" "$TMP/pag.html" '"Todo el negocio"'
 contiene "CSV: meta y vendido" "$TMP/pag.html" '8000,00;;6000,00;3;"75 %";5000,00;1;"20 %"'
 entrar "$P80_VEND" "claveSegura1"
 get "r=inicio" > /dev/null
@@ -239,12 +239,12 @@ contiene "Con lo que ella vendió" "$TMP/pag.html" '\$2.000,00</strong> <span>de
 get "r=reportes" > /dev/null
 contiene "La vendedora ve su avance" "$TMP/pag.html" "Tu avance"
 check "La vendedora descarga sus metas" "200" "$(get "r=metas&csv=1&desde=$P80_D&hasta=$P80_H")"
-no_contiene "…sin las filas del local" "$TMP/pag.html" "Todo el local"
+no_contiene "…sin las filas del negocio" "$TMP/pag.html" "Todo el negocio"
 entrar "$P80_COORD" "claveSegura1"
 get "r=inicio" > /dev/null
 no_contiene "El coordinador no ve metas" "$TMP/pag.html" "mt-inicio"
 entrar "$P80_CONS" "claveSegura1"
 get "r=inicio" > /dev/null
-contiene "Consulta ve la meta del local" "$TMP/pag.html" "Meta de $P80_MES"
+contiene "Consulta ve la meta del negocio" "$TMP/pag.html" "Meta de $P80_MES"
 no_contiene "Consulta no puede cambiar metas" "$TMP/pag.html" "Cambiar metas"
 entrar "$P80_EMAIL" "claveSegura1"

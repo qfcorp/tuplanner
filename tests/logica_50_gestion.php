@@ -9,8 +9,8 @@ $db = base_limpia();
 $hoy = new DateTimeImmutable('2026-10-12');   // lunes
 [$nid, $dueno] = negocio_prueba($db);
 $db->prepare("UPDATE negocios SET prueba_hasta = '2027-12-31', comision_vendedor_pct = 5 WHERE id = ?")->execute([$nid]);
-$salon = espacio_id($db, $nid, 'Salón principal');
-$jardin = espacio_id($db, $nid, 'Jardín');
+$salon = espacio_id($db, $nid, 'Hacienda La Herradura');
+$jardin = espacio_id($db, $nid, 'Capilla del Valle');
 $ev = new Eventos($db);
 $cot = new Cotizaciones($db);
 $pag = new Pagos($db);
@@ -106,7 +106,7 @@ $vender = function (string $nombre, string $fecha, int $inv, array $esp, string 
     use ($db, $ev, $cot, $pag, $nid, $dueno, $hoy): int {
     $id = $ev->crear($nid, ['cliente' => ['nombre' => $nombre, 'telefono' => '09' . random_int(10000000, 99999999)], 'tipo' => 'boda', 'fecha' => $fecha,
         'hora_inicio' => '18:00', 'hora_fin' => '02:00', 'invitados' => $inv, 'espacios' => $esp, 'origen' => $origen, 'vendedor_id' => $vendedor], (int) $dueno['id'], $hoy);
-    $c = $cot->crear($nid, $id, null, null, $hoy);           // alquiler del espacio (precio base)
+    $c = $cot->crear($nid, $id, null, null, $hoy);           // alquiler del lugar (precio base)
     $cot->aceptar($nid, $c, $nombre, '', $dueno, $hoy);
     $ev->cambiarEstado($nid, $id, 'separado', [], $dueno, $hoy);
     if ($estado === 'confirmado') $ev->cambiarEstado($nid, $id, 'confirmado', [], $dueno, $hoy);
@@ -117,7 +117,7 @@ $vender = function (string $nombre, string $fecha, int $inv, array $esp, string 
     }
     return $id;
 };
-// Salón principal vale $1.500 + IVA = $1.725 ; Jardín $1.200 + IVA = $1.380
+// Hacienda La Herradura vale $1.500 + IVA = $1.725 ; Jardín $1.200 + IVA = $1.380
 $a = $vender('Ana Torres', '2026-11-14', 150, [$salon], 'instagram', $v['id'], 'confirmado', '2026-10-03');   // sábado
 $b = $vender('Bruno Paz', '2027-02-20', 100, [$jardin], 'referido', null, 'separado', '2026-10-05');            // sábado
 $c = $vender('Carmen Ruiz', '2026-10-31', 200, [$salon, $jardin], 'instagram', $v['id'], 'separado', '2026-09-20'); // sábado, vendido el mes pasado
@@ -171,7 +171,7 @@ $oc = $rep->ocupacion($nid, $hoy);
 check('52 sábados en 12 meses', 52, $oc['sabados']);
 check('3 sábados vendidos', 3, $oc['sabados_vendidos']);
 check('% de sábados ocupados', 6, $oc['pct_sabados']);
-check('Salón principal: 2 fechas', 2, $oc['espacios'][0]['fechas']);
+check('Hacienda La Herradura: 2 fechas', 2, $oc['espacios'][0]['fechas']);
 check('Jardín: 2 fechas', 2, $oc['espacios'][1]['fechas']);
 check('Noviembre: 1 de 4 sábados', ['sabados' => 4, 'vendidos' => 1, 'pct' => 25], $oc['por_mes']['2026-11']);
 
@@ -248,7 +248,7 @@ check('Retenido es tentativo', true, str_contains($ics, 'STATUS:TENTATIVE'));
 check('Hora de Ecuador', true, str_contains($ics, 'DTSTART;TZID=America/Guayaquil:20261114T180000'));
 check('Pasa la medianoche: termina al día siguiente', true, str_contains($ics, 'DTEND;TZID=America/Guayaquil:20261115T020000'));
 check('UID estable', true, str_contains($ics, "UID:evento-$a@tuplanner.tukanec.com"));
-check('Comas escapadas', true, str_contains($ics, 'Salón principal\, Jardín'));
+check('Comas escapadas', true, str_contains($ics, 'Hacienda La Herradura\, Capilla del Valle'));
 check('Sin montos de dinero', false, str_contains($ics, '1.725') || str_contains($ics, '$'));
 $largo = max(array_map('strlen', explode("\r\n", $ics)));
 check('Ninguna línea pasa de 75 bytes', true, $largo <= 75);
@@ -314,7 +314,7 @@ check('Se cuenta 1 realizado', 1, $r['realizados']);
 check('Aviso: devolver la garantía ($500) al dueño', 1, (int) $db->query("SELECT count(*) FROM notificaciones WHERE texto LIKE '%Devuelve la garantía de%' AND texto LIKE '%\$500,00%' AND usuario_id = {$dueno['id']}")->fetchColumn());
 check('Y a la vendedora del evento', 1, (int) $db->query("SELECT count(*) FROM notificaciones WHERE texto LIKE '%Devuelve la garantía de%' AND usuario_id = {$v['id']}")->fetchColumn());
 check('El historial dice que lo hizo el Sistema', 1, (int) $db->query("SELECT count(*) FROM registro_cambios WHERE evento_id = $c AND quien = 'Sistema' AND accion LIKE '%a Realizado%'")->fetchColumn());
-check('Los espacios siguen bloqueados (fecha usada)', true, (bool) $db->query("SELECT bool_and(bloquea) FROM evento_espacios WHERE evento_id = $c")->fetchColumn());
+check('Los lugares siguen bloqueados (fecha usada)', true, (bool) $db->query("SELECT bool_and(bloquea) FROM evento_espacios WHERE evento_id = $c")->fetchColumn());
 $r = $auto->correr(new DateTimeImmutable('2026-11-01 05:00'));
 check('No se repite', 0, $r['realizados']);
 $auto->correr(new DateTimeImmutable('2026-11-16 09:00'));

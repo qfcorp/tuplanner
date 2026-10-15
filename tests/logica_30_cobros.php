@@ -9,8 +9,8 @@ $db = base_limpia();
 $hoy = new DateTimeImmutable('today');
 $fecha = $hoy->modify('+60 days')->format('Y-m-d');
 [$nid, $dueno] = negocio_prueba($db);
-$salon = espacio_id($db, $nid, 'Salón principal');
-$jardin = espacio_id($db, $nid, 'Jardín');
+$salon = espacio_id($db, $nid, 'Hacienda La Herradura');
+$jardin = espacio_id($db, $nid, 'Capilla del Valle');
 $ev = new Eventos($db);
 $cot = new Cotizaciones($db);
 $pag = new Pagos($db);
@@ -192,7 +192,7 @@ $m = $cob->mensajesDelDia($nid, $hoy);
 check('Personal sin confirmar mañana: solo el que no confirmó', 1, count($m['staff']));
 check('Mensaje al personal con su enlace', true, str_contains($m['staff'][0]['texto'], 'r=staff&t=' . $db->query("SELECT token FROM personal WHERE id = $p1")->fetchColumn()));
 check('Pedir lista de invitados: evento de mañana (en 10 días)', 1, count($m['invitados']));
-check('Lista de invitados con el enlace del portal (plan Quinta)', true, str_contains($m['invitados'][0]['texto'], 'lista de invitados en tu portal'));
+check('Lista de invitados con el enlace del portal (plan Agencia)', true, str_contains($m['invitados'][0]['texto'], 'lista de invitados en tu portal'));
 // Reseña: evento de ayer confirmado
 $e4 = $ev->crear($nid, ['cliente' => ['nombre' => 'Familia Ruiz', 'telefono' => '0964445566'], 'tipo' => 'bautizo', 'fecha' => $hoy->modify('+5 days')->format('Y-m-d'),
     'hora_inicio' => '09:00', 'hora_fin' => '12:00', 'invitados' => 50, 'espacios' => [$salon]], null, $hoy);

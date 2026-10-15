@@ -90,13 +90,13 @@ check('Simulador bajo el mínimo: calcula con 50', 50, $s2['invitados_calculo'])
 check('Simulador avisa que está bajo el mínimo', true, $s2['bajo_minimo']);
 
 titulo('4. Cotización con el paquete y PDF');
-$salon = espacio_id($db, $nid, 'Salón principal');
+$salon = espacio_id($db, $nid, 'Hacienda La Herradura');
 $e1 = $ev->crear($nid, ['cliente' => ['nombre' => 'María José Andrade', 'telefono' => '0991231234', 'identificacion' => '1711111111', 'email' => 'mj@correo.ec'],
     'tipo' => 'boda', 'fecha' => $fecha, 'hora_inicio' => '17:00', 'hora_fin' => '01:00', 'invitados' => 100, 'espacios' => [$salon]], (int) $dueno['id'], $hoy);
 $c1 = $cot->crear($nid, $e1, $pq, (int) $dueno['id'], $hoy);
 $C1 = $cot->obtener($nid, $c1);
 check('La cotización da el mismo total que el simulador', $s['total'], (float) $C1['total']);
-$pdf = PdfDocumentos::cotizacion($neg, $C1, 'http://127.0.0.1/?r=cot&t=' . $C1['token'], 'Salón principal');
+$pdf = PdfDocumentos::cotizacion($neg, $C1, 'http://127.0.0.1/?r=cot&t=' . $C1['token'], 'Hacienda La Herradura');
 $bin = Pdf::comoTexto($pdf);
 check('PDF de cotización empieza con %PDF', '%PDF', substr($bin, 0, 4));
 check('PDF de cotización no está vacío (> 5 KB)', true, strlen($bin) > 5000);

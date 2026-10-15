@@ -2,8 +2,8 @@
 use TuPlanner\{Eventos, Planos, Ventas};
 
 /**
- * Plano visual del salón (plan Quinta).
- *   /?r=plano                    distribuciones (plantillas) de los espacios · &espacio=<id> para elegir el espacio
+ * Plano visual del salón (plan Agencia).
+ *   /?r=plano                    distribuciones (plantillas) de los lugares · &espacio=<id> para elegir el espacio
  *   /?r=plano&p=<plano>          editor de una distribución (el dueño la cambia; los demás miran)
  *   /?r=plano&id=<evento>        plano del evento, pestaña "Plano" (dueño, vendedor y coordinador lo cambian; consulta mira)
  *   &json=1                      los datos del plano en JSON
@@ -57,7 +57,7 @@ if ($planoId) {
 $tab = 'plano';
 
 if (!es_quinta($u)) {
-    if (es_post()) exigir(false, 'El plano del salón es del plan Quinta.');
+    if (es_post()) exigir(false, 'El plano del salón es del plan Agencia.');
     $explicacion = 'Dibuja tus salones en metros con mesas redondas, imperiales, pista, tarima, barra y más; arrastra todo con el dedo o el mouse. '
                  . 'Cada evento tiene su plano unido a las mesas de los invitados: ves cuántos están sentados en cada mesa y lo sacas en PDF para el montaje.';
     if ($ev) {
@@ -82,7 +82,7 @@ if (es_post()) {
             $responderJson(['ok' => false, 'error' => 'La página caducó. Recarga para seguir (tus últimos cambios no se guardaron).'], 400);
         }
         if (!$puedeEditarPlano($plano)) {
-            $responderJson(['ok' => false, 'error' => $plano && $plano['tipo'] === 'plantilla' ? 'Solo el dueño puede cambiar las distribuciones de los espacios.' : 'Tu usuario solo puede mirar el plano.'], 403);
+            $responderJson(['ok' => false, 'error' => $plano && $plano['tipo'] === 'plantilla' ? 'Solo el dueño puede cambiar las distribuciones de los lugares.' : 'Tu usuario solo puede mirar el plano.'], 403);
         }
         $elementos = json_decode((string) ($_POST['elementos'] ?? ''), true);
         $version = isset($_POST['version']) && ctype_digit((string) $_POST['version']) ? (int) $_POST['version'] : null;
@@ -101,7 +101,7 @@ if (es_post()) {
     try {
         switch ($accion) {
             case 'crear_plantilla':
-                exigir($editaPlantillas, 'Solo el dueño puede crear distribuciones de los espacios.');
+                exigir($editaPlantillas, 'Solo el dueño puede crear distribuciones de los lugares.');
                 $nuevo = $planos->crearPlantilla($nid, (int) ($_POST['espacio_id'] ?? 0), campo('nombre'), campo('ancho'), campo('largo'), (int) $u['id'], campo('ejemplo'));
                 aviso('Distribución creada. Agrega y mueve los elementos; se guarda solo.');
                 redirigir('plano', ['p' => $nuevo]);

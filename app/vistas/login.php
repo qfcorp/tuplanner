@@ -1,8 +1,8 @@
 <div class="acceso-marca">
-    <span class="marca-sello" aria-hidden="true">Te</span>
+    <span class="marca-sello" aria-hidden="true">TP</span>
     <div>
         <h1>TuPlanner</h1>
-        <p>Fechas, cotizaciones, contratos y cobros de tu salón o quinta</p>
+        <p>Bodas, quince años y eventos: tareas, presupuesto, proveedores y cobros</p>
     </div>
 </div>
 <form method="post" class="bloque" novalidate>

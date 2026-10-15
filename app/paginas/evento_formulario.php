@@ -3,7 +3,7 @@ use TuPlanner\{Cuestionarios, Encuestas, Eventos, Extras};
 
 /**
  * Evento — pestaña "Formulario y extras" (migración 070): /?r=evento_formulario&id=<evento>
- *  - Formulario del evento (copia de la plantilla de su tipo): respuestas del cliente; el local las corrige, agrega o quita preguntas.
+ *  - Formulario del evento (copia de la plantilla de su tipo): respuestas del cliente; el negocio las corrige, agrega o quita preguntas.
  *  - Extras que el cliente pidió desde su portal: aprobar (se suma a la cotización y al plan de pagos) o rechazar con nota.
  *  - Encuesta de satisfacción del cliente.
  * Permisos: dueño y vendedor cambian todo; el coordinador solo ve el formulario (sin dinero); consulta solo mira.

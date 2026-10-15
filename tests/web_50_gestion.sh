@@ -250,7 +250,7 @@ check "No se crea el cuarto" "3" "$(sql "SELECT count(*) FROM usuarios WHERE neg
 
 echo "12. Planes y prueba terminada"
 check "Planes" "200" "$(get "r=planes")"
-contiene "Plan Quinta" "$TMP/pag.html" "Plan Quinta"
+contiene "Plan Agencia" "$TMP/pag.html" "Plan Agencia"
 contiene "Precio Salón" "$TMP/pag.html" "\$39,00"
 contiene "Semestral" "$TMP/pag.html" "Cada 6 meses"
 contiene "Contratar por WhatsApp" "$TMP/pag.html" "wa.me/593996408397?text="
@@ -335,7 +335,7 @@ get "r=admin_negocio&id=$NID_S" > /dev/null
 CLAVE_D=$(grep -o 'class="clave-temporal">[^<]*' "$TMP/pag.html" | head -1 | sed 's/.*>//')
 check "Nueva clave del dueño (se muestra)" "10" "${#CLAVE_D}"
 check "Planes y precios" "200" "$(get "r=admin_planes")"
-contiene "Máximo de espacios" "$TMP/pag.html" "Máximo de espacios"
+contiene "Máximo de lugares" "$TMP/pag.html" "Máximo de lugares"
 r=$(post_desde "r=admin_planes" "r=admin_planes" --data-urlencode "accion=plan" --data-urlencode "codigo=salon" --data-urlencode "nombre=Salón" \
      --data-urlencode "precio_mensual=42" --data-urlencode "max_espacios=3" --data-urlencode "max_usuarios=4" --data-urlencode "descripcion=Para salones")
 check "Guardar plan con máximos" "42.00|3|4" "$(sql "SELECT precio_mensual||'|'||max_espacios||'|'||max_usuarios FROM planes WHERE codigo='salon'")"

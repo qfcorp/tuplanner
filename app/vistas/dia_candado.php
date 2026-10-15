@@ -1,11 +1,11 @@
-<?php /** Pestaña del plan Quinta vista desde el plan Salón: cabecera del evento + candado. @var string $cab @var string $que @var string $explicacion */ ?>
+<?php /** Pestaña del plan Agencia vista desde el plan Salón: cabecera del evento + candado. @var string $cab @var string $que @var string $explicacion */ ?>
 <?= $cab ?>
 <section class="bloque dia-candado">
-    <p class="candado" style="font-size:1rem;margin-bottom:10px"><?= e($que) ?> es del plan Quinta.</p>
+    <p class="candado" style="font-size:1rem;margin-bottom:10px"><?= e($que) ?> es del plan Agencia.</p>
     <p><?= e($explicacion) ?></p>
     <?php if (es_dueno($u)): ?>
-        <a class="boton" href="<?= e(url('planes')) ?>">Ver el plan Quinta</a>
+        <a class="boton" href="<?= e(url('planes')) ?>">Ver el plan Agencia</a>
     <?php else: ?>
-        <p class="suave"><small>Pídele al dueño de la cuenta que cambie al plan Quinta.</small></p>
+        <p class="suave"><small>Pídele al dueño de la cuenta que cambie al plan Agencia.</small></p>
     <?php endif; ?>
 </section>

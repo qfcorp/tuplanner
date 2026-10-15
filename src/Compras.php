@@ -819,7 +819,7 @@ final class Compras
     // Mensajes y verificación
     // ------------------------------------------------------------------
 
-    /** Mensaje de WhatsApp para enviar la orden de compra. $portal = enlace del portal del proveedor (plan Quinta) o null. */
+    /** Mensaje de WhatsApp para enviar la orden de compra. $portal = enlace del portal del proveedor (plan Agencia) o null. */
     public static function mensajeOrden(array $c, array $items, array $negocio, ?string $portal = null): string
     {
         $nombre = trim(explode(' ', trim((string) ($c['proveedor_contacto'] ?: $c['proveedor'])))[0]);

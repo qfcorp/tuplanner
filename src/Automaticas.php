@@ -211,7 +211,7 @@ final class Automaticas
             $res['realizados']++;
             $g = $pagos->garantia((int) $e['id']);
             if ($g['saldo'] > 0) {
-                $this->avisar($negocioId, ['dueno'], '↩️ Devuelve la garantía de ' . $e['nombre'] . ': el local tiene ' . self::dinero($g['saldo'])
+                $this->avisar($negocioId, ['dueno'], '↩️ Devuelve la garantía de ' . $e['nombre'] . ': el negocio tiene ' . self::dinero($g['saldo'])
                     . ' del cliente. Revisa si hubo daños y registra la devolución en la pestaña Pagos del evento.',
                     null, (int) $e['id'], [$e['vendedor_id'], $e['coordinador_id']]);
                 $res['garantias']++;

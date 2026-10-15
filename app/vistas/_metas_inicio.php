@@ -1,7 +1,7 @@
 <?php
 /**
  * Avance de la meta de ventas del mes en el Inicio (módulo 080). Se incluye desde inicio.php.
- * Dueño y consulta: la meta del local. Vendedor: la suya (si el dueño se la puso). Coordinador: nada.
+ * Dueño y consulta: la meta del negocio. Vendedor: la suya (si el dueño se la puso). Coordinador: nada.
  * Todo con prefijo $mt para no pisar variables de la vista.
  */
 use TuPlanner\{Metas, Reportes};

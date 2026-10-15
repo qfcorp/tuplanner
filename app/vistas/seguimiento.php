@@ -79,7 +79,7 @@ $filtro = $mias ? ['mias' => 1] : [];
     <section class="bloque" id="visitas" aria-labelledby="t-vis">
         <h2 id="t-vis">Visitas y degustaciones de la semana</h2>
         <?php if (!$visitas): ?>
-            <p class="vacio">No hay visitas al local, degustaciones ni reuniones agendadas para estos 7 días.</p>
+            <p class="vacio">No hay visitas al negocio, degustaciones ni reuniones agendadas para estos 7 días.</p>
         <?php else: ?>
         <ul class="filas">
             <?php foreach ($visitas as $a): ?>

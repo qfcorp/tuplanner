@@ -19,7 +19,37 @@ $ptRespondio = $ptEncuesta ? (new Encuestas(db()))->deEvento($ptNid, $ptEid) : n
 $ptAnexos = (new \TuPlanner\Anexos(db()))->deEvento($ptNid, $ptEid);   // anexos por extras aprobados (090)
 $ptPorFirmar = array_values(array_filter($ptAnexos, fn($a) => $a['firmable']));
 $ptFirmados = array_values(array_filter($ptAnexos, fn($a) => $a['estado'] === 'firmado'));
+// Planificación con el organizador (migración 100): presupuesto, tareas e ideas
+$ptPlan = new \TuPlanner\Planificacion(db());
+$ptAvance = $ptPlan->avance($ptEid, 'cliente');
+$ptRes = $ptPlan->resumen($ptNid, $ptEid, true);
+$ptReuniones = $ptPlan->proximasReuniones($ptEid);
+$st = db()->prepare('SELECT count(*) FROM evento_ideas WHERE evento_id = ?');
+$st->execute([$ptEid]);
+$ptIdeas = (int) $st->fetchColumn();
 ?>
+<?php if ($activo): ?>
+<section class="bloque pt-tarjeta" id="mi-plan">
+    <div class="pt-tarjeta-icono" aria-hidden="true">📋</div>
+    <div class="pt-tarjeta-cuerpo">
+        <h2>Tu planificación</h2>
+        <p><?php if ($ptAvance['total']): ?>Tus tareas: <strong><?= (int) $ptAvance['hechas'] ?> de <?= (int) $ptAvance['total'] ?></strong> hechas<?= $ptAvance['vencidas'] ? ' · <span class="pn-rojo">' . (int) $ptAvance['vencidas'] . ' atrasada' . ($ptAvance['vencidas'] === 1 ? '' : 's') . '</span>' : '' ?>.<?php endif; ?>
+           <?php if ($ptRes['partidas']): ?> Presupuesto: <?= (int) $ptRes['contratadas'] ?> de <?= (int) $ptRes['partidas'] ?> proveedores contratados<?= $ptRes['falta'] > 0 ? ', falta pagar ' . dinero($ptRes['falta']) : '' ?>.<?php endif; ?>
+           <?php if (!$ptAvance['total'] && !$ptRes['partidas']): ?>Aquí verás tu lista de tareas, el presupuesto por proveedor y lo que falta pagar.<?php endif; ?></p>
+        <?php if ($ptReuniones): $r0 = $ptReuniones[0]; ?><p>Próxima reunión: <strong><?= e(fecha_corta(substr($r0['programada_para'], 0, 10))) ?> a las <?= e(substr($r0['programada_para'], 11, 5)) ?></strong> · <?= e($r0['texto']) ?></p><?php endif; ?>
+        <a class="boton" href="<?= e(url('portal_plan', ['t' => $token])) ?>">Ver mis tareas y presupuesto</a>
+    </div>
+</section>
+<section class="bloque pt-tarjeta" id="mis-ideas">
+    <div class="pt-tarjeta-icono" aria-hidden="true">💡</div>
+    <div class="pt-tarjeta-cuerpo">
+        <h2>Ideas para tu evento</h2>
+        <p><?= $ptIdeas ? $ptIdeas . ' foto' . ($ptIdeas === 1 ? '' : 's') . ' en el tablero.' : 'Sube fotos de lo que te gusta (decoración, flores, vestido, pastel) y marca las que te encantan.' ?>
+           <?= $ev['tematica'] ? ' Temática: <strong>' . e($ev['tematica']) . '</strong>.' : '' ?></p>
+        <a class="boton" href="<?= e(url('portal_ideas', ['t' => $token])) ?>">Abrir el tablero de ideas</a>
+    </div>
+</section>
+<?php endif; ?>
 <?php if ($ptPorFirmar && $activo): ?>
 <section class="bloque pt-tarjeta pt-tarjeta-anexo" id="anexo">
     <div class="pt-tarjeta-icono" aria-hidden="true">✍️</div>

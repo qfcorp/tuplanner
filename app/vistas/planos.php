@@ -1,7 +1,7 @@
 <?php
 use TuPlanner\Planos;
 
-/** Distribuciones (plantillas) de cada espacio. @var array $espacios @var array $lista @var array $vistas @var bool $editaPlantillas @var int $espacioElegido @var ?array $previo */
+/** Distribuciones (plantillas) de cada lugar. @var array $espacios @var array $lista @var array $vistas @var bool $editaPlantillas @var int $espacioElegido @var ?array $previo */
 $porEspacio = [];
 foreach ($lista as $p) $porEspacio[(int) $p['espacio_id']][] = $p;
 $pv = fn(string $k, string $def = '') => e($previo[$k] ?? $def);
@@ -9,12 +9,12 @@ $pv = fn(string $k, string $def = '') => e($previo[$k] ?? $def);
 <div class="cabecera">
     <div>
         <h1>Planos del salón</h1>
-        <p>Arma una vez cómo se acomoda cada espacio (boda con mesas redondas, corporativo en escuela…) y úsalo en cada evento.</p>
+        <p>Arma una vez cómo se acomoda cada lugar (boda con mesas redondas, corporativo en escuela…) y úsalo en cada evento.</p>
     </div>
 </div>
 
 <?php if (!$espacios): ?>
-    <section class="bloque vacio"><p>Primero crea tus espacios en <a href="<?= e(url('espacios')) ?>">Espacios</a>.</p></section>
+    <section class="bloque vacio"><p>Primero crea tus lugares en <a href="<?= e(url('espacios')) ?>">Lugares</a>.</p></section>
 <?php else: ?>
 
 <?php if ($editaPlantillas): ?>
@@ -23,7 +23,7 @@ $pv = fn(string $k, string $def = '') => e($previo[$k] ?? $def);
     <form method="post" action="<?= e(url('plano')) ?>">
         <?= campo_csrf() ?><input type="hidden" name="accion" value="crear_plantilla">
         <div class="rejilla-form">
-            <div class="campo"><label for="pn-espacio">Espacio</label>
+            <div class="campo"><label for="pn-espacio">Lugar</label>
                 <select id="pn-espacio" name="espacio_id" required>
                     <?php foreach ($espacios as $es): ?><option value="<?= (int) $es['id'] ?>" <?= $espacioElegido === (int) $es['id'] ? 'selected' : '' ?>><?= e($es['nombre']) ?></option><?php endforeach; ?>
                 </select></div>

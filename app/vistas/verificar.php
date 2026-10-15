@@ -18,10 +18,10 @@ $enmascarar = function (?string $id): string {
         <p class="doc-verif-icono" aria-hidden="true"><?= $ok ? '✓' : '✕' ?></p>
         <?php if (!$k['integro']): ?>
             <h2>El texto NO coincide</h2>
-            <p>El contrato existe, pero su texto fue cambiado después de prepararlo. <strong>No confíes en este documento</strong> y consulta con el local.</p>
+            <p>El contrato existe, pero su texto fue cambiado después de prepararlo. <strong>No confíes en este documento</strong> y consulta con el negocio.</p>
         <?php elseif ($k['estado'] === 'anulado'): ?>
             <h2><?= e($doc) ?> anulado</h2>
-            <p>Este contrato existe y su texto está íntegro, pero el local lo <strong>anuló</strong>. Ya no tiene validez.</p>
+            <p>Este contrato existe y su texto está íntegro, pero el negocio lo <strong>anuló</strong>. Ya no tiene validez.</p>
         <?php elseif ($k['estado'] === 'firmado'): ?>
             <h2><?= e($doc) ?> auténtico y firmado</h2>
             <p>El texto está íntegro: no fue cambiado desde que se preparó.</p>

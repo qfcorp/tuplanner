@@ -19,7 +19,7 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
         <p class="evento-sub" style="margin:0"><a href="<?= e(url('evento', ['id' => $ev['id']])) ?>"><?= e($ev['codigo']) ?></a></p>
         <h1>Editar evento</h1>
         <?php if (in_array($ev['estado'], Eventos::BLOQUEAN, true)): ?>
-            <p>Este evento ya está <?= e(strtolower(Eventos::ESTADOS[$ev['estado']])) ?>: si cambias la fecha, la hora o el espacio, revisamos que siga libre.</p>
+            <p>Este evento ya está <?= e(strtolower(Eventos::ESTADOS[$ev['estado']])) ?>: si cambias la fecha, la hora o el lugar, revisamos que siga libre.</p>
         <?php endif; ?>
     </div>
     <a class="boton boton-claro" href="<?= e(url('evento', ['id' => $ev['id']])) ?>">Cancelar</a>
@@ -28,12 +28,6 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
 
 <?php if ($error): ?><p class="aviso aviso-error" role="alert"><?= e($error) ?></p><?php endif; ?>
 
-<?php if (!$espacios): ?>
-    <section class="bloque vacio">
-        <p><strong>Primero crea al menos un espacio</strong> (salón, jardín, terraza…) para poder ubicar el evento.</p>
-        <?php if (es_dueno($u)): ?><a class="boton" href="<?= e(url('espacios')) ?>">Crear un espacio</a><?php endif; ?>
-    </section>
-<?php else: ?>
 <form method="post" action="<?= e($accion) ?>" id="form-evento" class="form-evento" novalidate
       data-disponible="<?= e(url('disponible')) ?>" data-excluir="<?= $ev ? (int) $ev['id'] : '' ?>">
     <?= campo_csrf() ?>
@@ -140,7 +134,8 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
         </div>
 
         <fieldset class="campo">
-            <legend>Espacios</legend>
+            <legend>Lugares <small>(si todavía no lo eligen, déjalo sin marcar: queda "por definir")</small></legend>
+            <?php if (!$espacios): ?><p class="suave ayuda-chica">Todavía no tienes lugares guardados.<?php if (es_dueno($u)): ?> <a href="<?= e(url('espacios', ['nuevo' => 1])) ?>">Agregar las quintas, haciendas o iglesias donde trabajas</a>.<?php endif; ?></p><?php endif; ?>
             <div class="casillas casillas-espacios">
                 <?php foreach ($espacios as $es): ?>
                     <label>
@@ -199,4 +194,3 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
         <a class="boton boton-claro" href="<?= e($nuevo ? url('eventos') : url('evento', ['id' => $ev['id']])) ?>">Cancelar</a>
     </div>
 </form>
-<?php endif; ?>

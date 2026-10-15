@@ -18,8 +18,8 @@ $de = new DiaEvento($db);
 $fi = new ProveedoresFicha($db);
 $co = new Compras($db);
 $inc = new Incidencias($db);
-$salon = espacio_id($db, $nid, 'Salón principal');
-$jardin = espacio_id($db, $nid, 'Jardín');
+$salon = espacio_id($db, $nid, 'Hacienda La Herradura');
+$jardin = espacio_id($db, $nid, 'Capilla del Valle');
 $fixture = (string) file_get_contents(__DIR__ . '/fixtures/factura_sri.xml');
 // Copia de la factura con fecha de hace 2 días (para que los vencimientos no dependan del día en que se corre la prueba)
 $xmlHoy = str_replace('<fechaEmision>10/10/2026</fechaEmision>', '<fechaEmision>' . $hoy->modify('-2 days')->format('d/m/Y') . '</fechaEmision>', $fixture);
@@ -114,7 +114,7 @@ check('Al pedirla, el proveedor aparece en el día del evento', $c1, (int) $EP['
 check('Todavía no confirmado en el día del evento', false, (bool) $EP['confirmado']);
 check('El historial del evento lo registra', 1, (int) $db->query("SELECT count(*) FROM registro_cambios WHERE evento_id = $e1 AND accion LIKE '%OC-0001%'")->fetchColumn());
 $c2 = $co->crear($nid, ['proveedor_id' => $pFlor, 'estado' => 'pedida', 'vence' => $dia(-40), 'fecha' => $dia(-45)],
-    [['descripcion' => 'Flores para la recepción del local', 'cantidad' => 1, 'precio_unitario' => 100]], $dueno, $hoy);
+    [['descripcion' => 'Flores para la recepción del negocio', 'cantidad' => 1, 'precio_unitario' => 100]], $dueno, $hoy);
 check('Segunda: OC-0002 (compra general, sin evento)', 'OC-0002', $co->compra($nid, $c2)['codigo']);
 check('Fecha límite escrita a mano', $dia(-40), $co->compra($nid, $c2)['vence']);
 check('Pasó la fecha límite: vencida', 'vencida', $co->compra($nid, $c2)['estado_pago']);

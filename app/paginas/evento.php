@@ -30,7 +30,7 @@ if (es_post()) {
                 $eventos->cambiarEstado($nid, $id, $nuevo, ['motivo' => (string) ($_POST['motivo'] ?? '')], $u);
                 $mensajes = [
                     'cotizado' => 'Listo: el evento está cotizado y la fecha queda retenida unos días.',
-                    'separado' => 'Listo: la fecha y el espacio quedan separados (bloqueados) para este evento.',
+                    'separado' => 'Listo: la fecha y el lugar quedan separados (bloqueados) para este evento.',
                     'confirmado' => '¡Evento confirmado!',
                     'realizado' => 'Evento marcado como realizado. Recuerda devolver la garantía.',
                     'perdido' => 'Evento marcado como perdido. La fecha queda libre.',

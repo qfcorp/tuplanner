@@ -8,7 +8,7 @@ use RuntimeException;
 
 /**
  * Alta de un negocio nuevo con su dueño (registro público con prueba gratis y panel de Tukán).
- * Se carga con datos de ejemplo para que pueda cotizar desde el primer minuto: espacios, catálogo,
+ * Se carga con datos de ejemplo para que pueda cotizar desde el primer minuto: lugares, catálogo,
  * paquetes, contrato, lista de tareas y mobiliario. Todo se puede cambiar.
  */
 final class Altas
@@ -43,7 +43,7 @@ final class Altas
         $negocio = trim($negocio);
         $nombre = trim($nombre);
         $email = strtolower(trim($email));
-        if (mb_strlen($negocio) < 3) throw new RuntimeException('Escribe el nombre de tu salón, quinta o hacienda.');
+        if (mb_strlen($negocio) < 3) throw new RuntimeException('Escribe el nombre de tu negocio de eventos (ej. Ana Pérez Wedding Planner).');
         if (mb_strlen($nombre) < 2) throw new RuntimeException('Escribe el nombre del dueño.');
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) throw new RuntimeException('El correo no es válido.');
         if (strlen($clave) < 8) throw new RuntimeException('La contraseña debe tener al menos 8 caracteres.');
@@ -74,14 +74,18 @@ final class Altas
         return ['negocio_id' => $negocioId, 'usuario_id' => $usuarioId, 'slug' => $slug];
     }
 
-    public const CONDICIONES = "• Precios en dólares, válidos hasta la fecha indicada.\n• La fecha se separa con el pago de la reserva; sin pago, la fecha no queda asegurada.\n• El número final de invitados se confirma 15 días antes del evento.\n• El saldo se cancela hasta 15 días antes del evento.\n• Se pide una garantía por daños que se devuelve después del evento.";
+    public const CONDICIONES = "• Precios en dólares, válidos hasta la fecha indicada.\n• La fecha se separa con el pago de la reserva; sin pago, la fecha no queda asegurada.\n• Los proveedores que el cliente contrata directo se pagan aparte, según cada contrato.\n• El número final de invitados se confirma 15 días antes del evento.\n• El saldo se cancela hasta 15 días antes del evento.";
 
-    /** Espacios, catálogo, paquetes, contrato, tareas y mobiliario de ejemplo. */
+    /** Lugares, catálogo, paquetes, contrato, tareas y mobiliario de ejemplo. */
     public function datosDeEjemplo(int $negocioId): void
     {
-        $esp = $this->db->prepare('INSERT INTO espacios (negocio_id, nombre, descripcion, capacidad_banquete, capacidad_coctel, precio_base, color, orden) VALUES (?,?,?,?,?,?,?,?)');
-        $esp->execute([$negocioId, 'Salón principal', 'Salón cubierto con pista de baile y tarima.', 250, 350, 1500, '#6B2D3C', 1]);
-        $esp->execute([$negocioId, 'Jardín', 'Jardín al aire libre para ceremonias y cóctel.', 200, 300, 1200, '#3E7C59', 2]);
+        // Lugares donde trabaja el organizador (de ejemplo: los cambia por los suyos)
+        $esp = $this->db->prepare('INSERT INTO espacios (negocio_id, nombre, descripcion, capacidad_banquete, capacidad_coctel, precio_base, color, orden,
+                                                         direccion, tipo_lugar) VALUES (?,?,?,?,?,?,?,?,?,?)');
+        $esp->execute([$negocioId, 'Hacienda La Herradura', 'Hacienda de ejemplo con salón cubierto, pista de baile y tarima. Cámbiala por los lugares donde trabajas.',
+                       250, 350, 1500, '#A0526D', 1, 'Vía a Tumbaco, km 5 (ejemplo)', 'recepcion']);
+        $esp->execute([$negocioId, 'Capilla del Valle', 'Capilla y jardín de ejemplo para la ceremonia y el cóctel.', 200, 300, 1200, '#3E7C59', 2,
+                       'Valle de los Chillos (ejemplo)', 'ceremonia']);
 
         $prod = $this->db->prepare('INSERT INTO productos (negocio_id, categoria, nombre, descripcion, unidad, precio, costo, con_iva, orden) VALUES (?,?,?,?,?,?,?,?,?) RETURNING id');
         $ids = [];
@@ -104,6 +108,14 @@ final class Altas
             ['transmision', 'Boda en vivo (QF Producciones)', 'Transmisión privada en HD para la familia que no puede asistir, con enlace para ver desde cualquier país', 'evento', 450, 300, true],
             ['otros', 'Hora adicional', 'Por cada hora extra de evento', 'hora', 150, 60, true],
             ['otros', 'Parqueadero con guardianía', '', 'evento', 120, 60, true],
+            // Servicios del organizador
+            ['honorarios', 'Organización integral', 'Planificación desde el primer día: presupuesto, proveedores, diseño, cronograma y coordinación del evento', 'evento', 1800, 0, true],
+            ['honorarios', 'Coordinación del día del evento', 'Para quien ya tiene proveedores: tomamos el control 1 mes antes y el día del evento', 'evento', 450, 0, true],
+            ['honorarios', 'Asesoría por horas', 'Reunión para armar el presupuesto, elegir proveedores o el diseño', 'hora', 35, 0, true],
+            ['flores', 'Ramo de novia', 'Flores naturales de temporada', 'evento', 120, 70, true],
+            ['belleza', 'Maquillaje y peinado de la novia', 'Con prueba previa', 'evento', 180, 120, true],
+            ['invitaciones', 'Invitaciones impresas', 'Diseño personalizado con sobre', 'unidad', 2.5, 1.2, true],
+            ['transporte', 'Auto clásico para los novios', 'Con chofer, 3 horas', 'evento', 250, 170, true],
         ] as $i => [$cat, $nom, $desc, $uni, $precio, $costo, $iva]) {
             $prod->execute([$negocioId, $cat, $nom, $desc ?: null, $uni, $precio, $costo, $iva ? 'true' : 'false', $i]);
             $ids[$nom] = (int) $prod->fetchColumn();
@@ -124,6 +136,8 @@ final class Altas
                 ['Menú buffet', 1, 22], ['Bocaditos de sal y dulce', 1, 5], ['Gaseosas, agua y hielo ilimitado', 1, 3],
                 ['DJ con sonido e iluminación (6 horas)', 1, 600], ['Hora loca', 1, 250], ['Decoración floral de mesas', 10, 30]]],
         ];
+        $paquetes[] = ['Organización integral de boda', 'Planificación completa, coordinación del día, ramo y auto de los novios. El banquete y el lugar se cotizan aparte.', 'boda', 0, [
+            ['Organización integral', 1, 1800], ['Ramo de novia', 1, 110], ['Auto clásico para los novios', 1, 240]]];
         foreach ($paquetes as [$nom, $desc, $tipo, $min, $lista]) {
             $paq->execute([$negocioId, $nom, $desc, $tipo, $min]);
             $pid = (int) $paq->fetchColumn();
@@ -133,22 +147,20 @@ final class Altas
         $this->db->prepare('INSERT INTO plantillas_contrato (negocio_id, nombre, texto, predeterminada) VALUES (?,?,?, true)')
                  ->execute([$negocioId, 'Contrato general', Contratos::plantillaDefecto()]);
 
-        $tar = $this->db->prepare('INSERT INTO plantilla_tareas (negocio_id, tipo_evento, titulo, dias_antes, orden) VALUES (?,?,?,?,?)');
-        foreach ([
-            [null, 'Firmar el contrato', 150], [null, 'Elegir el menú', 60], ['boda', 'Degustación del menú con los novios', 60],
-            [null, 'Definir decoración y colores', 45], ['boda', 'Reunión con el DJ: canciones de entrada, vals y baile', 30],
-            [null, 'Confirmar número final de invitados', 15], [null, 'Cobrar el saldo', 15], [null, 'Recibir lista de invitados y plano de mesas', 10],
-            [null, 'Confirmar proveedores externos y horarios de llegada', 7], [null, 'Asignar meseros y personal', 7],
-            [null, 'Cronograma del evento aprobado por el cliente', 5], [null, 'Recibir la garantía por daños', 3],
-            [null, 'Revisión final del montaje', 0], [null, 'Devolver la garantía', -8],
-        ] as $i => [$tipo, $titulo, $dias]) {
-            $tar->execute([$negocioId, $tipo, $titulo, $dias, $i]);
+        // Lista de tareas por meses: boda y quince años con su propia lista; los demás eventos, la general
+        $tar = $this->db->prepare('INSERT INTO plantilla_tareas (negocio_id, tipo_evento, titulo, dias_antes, asignado, orden) VALUES (?,?,?,?,?,?)');
+        foreach (['boda' => 'boda', 'quince' => 'quince', 'otro' => null] as $clave => $tipo) {
+            foreach (Planificacion::LISTA_TIPICA[$clave] as $i => [$titulo, $dias, $asig]) {
+                $tar->execute([$negocioId, $tipo, $titulo, $dias, $asig, $i]);
+            }
         }
 
         $mob = $this->db->prepare('INSERT INTO mobiliario (negocio_id, nombre, categoria, cantidad_total, costo_reposicion) VALUES (?,?,?,?,?)');
         foreach ([['Silla Tiffany', 'mobiliario', 250, 45], ['Mesa redonda (10 personas)', 'mobiliario', 25, 120], ['Mesa imperial', 'mobiliario', 6, 180],
                   ['Mantel blanco redondo', 'manteleria', 40, 25], ['Plato base', 'vajilla', 300, 6], ['Copa de vino', 'cristaleria', 300, 4],
-                  ['Copa de agua', 'cristaleria', 300, 4], ['Juego de cubiertos', 'vajilla', 300, 5]] as [$nom, $cat, $cant, $costo]) {
+                  ['Copa de agua', 'cristaleria', 300, 4], ['Juego de cubiertos', 'vajilla', 300, 5],
+                  ['Base dorada para centro de mesa', 'decoracion', 20, 18], ['Candelabro de 5 brazos', 'decoracion', 12, 35],
+                  ['Arco de ceremonia', 'decoracion', 1, 220], ['Camino de mesa de yute', 'manteleria', 15, 8]] as [$nom, $cat, $cant, $costo]) {
             $mob->execute([$negocioId, $nom, $cat, $cant, $costo]);
         }
     }

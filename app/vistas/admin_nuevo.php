@@ -6,7 +6,7 @@
 <form method="post" class="bloque" style="max-width:640px">
     <?= campo_csrf() ?>
     <?php if ($error): ?><p class="aviso aviso-error" role="alert"><?= e($error) ?></p><?php endif; ?>
-    <div class="campo"><label for="negocio">Nombre del salón, quinta o hacienda</label>
+    <div class="campo"><label for="negocio">Nombre del negocio de eventos</label>
         <input type="text" id="negocio" name="negocio" value="<?= e($d['negocio']) ?>" required></div>
     <div class="fila-campos">
         <div class="campo"><label for="nombre">Nombre del dueño</label>

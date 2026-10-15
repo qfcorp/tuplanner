@@ -19,7 +19,7 @@ $editable = $form && $form['abierto'];
     <section class="bloque pt-vacio">
         <h2>Formulario de tu evento</h2>
         <p><?= !$disponible ? 'El formulario se abre cuando tu fecha queda separada (al pagar la reserva). Ahí podrás contarnos la música, la decoración, el menú y cada detalle.'
-                            : 'El local todavía está preparando el formulario de tu evento. Te avisaremos cuando esté listo.' ?></p>
+                            : 'El negocio todavía está preparando el formulario de tu evento. Te avisaremos cuando esté listo.' ?></p>
     </section>
 <?php else: ?>
 
@@ -35,7 +35,7 @@ $editable = $form && $form['abierto'];
     <?php if ($editable): ?>
         <p class="pt-hero-cierre">Puedes llenarlo y cambiarlo hasta el <strong><?= e(fecha_larga($form['cierre'])) ?></strong>.</p>
     <?php else: ?>
-        <p class="pt-hero-cierre">El formulario se cerró el <?= e(fecha_corta($form['cierre'])) ?>. Si necesitas cambiar algo, escríbele al local.</p>
+        <p class="pt-hero-cierre">El formulario se cerró el <?= e(fecha_corta($form['cierre'])) ?>. Si necesitas cambiar algo, escríbele al negocio.</p>
     <?php endif; ?>
 </section>
 
@@ -56,7 +56,7 @@ $editable = $form && $form['abierto'];
     <div class="pt-barra-guardar">
         <span class="pt-estado" data-pt-estado aria-live="polite"></span>
         <button class="boton boton-claro" type="submit" name="accion" value="guardar">Guardar</button>
-        <button class="boton" type="submit" name="accion" value="terminar"><?= $form['enviado_en'] ? 'Guardar y avisar' : 'Listo, enviar al local' ?></button>
+        <button class="boton" type="submit" name="accion" value="terminar"><?= $form['enviado_en'] ? 'Guardar y avisar' : 'Listo, enviar al negocio' ?></button>
     </div>
     <?php if ($form['faltan_obligatorias']): ?><p class="suave pt-nota">Las preguntas con <span class="pt-obl">*</span> son necesarias para enviar.</p><?php endif; ?>
 </form>
