@@ -1,0 +1,225 @@
+<?php
+declare(strict_types=1);
+
+namespace TuPlanner;
+
+use DateTimeImmutable;
+use PDO;
+use RuntimeException;
+
+/**
+ * Planes, prueba gratis y suscripciones de TuPlanner (mismas reglas que la familia Tukán).
+ *  - Salón $39 / Quinta $69 al mes (se cambian en el panel de Tukán)
+ *  - Semestral: paga 5, recibe 6
+ *  - Anual: paga 10, recibe 12 + dominio propio (a nombre de Tukán)
+ *  - Prueba gratis: 7 días
+ */
+final class Planes
+{
+    public const AJUSTES = [
+        'dias_prueba' => '7',
+        'semestral_paga' => '5', 'semestral_recibe' => '6',
+        'anual_paga' => '10', 'anual_recibe' => '12',
+        'dias_gracia' => '3',
+        'whatsapp_ventas' => '593996408397',
+    ];
+    public const PERIODOS_NOMBRE = ['mensual' => 'Mensual', 'semestral' => 'Semestral', 'anual' => 'Anual'];
+
+    private ?array $ajustes = null;
+
+    public function __construct(private PDO $db) {}
+
+    public function ajustes(): array
+    {
+        if ($this->ajustes === null) {
+            $this->ajustes = self::AJUSTES;
+            foreach ($this->db->query('SELECT clave, valor FROM ajustes')->fetchAll(PDO::FETCH_KEY_PAIR) as $k => $v) {
+                $this->ajustes[$k] = (string) $v;
+            }
+        }
+        return $this->ajustes;
+    }
+
+    public function ajuste(string $clave): string
+    {
+        return $this->ajustes()[$clave] ?? '';
+    }
+
+    public function guardarAjustes(array $valores): void
+    {
+        $n = fn($k, $min, $max) => (isset($valores[$k]) && ctype_digit((string) $valores[$k])
+            && (int) $valores[$k] >= $min && (int) $valores[$k] <= $max) ? (string) (int) $valores[$k]
+            : throw new RuntimeException("Revisa el valor de \"$k\".");
+        $limpio = [
+            'dias_prueba' => $n('dias_prueba', 0, 90),
+            'semestral_paga' => $n('semestral_paga', 1, 6), 'semestral_recibe' => $n('semestral_recibe', 6, 12),
+            'anual_paga' => $n('anual_paga', 1, 12), 'anual_recibe' => $n('anual_recibe', 12, 24),
+            'dias_gracia' => $n('dias_gracia', 0, 30),
+        ];
+        if ((int) $limpio['semestral_paga'] > (int) $limpio['semestral_recibe'] || (int) $limpio['anual_paga'] > (int) $limpio['anual_recibe']) {
+            throw new RuntimeException('Los meses que paga no pueden ser más que los que recibe.');
+        }
+        $wa = preg_replace('/\D+/', '', (string) ($valores['whatsapp_ventas'] ?? ''));
+        if (strlen($wa) < 10 || strlen($wa) > 15) throw new RuntimeException('El WhatsApp de ventas debe tener el código del país, ej. 593991234567.');
+        $limpio['whatsapp_ventas'] = $wa;
+        $st = $this->db->prepare('INSERT INTO ajustes (clave, valor) VALUES (?, ?) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor');
+        foreach ($limpio as $k => $v) $st->execute([$k, $v]);
+        $this->ajustes = null;
+    }
+
+    public function periodos(): array
+    {
+        $a = $this->ajustes();
+        return [
+            'mensual'   => ['paga' => 1, 'recibe' => 1, 'dominio' => false],
+            'semestral' => ['paga' => (int) $a['semestral_paga'], 'recibe' => (int) $a['semestral_recibe'], 'dominio' => false],
+            'anual'     => ['paga' => (int) $a['anual_paga'], 'recibe' => (int) $a['anual_recibe'], 'dominio' => true],
+        ];
+    }
+
+    public function textoPeriodo(string $periodo): string
+    {
+        $p = $this->periodos()[$periodo];
+        return $periodo === 'mensual' ? 'Mensual'
+            : 'Paga ' . $p['paga'] . ', recibe ' . $p['recibe'] . ($p['dominio'] ? ' + dominio propio' : '');
+    }
+
+    public function lista(): array
+    {
+        return $this->db->query('SELECT * FROM planes ORDER BY precio_mensual')->fetchAll();
+    }
+
+    public function guardarPlan(string $codigo, string $nombre, float $precio, ?int $maxEspacios, ?int $maxUsuarios, string $descripcion = ''): void
+    {
+        if (mb_strlen(trim($nombre)) < 2) throw new RuntimeException('Escribe el nombre del plan.');
+        if ($precio < 0 || $precio > 10000) throw new RuntimeException('Precio no válido.');
+        if ($maxEspacios !== null && $maxEspacios < 1) throw new RuntimeException('El máximo de espacios debe ser 1 o más (vacío = sin límite).');
+        if ($maxUsuarios !== null && $maxUsuarios < 1) throw new RuntimeException('El máximo de usuarios debe ser 1 o más (vacío = sin límite).');
+        $st = $this->db->prepare('UPDATE planes SET nombre = ?, precio_mensual = ?, max_espacios = ?, max_usuarios = ?, descripcion = ? WHERE codigo = ?');
+        $st->execute([trim($nombre), round($precio, 2), $maxEspacios, $maxUsuarios, trim($descripcion) ?: null, $codigo]);
+        if ($st->rowCount() !== 1) throw new RuntimeException('Plan no encontrado.');
+    }
+
+    /** prueba, prueba_vencida, activo, por_vencer (en días de gracia), vencido, suspendido, cancelado. */
+    public function estadoCuenta(array $negocio, ?DateTimeImmutable $hoy = null): string
+    {
+        $hoy = ($hoy ?? new DateTimeImmutable('today'))->format('Y-m-d');
+        return match ($negocio['estado']) {
+            'suspendido', 'cancelado' => $negocio['estado'],
+            'prueba' => (!empty($negocio['prueba_hasta']) && $negocio['prueba_hasta'] < $hoy) ? 'prueba_vencida' : 'prueba',
+            default => (function () use ($negocio, $hoy) {
+                if (empty($negocio['activo_hasta']) || $negocio['activo_hasta'] >= $hoy) return 'activo';
+                $gracia = (new DateTimeImmutable($negocio['activo_hasta']))->modify('+' . (int) $this->ajuste('dias_gracia') . ' days')->format('Y-m-d');
+                return $gracia >= $hoy ? 'por_vencer' : 'vencido';
+            })(),
+        };
+    }
+
+    public function alDia(array $negocio, ?DateTimeImmutable $hoy = null): bool
+    {
+        return in_array($this->estadoCuenta($negocio, $hoy), ['prueba', 'activo', 'por_vencer'], true);
+    }
+
+    public function crearNegocio(string $nombre, string $slug, string $plan, ?DateTimeImmutable $hoy = null): int
+    {
+        $hoy ??= new DateTimeImmutable('today');
+        $hasta = $hoy->modify('+' . (int) $this->ajuste('dias_prueba') . ' days')->format('Y-m-d');
+        $st = $this->db->prepare("INSERT INTO negocios (nombre, slug, plan_codigo, estado, prueba_hasta) VALUES (?, ?, ?, 'prueba', ?) RETURNING id");
+        $st->execute([$nombre, $slug, $plan, $hasta]);
+        return (int) $st->fetchColumn();
+    }
+
+    public function cotizar(string $plan, string $periodo): array
+    {
+        $periodos = $this->periodos();
+        if (!isset($periodos[$periodo])) throw new RuntimeException("Periodo no válido: $periodo");
+        $st = $this->db->prepare('SELECT precio_mensual FROM planes WHERE codigo = ?');
+        $st->execute([$plan]);
+        $precio = $st->fetchColumn();
+        if ($precio === false) throw new RuntimeException("Plan no válido: $plan");
+        $p = $periodos[$periodo];
+        $monto = round((float) $precio * $p['paga'], 2);
+        return [
+            'plan' => $plan, 'periodo' => $periodo,
+            'meses_pagados' => $p['paga'], 'meses_recibidos' => $p['recibe'],
+            'monto' => $monto, 'precio_por_mes' => round($monto / $p['recibe'], 2),
+            'incluye_dominio' => $p['dominio'],
+        ];
+    }
+
+    public function inicioSugerido(int $negocioId, ?DateTimeImmutable $hoy = null): DateTimeImmutable
+    {
+        $hoy ??= new DateTimeImmutable('today');
+        $st = $this->db->prepare('SELECT activo_hasta FROM negocios WHERE id = ?');
+        $st->execute([$negocioId]);
+        $hasta = $st->fetchColumn();
+        if ($hasta && $hasta >= $hoy->format('Y-m-d')) return (new DateTimeImmutable($hasta))->modify('+1 day');
+        return $hoy;
+    }
+
+    /**
+     * Registra un pago de suscripción. $pagadoEn: fecha en que pagó (por defecto hoy; el Panel Tukán Central la manda).
+     */
+    public function suscribir(int $negocioId, string $plan, string $periodo, DateTimeImmutable $inicio,
+                              string $metodoPago, ?string $dominio = null, ?float $monto = null, ?DateTimeImmutable $pagadoEn = null): int
+    {
+        $c = $this->cotizar($plan, $periodo);
+        if ($monto !== null) {
+            if ($monto < 0) throw new RuntimeException('El monto no puede ser negativo.');
+            $c['monto'] = round($monto, 2);
+        }
+        $fin = $inicio->modify('+' . $c['meses_recibidos'] . ' months')->modify('-1 day');
+        $propia = !$this->db->inTransaction();
+        if ($propia) $this->db->beginTransaction();
+        $st = $this->db->prepare(
+            'INSERT INTO suscripciones (negocio_id, plan_codigo, periodo, meses_pagados, meses_recibidos,
+                                        monto, inicio, fin, metodo_pago, incluye_dominio, dominio, pagado_en)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?, COALESCE(?::date, CURRENT_DATE)) RETURNING id'
+        );
+        $st->execute([
+            $negocioId, $plan, $periodo, $c['meses_pagados'], $c['meses_recibidos'], $c['monto'],
+            $inicio->format('Y-m-d'), $fin->format('Y-m-d'), $metodoPago,
+            $c['incluye_dominio'] ? 'true' : 'false', $c['incluye_dominio'] ? $dominio : null,
+            $pagadoEn?->format('Y-m-d'),
+        ]);
+        $id = (int) $st->fetchColumn();
+        $this->db->prepare("UPDATE negocios SET estado = 'activo', plan_codigo = ?,
+                                   activo_hasta = GREATEST(COALESCE(activo_hasta, ?::date), ?::date) WHERE id = ?")
+                 ->execute([$plan, $fin->format('Y-m-d'), $fin->format('Y-m-d'), $negocioId]);
+        if ($propia) $this->db->commit();
+        return $id;
+    }
+
+    public function anularPago(int $suscripcionId): void
+    {
+        $st = $this->db->prepare('UPDATE suscripciones SET anulada = true WHERE id = ? AND NOT anulada RETURNING negocio_id');
+        $st->execute([$suscripcionId]);
+        $negocioId = $st->fetchColumn();
+        if (!$negocioId) throw new RuntimeException('Ese pago no existe o ya estaba anulado.');
+        $this->db->prepare('UPDATE negocios SET activo_hasta = (SELECT max(fin) FROM suscripciones WHERE negocio_id = ? AND NOT anulada) WHERE id = ?')
+                 ->execute([$negocioId, $negocioId]);
+    }
+
+    /** ¿El plan permite otro espacio activo? */
+    public function puedeAgregarEspacio(int $negocioId): bool
+    {
+        return $this->dentroDelLimite($negocioId, 'max_espacios', 'SELECT count(*) FROM espacios WHERE negocio_id = ? AND activo');
+    }
+
+    /** ¿El plan permite otro usuario activo? */
+    public function puedeAgregarUsuario(int $negocioId): bool
+    {
+        return $this->dentroDelLimite($negocioId, 'max_usuarios', 'SELECT count(*) FROM usuarios WHERE negocio_id = ? AND activo');
+    }
+
+    private function dentroDelLimite(int $negocioId, string $columna, string $sqlConteo): bool
+    {
+        $st = $this->db->prepare("SELECT p.$columna FROM negocios n JOIN planes p ON p.codigo = n.plan_codigo WHERE n.id = ?");
+        $st->execute([$negocioId]);
+        $max = $st->fetchColumn();
+        if ($max === null || $max === false) return true;
+        $st = $this->db->prepare($sqlConteo);
+        $st->execute([$negocioId]);
+        return (int) $st->fetchColumn() < (int) $max;
+    }
+}
