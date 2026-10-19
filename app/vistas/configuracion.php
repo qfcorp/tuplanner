@@ -177,6 +177,7 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
     <div class="campo"><label for="pago_deuna">Celular de DeUna</label>
         <input type="tel" id="pago_deuna" name="pago_deuna" value="<?= $f('pago_deuna') ?>" placeholder="0991234567" style="max-width:260px"></div>
 
+    <?php if (modulo_activo($u, 'cobros_linea')): /* Anexo B: módulo "Cobros en línea (Payphone)" */ ?>
     <h2 style="margin-top:20px">Pago con tarjeta (Payphone)</h2>
     <?php $conPayphone = trim((string) $n['payphone_token']) !== '' && trim((string) $n['payphone_store_id']) !== ''; ?>
     <?php if ($conPayphone): ?><p class="aviso aviso-ok">✅ Payphone está activo: tus clientes pueden pagar con tarjeta desde su portal.</p><?php endif; ?>
@@ -198,6 +199,9 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
     </div>
     <?php if ($conPayphone): ?>
         <div class="casillas" style="margin-bottom:14px"><label><input type="checkbox" name="quitar_payphone" value="1"> Quitar Payphone (dejar de cobrar con tarjeta)</label></div>
+    <?php endif; ?>
+    <?php else: ?>
+    <input type="hidden" name="payphone_store_id" value="<?= $f('payphone_store_id') ?>">
     <?php endif; ?>
     <button class="boton" type="submit">Guardar datos de cobro</button>
 </form>
@@ -328,11 +332,14 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
 
 <?php else: /* otros */ ?>
 <div class="rejilla rejilla-2">
+    <?php if (modulo_activo($u, 'contratos')): ?>
     <section class="bloque">
         <h2>Plantillas de contrato</h2>
         <p>El texto del contrato que firman tus clientes en el celular, con los datos del evento puestos solos.</p>
         <a class="boton" href="<?= e(url('contrato')) ?>">Editar plantillas de contrato</a>
     </section>
+    <?php endif; ?>
+    <?php if (modulo_activo($u, 'boda_vivo')): ?>
     <form method="post" action="<?= e(url('configuracion', ['tab' => 'otros', 'accion' => 'transmision'])) ?>" class="bloque">
         <?= campo_csrf() ?>
         <h2>Boda en vivo (transmisiones)</h2>
@@ -342,12 +349,13 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
             <input type="tel" id="whatsapp_transmision" name="whatsapp_transmision" value="<?= $f('whatsapp_transmision') ?>" required style="max-width:260px"></div>
         <button class="boton" type="submit">Guardar</button>
     </form>
+    <?php endif; ?>
     <section class="bloque">
         <h2>Catálogo y lugares</h2>
         <p>Tus precios, paquetes y lugares se cambian en sus propias pantallas.</p>
         <div class="acciones">
             <a class="boton boton-claro" href="<?= e(url('catalogo')) ?>">Catálogo y precios</a>
-            <a class="boton boton-claro" href="<?= e(url('paquetes')) ?>">Paquetes</a>
+            <?php if (modulo_activo($u, 'paquetes')): ?><a class="boton boton-claro" href="<?= e(url('paquetes')) ?>">Paquetes</a><?php endif; ?>
             <a class="boton boton-claro" href="<?= e(url('espacios')) ?>">Lugares</a>
         </div>
         <?php if (!$n['precios_revisados']): ?>

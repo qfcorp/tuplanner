@@ -343,9 +343,11 @@ final class Cobranza
         $hoy ??= new DateTimeImmutable('today');
         $h = $hoy->format('Y-m-d');
         $neg = $this->nombreNegocio($negocioId);
-        $st = $this->db->prepare('SELECT plan_codigo, resenas_url FROM negocios WHERE id = ?');
+        $st = $this->db->prepare('SELECT resenas_url FROM negocios WHERE id = ?');
         $st->execute([$negocioId]);
-        $n = $st->fetch() ?: ['plan_codigo' => 'salon', 'resenas_url' => null];
+        $n = $st->fetch() ?: ['resenas_url' => null];
+        $mods = (new Modulos($this->db))->activos($negocioId);   // Anexo B: cada grupo y cada enlace, según los módulos encendidos
+        $con = fn(string $m) => in_array($m, $mods, true);
         $res = array_fill_keys(array_keys(self::MENSAJES), []);
         $agregar = function (string $tipo, array $fila, string $para, ?string $tel, string $motivo, string $texto) use (&$res): void {
             $res[$tipo][] = [
@@ -369,7 +371,7 @@ final class Cobranza
         $st = $this->db->prepare($sql);
         $st->execute(['n' => $negocioId, 'hoy' => $h]);
         foreach ($st->fetchAll() as $f) {
-            $portal = $this->enlace('portal', ['t' => $f['token_cliente']]);
+            $portal = $con('portal_cliente') ? $this->enlace('portal', ['t' => $f['token_cliente']]) : '';
             $texto = Pagos::textoRecordatorio($f['cliente'], $neg, $f['concepto'], (float) $f['saldo'], $f['vence'], $portal);
             $dias = (int) $hoy->diff(new DateTimeImmutable($f['vence']))->format('%r%a');
             $motivo = $f['concepto'] . ' · ' . self::dinero((float) $f['saldo']) . ' · '
@@ -441,9 +443,11 @@ final class Cobranza
         foreach ($st->fetchAll() as $f) {
             $dias = (int) $hoy->diff(new DateTimeImmutable($f['fecha']))->days;
             $texto = 'Hola ' . self::primerNombre($f['cliente']) . ', te saludamos de ' . $neg . '. ¡Faltan ' . $dias . ' días para tu evento! '
-                . ($n['plan_codigo'] === 'quinta'
-                    ? 'Para organizar las mesas y la puerta, carga tu lista de invitados en tu portal: ' . $this->enlace('portal', ['t' => $f['token_cliente']])
-                    : 'Para organizar las mesas, envíanos por aquí tu lista de invitados (nombre y cuántas personas). Tu portal: ' . $this->enlace('portal', ['t' => $f['token_cliente']]))
+                . ($con('invitados')
+                    ? 'Para organizar las mesas y la puerta, carga tu lista de invitados ' . ($con('portal_cliente') ? 'en tu portal: ' . $this->enlace('portal', ['t' => $f['token_cliente']])
+                                                                                                         : 'aquí: ' . $this->enlace('portal_invitados', ['t' => $f['token_cliente']]))
+                    : 'Para organizar las mesas, envíanos por aquí tu lista de invitados (nombre y cuántas personas).'
+                      . ($con('portal_cliente') ? ' Tu portal: ' . $this->enlace('portal', ['t' => $f['token_cliente']]) : ''))
                 . ' ¡Gracias!';
             $agregar('invitados', $f, $f['cliente'], $f['telefono'], 'Evento el ' . self::fechaTexto($f['fecha']) . ' · ' . (int) $f['invitados'] . ' invitados', $texto);
         }
@@ -469,13 +473,14 @@ final class Cobranza
         foreach ($st->fetchAll() as $f) {
             $url = trim((string) $n['resenas_url']);
             $texto = 'Hola ' . self::primerNombre($f['cliente']) . ', gracias por celebrar "' . $f['evento'] . '" con nosotros en ' . $neg . '. ¡Fue un gusto! '
-                . (!$f['encuesta_hecha']
+                . (!$f['encuesta_hecha'] && $con('cuestionarios')
                     ? '¿Nos cuentas cómo te fue? Toma un minuto: ' . $this->enlace('encuesta', ['t' => $f['token_encuesta']])
                       . ($url !== '' ? ' Y si te gustó, déjanos tu reseña en Google: ' . $url : ' O respóndenos este mensaje con tu opinión.')
                     : ($url !== '' ? 'Nos ayudarías mucho dejando tu opinión aquí: ' . $url : 'Nos encantaría saber cómo te fue; respóndenos este mensaje con tu opinión.'))
                 . ' ¡Gracias!';
             $agregar('resena', $f, $f['cliente'], $f['telefono'], 'Evento del ' . self::fechaTexto($f['fecha']), $texto);
         }
+        foreach (Modulos::MENSAJES as $tipo => $m) if ($m !== '' && !$con($m)) $res[$tipo] = [];
         return $res;
     }
 

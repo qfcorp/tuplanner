@@ -267,7 +267,7 @@ final class Configuracion
         $st = $this->db->prepare('SELECT count(*) FROM usuarios WHERE id = ? AND telegram_chat_id IS NOT NULL');
         $st->execute([$usuarioId]);
         $telegram = (int) $st->fetchColumn() > 0;
-        return [
+        $pasos = [
             ['clave' => 'datos', 'texto' => 'Completa los datos de tu negocio', 'ayuda' => 'Dirección, RUC y WhatsApp: salen en las cotizaciones y contratos.',
              'enlace' => self::ruta('configuracion', ['tab' => 'datos']), 'hecho' => !empty($n['direccion']) && !empty($n['ruc']) && !empty($n['whatsapp'])],
             ['clave' => 'logo', 'texto' => 'Sube tu logo', 'ayuda' => 'Aparece en la cotización, el contrato y tu página pública.',
@@ -279,5 +279,8 @@ final class Configuracion
             ['clave' => 'telegram', 'texto' => 'Conecta tu Telegram', 'ayuda' => 'Recibe al instante los pagos, firmas y consultas nuevas.',
              'enlace' => self::ruta('mi_cuenta') . '#telegram', 'hecho' => $telegram],
         ];
+        // Anexo B: sin el módulo de Telegram, ese paso no aplica
+        if (!(new Modulos($this->db))->activo($negocioId, 'telegram')) $pasos = array_values(array_filter($pasos, fn($p) => $p['clave'] !== 'telegram'));
+        return $pasos;
     }
 }

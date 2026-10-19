@@ -436,7 +436,7 @@ final class Pagos
         $f = new DateTimeImmutable($vence);
         $cuando = $f < new DateTimeImmutable('today') ? 'venció el ' . $f->format('d/m') : 'vence el ' . $f->format('d/m');
         return "Hola $nombre, te saludamos de $negocio. Te recordamos que tu pago \"$concepto\" por $" . number_format($saldo, 2, ',', '.')
-             . " $cuando. Puedes ver tu plan de pagos y subir tu comprobante aquí: $enlacePortal ¡Gracias!";
+             . " $cuando. " . ($enlacePortal !== '' ? "Puedes ver tu plan de pagos y subir tu comprobante aquí: $enlacePortal" : 'Si ya pagaste, envíanos el comprobante por aquí.') . ' ¡Gracias!';
     }
 
     // ------------------------------------------------------------------
@@ -448,7 +448,8 @@ final class Pagos
         $st = $this->db->prepare('SELECT payphone_token, payphone_store_id FROM negocios WHERE id = ?');
         $st->execute([$negocioId]);
         $n = $st->fetch();
-        return $n && trim((string) $n['payphone_token']) !== '' && trim((string) $n['payphone_store_id']) !== '';
+        return $n && trim((string) $n['payphone_token']) !== '' && trim((string) $n['payphone_store_id']) !== ''
+            && (new Modulos($this->db))->activo($negocioId, 'cobros_linea');   // Anexo B: módulo "Cobros en línea"
     }
 
     /** Prepara la cajita de Payphone para pagar $monto. Crea un pago pendiente con un código único. */

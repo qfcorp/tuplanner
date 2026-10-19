@@ -32,6 +32,7 @@
         <button class="boton" type="submit">Cambiar contraseña</button>
     </form>
 
+    <?php if (modulo_activo($u, 'telegram')): /* Anexo B: módulo "Avisos por Telegram" */ ?>
     <section class="bloque" id="telegram">
         <h2>Avisos en Telegram</h2>
         <p>Recibe al instante en tu celular los pagos, firmas de contrato, consultas nuevas y tu lista de seguimientos de cada mañana.</p>
@@ -55,6 +56,7 @@
             <p class="vacio">Los avisos por Telegram se activan pronto en este servidor. Mientras tanto, los verás en la campana de Avisos.</p>
         <?php endif; ?>
     </section>
+    <?php endif; ?>
 
     <section class="bloque">
         <h2>Sesión</h2>

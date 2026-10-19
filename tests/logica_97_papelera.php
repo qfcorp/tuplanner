@@ -115,7 +115,7 @@ check('4 negocios', 4, $cuenta('SELECT count(*) FROM negocios'));
 $cap = $pedir('capacidades')[1];
 check('capacidades: operaciones nuevas', [true, true, true], [in_array('pausar', $cap['ejecutar'], true), in_array('borrar_cliente', $cap['ejecutar'], true),
                                                                in_array('restaurar_cliente', $cap['ejecutar'], true)]);
-check('capacidades: revisión 2 y tipos de pausa', [2, ['falta_pago', 'pedido_cliente', 'revision', 'abuso', 'otro']], [$cap['revision'], array_keys($cap['tipos_pausa'])]);
+check('capacidades: revisión 3 (Anexo B) y tipos de pausa', [3, ['falta_pago', 'pedido_cliente', 'revision', 'abuso', 'otro']], [$cap['revision'], array_keys($cap['tipos_pausa'])]);
 check('capacidades: formularios de pausar y borrar', [['tipo', 'motivo'], ['confirmar', 'motivo']],
       [array_column($cap['formularios']['pausar'], 'campo'), array_column($cap['formularios']['borrar_cliente'], 'campo')]);
 check('capacidades: 30 días de papelera, copia 1 año', ['dias' => 30, 'copia_dias' => 365], $cap['papelera']);
@@ -295,8 +295,8 @@ $mesPago = substr($d('-40 days'), 0, 7);
 check('finanzas: el pago de hace 40 días sigue en su mes (4 negocios pagaron)', 4 * 690.0, $porMes[$mesPago]['ingresos']);
 $proximo = $hoy->modify('first day of next month')->format('Y-m');
 check('finanzas: el devengado del mes que viene es solo de los 3 vivos', true, abs($porMes[$proximo]['devengado'] - 3 * 690 / 12) < 3.0);
-check('finanzas: MRR sin él', round(3 * 690 / 12, 2), $fin['mrr']);
-check('estado v1: ingreso mensual recurrente sin él', round(3 * 690 / 12, 2), (new TukanCentral($db))->estado($hoy)['extra']['Ingreso mensual recurrente']);
+check('finanzas: MRR sin él (3 vivos × Quinta $69)', 3 * 69.0, $fin['mrr']);
+check('estado v1: ingreso mensual recurrente sin él', 3 * 69.0, (new TukanCentral($db))->estado($hoy)['extra']['Ingreso mensual recurrente']);
 check('estado v1: eventos y usuarios sin los suyos', [$cuenta("SELECT count(*) FROM usuarios WHERE activo AND negocio_id <> {$A['id']}")],
       [(new TukanCentral($db))->estado($hoy)['extra']['Usuarios activos']]);
 // Páginas públicas: cada página pública es de un negocio conocido o no es de ningún negocio

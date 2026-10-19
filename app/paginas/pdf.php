@@ -11,6 +11,14 @@ if (!preg_match('/^[a-z_]+$/', $tipo) || !is_file(RAIZ . "/app/pdf/$tipo.php")) 
     vista('error', ['mensaje' => 'Ese documento no existe.'], 'PDF · TuPlanner');
     return;
 }
+// Anexo B: cada PDF es de la base o de un módulo (Modulos::PDFS); con el módulo apagado se explica cómo agregarlo
+$moduloPdf = \TuPlanner\Modulos::PDFS[$tipo] ?? null;
+if ($moduloPdf === null) {
+    http_response_code(404);
+    vista('error', ['mensaje' => 'Ese documento no existe.'], 'PDF · TuPlanner');
+    return;
+}
+if (!requiere_modulo($u, $moduloPdf)) return;
 $st = db()->prepare('SELECT * FROM negocios WHERE id = ?');
 $st->execute([$u['negocio_id']]);
 $negocio = $st->fetch();

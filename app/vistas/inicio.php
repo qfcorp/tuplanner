@@ -91,13 +91,13 @@ $hechos = count(array_filter($pasos, fn($p) => $p['hecho']));
     <?php if ($comercial): ?>
         <a class="g-cifra <?= $cifras['vencido'] > 0 ? 'alerta' : '' ?>" href="<?= e(url('cobros')) ?>"><strong><?= dinero($cifras['vencido']) ?></strong><span>Vencido por cobrar</span></a>
         <a class="g-cifra <?= $cifras['comprobantes'] > 0 ? 'atencion' : '' ?>" href="<?= e(url('cobros')) ?>"><strong><?= (int) $cifras['comprobantes'] ?></strong><span>Comprobantes por revisar</span></a>
-        <?php require RAIZ . '/app/vistas/_pv_inicio.php'; /* pagos a proveedores (060) */ ?>
+        <?php if (modulo_activo($u, 'proveedores')) require RAIZ . '/app/vistas/_pv_inicio.php'; /* pagos a proveedores (060, módulo proveedores) */ ?>
     <?php endif; ?>
     <?php if ($u['rol'] !== 'coordinador'): ?>
         <a class="g-cifra <?= $cifras['consultas_nuevas'] > 0 ? 'atencion' : '' ?>" href="<?= e(url('eventos', ['estado' => 'consulta'])) ?>"><strong><?= (int) $cifras['consultas_nuevas'] ?></strong><span>Consultas nuevas sin atender</span></a>
     <?php endif; ?>
 </div>
-<?php require RAIZ . '/app/vistas/_metas_inicio.php'; /* meta de ventas del mes (módulo 080) */ ?>
+<?php if (modulo_activo($u, 'metas')) require RAIZ . '/app/vistas/_metas_inicio.php'; /* meta de ventas del mes (módulo metas) */ ?>
 
 <div class="rejilla rejilla-2">
     <section class="bloque" aria-labelledby="t-proximos">

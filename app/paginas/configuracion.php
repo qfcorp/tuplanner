@@ -11,6 +11,7 @@ $nid = (int) $u['negocio_id'];
 $config = new Configuracion(db());
 $tabs = ['datos' => 'Negocio', 'reglas' => 'Reglas', 'cobros' => 'Cobros en línea', 'pagina' => 'Página pública',
          'tareas' => 'Tareas', 'calendario' => 'Google Calendar', 'otros' => 'Más'];
+if (!modulo_activo($u, 'exportar')) unset($tabs['calendario']);   // Anexo B: Google Calendar es del módulo "Exportar"
 $tab = (string) ($_GET['tab'] ?? 'datos');
 if (!isset($tabs[$tab])) $tab = 'datos';
 
@@ -54,10 +55,12 @@ if (es_post()) {
                 aviso('Tarea quitada de la plantilla. Los eventos que ya la tienen la conservan.');
                 break;
             case 'ical':
+                exigir(modulo_activo($u, 'exportar'), 'Google Calendar no está en tu plan. Agrégalo en Mi plan.');
                 $config->cambiarTokenIcal($nid);
                 aviso('Listo: creamos un enlace nuevo. El anterior ya no funciona; vuelve a agregarlo en Google Calendar.');
                 break;
             case 'transmision':
+                exigir(modulo_activo($u, 'boda_vivo'), 'La boda en vivo no está en tu plan. Agrégala en Mi plan.');
                 $config->guardarTransmision($nid, campo('whatsapp_transmision'));
                 aviso('WhatsApp de transmisiones guardado.');
                 break;

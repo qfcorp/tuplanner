@@ -176,8 +176,8 @@ function usuario(): ?array
     $st = db()->prepare(
         'SELECT u.id, u.nombre, u.email, u.rol, u.negocio_id, u.telefono,
                 n.nombre AS negocio, n.slug, n.plan_codigo, n.estado, n.prueba_hasta, n.activo_hasta, n.color, n.iva_pct,
-                n.pausa_tipo, n.pausa_motivo
-           FROM usuarios u JOIN negocios n ON n.id = u.negocio_id
+                n.pausa_tipo, n.pausa_motivo, pl.nombre AS plan_nombre
+           FROM usuarios u JOIN negocios n ON n.id = u.negocio_id JOIN planes pl ON pl.codigo = n.plan_codigo
           WHERE u.id = ? AND u.activo AND n.eliminado_en IS NULL'
     );
     $st->execute([$_SESSION['usuario_id']]);
@@ -220,12 +220,7 @@ function exigir(bool $permitido, string $mensaje = 'Tu usuario no tiene permiso 
     }
 }
 
-function es_quinta(array $u): bool
-{
-    return $u['plan_codigo'] === 'quinta';
-}
-
-/** Días que le quedan a la prueba gratis (null si ya pagó). */
+/** Días que le quedan a la demo (null si ya pagó). */
 function dias_prueba(array $u): ?int
 {
     if ($u['estado'] !== 'prueba' || !$u['prueba_hasta']) {
@@ -309,13 +304,43 @@ function registrar_admin(string $accion, ?int $negocioId = null): void
         ->execute([$a['id'] ?? null, $negocioId, mb_substr($accion, 0, 300)]);
 }
 
-/**
- * Funciones del plan Agencia: si el negocio está en plan Salón, muestra el candado y devuelve false.
- */
-function requiere_quinta(array $u, string $que, string $explicacion): bool
+function modulos(): \TuPlanner\Modulos
 {
-    if (es_quinta($u)) return true;
-    vista('candado', ['que' => $que, 'explicacion' => $explicacion], "$que · TuPlanner");
+    static $m = null;
+    return $m ??= new \TuPlanner\Modulos(db());
+}
+
+/** Módulos encendidos de un negocio (se calcula una vez por página; modulos_olvidar() lo vuelve a leer). */
+function modulos_de(int $negocioId, bool $olvidar = false): array
+{
+    static $cache = [];
+    if ($olvidar) { $cache = []; return []; }
+    return $cache[$negocioId] ??= modulos()->activos($negocioId);
+}
+
+function modulos_olvidar(): void
+{
+    modulos_de(0, true);
+}
+
+/**
+ * ¿El negocio tiene encendido este módulo? (Anexo B: la única pregunta que se hace en todo el programa.)
+ * $negocio: el usuario (negocio_id), una fila de negocios (id) o el id. $id = '' es la base: siempre true.
+ */
+function modulo_activo(array|int|null $negocio, string $id): bool
+{
+    if ($id === '') return true;
+    $nid = is_int($negocio) ? $negocio : (int) ($negocio['negocio_id'] ?? $negocio['id'] ?? 0);
+    if ($nid <= 0) return false;
+    return in_array($id, modulos_de($nid), true);
+}
+
+/** Si el módulo está apagado, muestra "Este módulo no está en tu plan" (403) y devuelve false. Los datos no se tocan. */
+function requiere_modulo(array $u, string $id): bool
+{
+    if (modulo_activo($u, $id)) return true;
+    http_response_code(403);
+    vista('modulo_apagado', ['modulo' => $id], \TuPlanner\Modulos::nombre($id) . ' · TuPlanner');
     return false;
 }
 

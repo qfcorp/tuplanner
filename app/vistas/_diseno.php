@@ -56,7 +56,7 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
         <span class="marca-sello" aria-hidden="true">TP</span>
         <span class="marca-texto">
             <strong><?= e($u['negocio']) ?></strong>
-            <small>Plan <?= $u['plan_codigo'] === 'quinta' ? 'Agencia' : 'Planner' ?></small>
+            <small>Plan <?= e($u['plan_nombre'] ?? $u['plan_codigo']) ?></small>
         </span>
     </a>
     <div class="buscar-lateral solo-ancho">
@@ -80,23 +80,23 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
         <a href="<?= e(url('seguimiento')) ?>">Seguimiento</a>
         <a href="<?= e(url('mensajes')) ?>">Mensajes por WhatsApp</a>
         <a href="<?= e(url('catalogo')) ?>">Catálogo y precios</a>
-        <a href="<?= e(url('paquetes')) ?>">Paquetes</a>
-        <a href="<?= e(url('extras')) ?>">Extras del portal</a>
+        <?php if (modulo_activo($u, 'paquetes')): ?><a href="<?= e(url('paquetes')) ?>">Paquetes</a><?php endif; ?>
+        <?php if (modulo_activo($u, 'cuestionarios')): ?><a href="<?= e(url('extras')) ?>">Extras del portal</a><?php endif; ?>
         <?php endif; ?>
         <a href="<?= e(url('espacios')) ?>">Lugares</a>
-        <a href="<?= e(url('personal')) ?>">Personal</a>
-        <a href="<?= e(url('proveedores')) ?>">Proveedores</a>
-        <?php if ($u['rol'] !== 'coordinador'): ?><a href="<?= e(url('por_pagar')) ?>">Por pagar</a><?php endif; ?>
-        <?php if (es_comercial($u)): ?><a href="<?= e(url('comisiones')) ?>">Comisiones</a><?php endif; ?>
-        <a href="<?= e(url('incidencias')) ?>">Incidencias</a>
-        <a href="<?= e(url('mobiliario')) ?>">Decoración y menaje</a>
+        <?php if (modulo_activo($u, 'dia_evento')): ?><a href="<?= e(url('personal')) ?>">Personal</a><?php endif; ?>
+        <?php if (modulo_activo($u, 'proveedores')): ?><a href="<?= e(url('proveedores')) ?>">Proveedores</a><?php endif; ?>
+        <?php if (modulo_activo($u, 'proveedores')): ?><?php if ($u['rol'] !== 'coordinador'): ?><a href="<?= e(url('por_pagar')) ?>">Por pagar</a><?php endif; ?><?php endif; ?>
+        <?php if (modulo_activo($u, 'comisiones')): ?><?php if (es_comercial($u)): ?><a href="<?= e(url('comisiones')) ?>">Comisiones</a><?php endif; ?><?php endif; ?>
+        <?php if (modulo_activo($u, 'incidencias')): ?><a href="<?= e(url('incidencias')) ?>">Incidencias</a><?php endif; ?>
+        <?php if (modulo_activo($u, 'mobiliario')): ?><a href="<?= e(url('mobiliario')) ?>">Decoración y menaje</a><?php endif; ?>
         <?php if ($u['rol'] !== 'coordinador'): ?>
         <a href="<?= e(url('reportes')) ?>">Reportes</a>
         <?php endif; ?>
         <?php if (es_dueno($u)): ?>
         <a href="<?= e(url('configuracion')) ?>">Configuración</a>
-        <a href="<?= e(url('contrato')) ?>">Plantillas de contrato</a>
-        <a href="<?= e(url('cuestionarios')) ?>">Formularios del evento</a>
+        <?php if (modulo_activo($u, 'contratos')): ?><a href="<?= e(url('contrato')) ?>">Plantillas de contrato</a><?php endif; ?>
+        <?php if (modulo_activo($u, 'cuestionarios')): ?><a href="<?= e(url('cuestionarios')) ?>">Formularios del evento</a><?php endif; ?>
         <a href="<?= e(url('usuarios')) ?>">Usuarios</a>
         <a href="<?= e(url('planes')) ?>">Mi plan</a>
         <?php endif; ?>
@@ -109,8 +109,8 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
 <main class="principal" id="contenido">
     <?php if ($diasPrueba !== null && $diasPrueba >= 0): ?>
         <p class="franja-prueba no-imprimir">
-            Prueba gratis: <?= $diasPrueba === 0 ? 'termina hoy' : "te quedan $diasPrueba " . ($diasPrueba === 1 ? 'día' : 'días') ?>.
-            <?php if (es_dueno($u)): ?><a href="<?= e(url('planes')) ?>">Ver planes</a><?php endif; ?>
+            Demo: <?= $diasPrueba === 0 ? 'termina hoy' : "te quedan $diasPrueba " . ($diasPrueba === 1 ? 'día' : 'días') ?>.
+            <?php if (es_dueno($u)): ?><a href="<?= e(url('planes')) ?>">Ver Mi plan</a><?php endif; ?>
         </p>
     <?php endif; ?>
     <?php if ($adminViendo): ?>

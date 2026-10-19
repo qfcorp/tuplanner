@@ -284,6 +284,7 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
 </section>
 
 <?php /* Compras a proveedores del evento (060) */ $comprasEv ??= []; $activasEv = array_filter($comprasEv, fn($c) => in_array($c['estado'], \TuPlanner\Compras::ACTIVAS, true)); ?>
+<?php if (modulo_activo($u, 'proveedores')): /* Anexo B: módulo "Proveedores y compras" */ ?>
 <section class="bloque" id="compras">
     <div class="dia-titulo-acciones"><h2>Compras a proveedores</h2>
         <?php if ($puede): ?><a class="boton boton-claro boton-chico" href="<?= e(url('compras', ['nueva' => 1, 'evento' => $ev['id']])) ?>#nueva">Nueva compra</a><?php endif; ?></div>
@@ -297,6 +298,7 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
     </ul>
     <?php endif; ?>
 </section>
+<?php endif; ?>
 
 <section class="bloque" id="gastos">
     <h2>Gastos del evento</h2>

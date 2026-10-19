@@ -1,7 +1,7 @@
 <?php
 /** Diseño del panel del super administrador. @var string $contenido @var string $titulo @var ?array $admin */
 $rutaActual = (string) ($_GET['r'] ?? '');
-$menuAdmin = ['admin' => 'Resumen', 'admin_negocios' => 'Negocios', 'admin_nuevo' => 'Nuevo negocio', 'admin_planes' => 'Planes y precios'];
+$menuAdmin = ['admin' => 'Resumen', 'admin_negocios' => 'Negocios', 'admin_nuevo' => 'Nueva demo', 'admin_planes' => 'Planes y precios'];
 $avisos = tomar_avisos();
 // Si entró desde el Panel Tukán Central, botón para volver allá
 $volverCentral = (!empty($_SESSION['desde_central']) && \TuPlanner\TukanCentral::config()) ? \TuPlanner\TukanCentral::urlCentral() : null;
@@ -18,6 +18,9 @@ $volverCentral = (!empty($_SESSION['desde_central']) && \TuPlanner\TukanCentral:
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/app.css?v=<?= filemtime(RAIZ . '/public/assets/app.css') ?>">
+<?php foreach (glob(RAIZ . '/public/assets/mod_*.css') ?: [] as $css): ?>
+<link rel="stylesheet" href="/assets/<?= e(basename($css)) ?>?v=<?= filemtime($css) ?>">
+<?php endforeach; ?>
 </head>
 <body class="admin">
 <?php if ($admin): ?>
@@ -41,5 +44,6 @@ $volverCentral = (!empty($_SESSION['desde_central']) && \TuPlanner\TukanCentral:
     <?= $contenido ?>
 </main>
 <script src="/assets/app.js?v=<?= filemtime(RAIZ . '/public/assets/app.js') ?>" defer></script>
+<script src="/assets/mod_modulos.js?v=<?= filemtime(RAIZ . '/public/assets/mod_modulos.js') ?>" defer></script>
 </body>
 </html>

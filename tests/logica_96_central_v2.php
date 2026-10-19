@@ -97,6 +97,13 @@ $anulado = $pagar($P1, 'quinta', 'mensual', $d('today'), 500.0, $d('today'));
 $planes->anularPago($anulado);
 $db->exec("UPDATE negocios SET estado = 'prueba' WHERE id = $P1");
 $cli = (int) $db->query("INSERT INTO clientes (negocio_id, nombre, telefono) VALUES ($A2, 'Cliente Secreto Del Salón', '0987654321') RETURNING id")->fetchColumn();
+// Ya no hay registro con prueba gratis: llegan pedidos de demo (demo_pedida) y pedidos de módulos desde Mi plan (cambio_modulos)
+$pedidosDemo = new \TuPlanner\PedidosDemo($db);
+$PD1 = $pedidosDemo->crear(['nombre' => 'Rosa Pérez', 'negocio' => 'Hacienda La Pedida', 'ciudad' => 'Ibarra', 'whatsapp' => '0981112233',
+                            'email' => 'rosa@pedida.ec', 'necesita' => 'Tenemos 3 salones', 'modulos' => ['invitados', 'plano']]);
+$PD2 = $pedidosDemo->crear(['nombre' => 'Luis Mora', 'negocio' => 'Salón Los Pinos', 'whatsapp' => '0982223344', 'email' => 'luis@pinos.ec']);
+$pedidosDemo->marcar($PD2, 'contactada');
+$PM1 = (new \TuPlanner\Modulos($db))->pedir($A2, null, ['dia_evento'], 'Para las bodas grandes');
 check('12 negocios', 12, $cuenta('SELECT count(*) FROM negocios'));
 check('El origen se guarda (registro / super)', ['registro', 'super'], [$db->query("SELECT origen FROM negocios WHERE id = $P1")->fetchColumn(),
                                                                        $db->query("SELECT origen FROM negocios WHERE id = $O1")->fetchColumn()]);
@@ -179,17 +186,17 @@ $db->exec('DELETE FROM tukan_central_pedidos');
 // ---------------------------------------------------------------------------------------------
 titulo('4. capacidades (§5.1): solo lo que de verdad funciona');
 $cap = $pedir('capacidades')[1];
-check('Acciones', ['capacidades', 'estado', 'sso', 'clientes', 'cliente', 'cotizar', 'planes', 'solicitudes', 'solicitud', 'finanzas', 'ejecutar'], $cap['acciones']);
+check('Acciones', ['capacidades', 'estado', 'sso', 'clientes', 'cliente', 'cotizar', 'planes', 'modulos', 'solicitudes', 'solicitud', 'finanzas', 'ejecutar'], $cap['acciones']);
 check('Sin adjunto', false, in_array('adjunto', $cap['acciones'], true));
 check('Operaciones', TukanCentralV2::OPERACIONES, $cap['ejecutar']);
 check('Sin comprobantes ni tickets', [], array_intersect($cap['ejecutar'], ['aprobar_comprobante', 'rechazar_comprobante', 'responder_ticket']));
-check('Tipos de solicitud', ['registro_nuevo', 'seguimiento_prueba', 'renovacion', 'dominio_gratis'], $cap['tipos_solicitud']);
+check('Tipos de solicitud (sin registro_nuevo: no hay prueba gratis)', ['demo_pedida', 'cambio_modulos', 'seguimiento_prueba', 'renovacion', 'dominio_gratis'], $cap['tipos_solicitud']);
 check('Datos básicos', [false, 'USD', 'America/Guayaquil', 'TuPlanner', true, false, true],
       [$cap['unico'], $cap['moneda'], $cap['zona_horaria'], $cap['nombre'], $cap['sso_ir'], $cap['meses_libres'], $cap['planes_editar']]);
 check('rutas_sso', ['/?r=admin'], $cap['rutas_sso']);
 check('Períodos con los meses que recibe', [['periodo' => 'mensual', 'meses' => 1], ['periodo' => 'semestral', 'meses' => 6], ['periodo' => 'anual', 'meses' => 12]], $cap['periodos']);
 check('Métodos de pago de TuPlanner', array_keys(PanelTukan::METODOS), array_column($cap['metodos_pago'], 'metodo'));
-check('Formulario propio de crear demo: ciudad', ['ciudad'], array_column($cap['formularios']['crear_demo'], 'campo'));
+check('Formulario propio de crear demo: ciudad y módulos', ['ciudad', 'modulos'], array_column($cap['formularios']['crear_demo'], 'campo'));
 check('Estados propios con nombre', true, isset($cap['estados_detalle']['gracia'], $cap['estados_detalle']['cancelado'], $cap['estados_detalle']['prueba_vencida']));
 check('Límites', ['por_pagina_max' => 200, 'meses_finanzas_max' => 24, 'dias_prueba_max' => 90], $cap['limites']);
 check('Versión = commit de git', TukanCentral::version(RAIZ), $cap['version']);
@@ -216,11 +223,11 @@ check('Prueba que termina hoy sigue en prueba', ['prueba', 0], [$por[$P2]['estad
 check('Vencido: días negativos', -10, $por[$V1]['fechas']['dias_para_vencer']);
 $x = $por[$A2];
 check('Forma del cliente (§4.3)', ['id', 'nombre', 'tipo', 'tipo_nombre', 'ciudad', 'plan', 'estado', 'estado_detalle', 'estado_texto', 'en_gracia', 'bloqueado',
-      'fechas', 'dueno', 'ultima_actividad', 'pagos', 'mensual_estimado', 'origen', 'vendedor', 'uso', 'ir', 'ir_trabajar', 'actualizado',
-      'pausa', 'eliminado', 'papelera'], array_keys($x));   // + Anexo A
+      'fechas', 'dueno', 'ultima_actividad', 'pagos', 'mensual_estimado', 'modulos', 'origen', 'vendedor', 'uso', 'ir', 'ir_trabajar', 'actualizado',
+      'pausa', 'eliminado', 'papelera'], array_keys($x));   // + Anexo A y B
 check('id como texto y plan', [(string) $A2, ['codigo' => 'salon', 'nombre' => 'Planner']], [$x['id'], $x['plan']]);
 check('Dueño con WhatsApp normalizado', ['Dueño Salón Anual Al Día', '0990000000', '593990000000'], [$x['dueno']['nombre'], $x['dueno']['telefono'], $x['dueno']['whatsapp']]);
-check('Pagos (sin anulados) y mensual estimado', [390.0, 1, $d('today'), 390.0, 32.5], [$x['pagos']['total'], $x['pagos']['cantidad'], $x['pagos']['primer_pago'], $x['pagos']['ultimo_monto'], $x['mensual_estimado']]);
+check('Pagos (sin anulados) y mensual estimado = precio de su plan con módulos', [390.0, 1, $d('today'), 390.0, 39.0], [$x['pagos']['total'], $x['pagos']['cantidad'], $x['pagos']['primer_pago'], $x['pagos']['ultimo_monto'], $x['mensual_estimado']]);
 check('El pago anulado no cuenta', [0.0, 0], [$por[$P1]['pagos']['total'], $por[$P1]['pagos']['cantidad']]);
 check('Uso', ['Espacios' => 2, 'Eventos (30 días)' => 0, 'Eventos vendidos' => 0, 'Usuarios' => 1], $x['uso']);
 check('Ficha en el súper panel', "/?r=admin_negocio&id=$A2", $x['ir']);
@@ -261,15 +268,16 @@ $x = $pedir('cliente', ['id' => (string) $P1])[1]['cliente'];
 check('Ficha: resumen + detalle', true, isset($x['notas_admin'], $x['pagos_detalle'], $x['registro'], $x['mensajes_sugeridos'], $x['acciones_posibles'], $x['enlace_publico']));
 check('pagos_detalle incluye el anulado', [1, true, false, 500.0], [count($x['pagos_detalle']), $x['pagos_detalle'][0]['anulado'], $x['pagos_detalle'][0]['puede_anular'], $x['pagos_detalle'][0]['monto']]);
 check('Enlace público', 'https://tuplanner.prueba.ec/?r=sitio&s=' . $db->query("SELECT slug FROM negocios WHERE id = $P1")->fetchColumn(), $x['enlace_publico']);
-check('Mensaje para recordar la prueba', true, str_contains((string) $x['mensajes_sugeridos']['recordar_prueba'], 'Tu prueba de Quinta Prueba Uno termina el'));
+check('Mensaje para recordar la prueba', true, str_contains((string) $x['mensajes_sugeridos']['recordar_prueba'], 'Tu demo de Quinta Prueba Uno termina el'));
 check('Sin mensaje de vencido', null, $x['mensajes_sugeridos']['vencido']);
 $acc = array_column($x['acciones_posibles'], 'accion');
-check('Botones de una prueba', ['whatsapp', 'registrar_pago', 'extender_prueba', 'cambiar_plan', 'pausar', 'cancelar', 'nueva_clave_dueno', 'nota_interna', 'borrar_cliente', 'abrir'], $acc);
+check('Botones de una demo', ['whatsapp', 'registrar_pago', 'extender_prueba', 'cambiar_plan', 'cambiar_modulos', 'pausar', 'cancelar', 'nueva_clave_dueno', 'nota_interna', 'borrar_cliente', 'abrir'], $acc);
 $pago = $x['acciones_posibles'][1];
 check('Formulario de pago (§4.4)', ['plan', 'periodo', 'monto', 'metodo', 'fecha', 'inicio', 'nota', 'dominio'], array_column($pago['campos'], 'campo'));
 check('… con datos fijos y cotizar', [['cliente_id' => (string) $P1], true, 69.0], [$pago['datos'], $pago['campos'][2]['cotizar'], $pago['campos'][2]['valor']]);
-check('Solicitudes abiertas del cliente', ["registro_nuevo:$P1"], array_column($x['solicitudes'], 'id'));
+check('Solicitudes abiertas del cliente (en demo, sin registro_nuevo)', [], array_column($x['solicitudes'], 'id'));
 $x2 = $pedir('cliente', ['id' => (string) $A2])[1]['cliente'];
+check('Solicitudes abiertas de quien pidió un módulo', true, in_array("cambio_modulos:$PM1", array_column($x2['solicitudes'], 'id'), true));
 check('A quien paga no se le ofrece alargar la prueba', false, in_array('extender_prueba', array_column($x2['acciones_posibles'], 'accion'), true));
 check('Mensaje de renovación con el precio', true, str_contains((string) $x2['mensajes_sugeridos']['recordar_renovacion'], '$39,00 al mes'));
 check('Suspendido: botón reactivar', true, in_array('reactivar', array_column($pedir('cliente', ['id' => (string) $S1])[1]['cliente']['acciones_posibles'], 'accion'), true));
@@ -289,25 +297,27 @@ check('cotizar: meses libres no → 422 meses', 'meses', $pedir('cotizar', ['cli
 check('cotizar: plan que no existe → 422', 'plan', $pedir('cotizar', ['cliente_id' => (string) $V1, 'plan' => 'oro', 'periodo' => 'mensual'])[1]['campo']);
 $db->exec("UPDATE planes SET max_espacios = 2 WHERE codigo = 'salon'");   // el plan Planner no tiene límite; se prueba el mecanismo
 $r = $pedir('planes')[1];
-check('planes: editable y 2 planes', [true, ['salon', 'quinta']], [$r['editable'], array_column($r['planes'], 'codigo')]);
-check('planes: precios de Salón', [39.0, 195.0, 390.0], array_column($r['planes'][0]['precios'], 'precio'));
-check('planes: meses gratis', [0, 1, 2], array_column($r['planes'][0]['precios'], 'meses_gratis'));
-check('planes: clientes por plan', [6, 6], array_column($r['planes'], 'clientes'));
-check('planes: límites', ['Espacios' => '2', 'Usuarios' => '3'], $r['planes'][0]['limites']);
-check('planes: ajustes', ['dias_prueba' => 7, 'dias_demo' => 7, 'dias_gracia' => 3, 'dias_gracia_demo' => 0, 'registro_abierto' => true], $r['ajustes']);
+check('planes: editable y 3 planes (Esencial, Planner, Agencia)', [true, ['esencial', 'salon', 'quinta']], [$r['editable'], array_column($r['planes'], 'codigo')]);
+check('planes: precios de Salón', [39.0, 195.0, 390.0], array_column($r['planes'][1]['precios'], 'precio'));
+check('planes: meses gratis', [0, 1, 2], array_column($r['planes'][1]['precios'], 'meses_gratis'));
+check('planes: clientes por plan', [0, 6, 6], array_column($r['planes'], 'clientes'));
+check('planes: límites', ['Espacios' => '2', 'Usuarios' => '3'], $r['planes'][1]['limites']);
+check('planes: ajustes', ['dias_prueba' => 7, 'dias_demo' => 7, 'dias_gracia' => 3, 'dias_gracia_demo' => 0, 'registro_abierto' => false], $r['ajustes']);
 
 // ---------------------------------------------------------------------------------------------
 titulo('7. solicitudes (§5.8, §5.9): registros nuevos y recordatorios');
 $ab = $sols();
 $tipos = array_count_values(array_column($ab, 'tipo'));
-check('Registros nuevos: los que se registraron solos (no suspendidos ni del súper)', 9, $tipos['registro_nuevo'] ?? 0);
+check('Sin registros nuevos (no hay prueba gratis)', 0, $tipos['registro_nuevo'] ?? 0);
+check('Pedidos de demo abiertos (nuevo y contactado)', 2, $tipos['demo_pedida'] ?? 0);
+check('Pedido de módulos desde Mi plan', 1, $tipos['cambio_modulos'] ?? 0);
 check('Seguimiento de prueba: termina hoy, faltan 2 y terminada', ["seguimiento_prueba:$P2:vence_hoy:" . $d('today'), "seguimiento_prueba:$P3:faltan_2:" . $d('+2 days'),
       "seguimiento_prueba:$T1:terminada:" . $d('-3 days')], array_values(array_filter($ids($ab), fn($i) => str_starts_with($i, 'seguimiento_prueba:'))));
 check('Renovación: vence en 3 días y los dos vencidos', ["renovacion:$G1:vencida:" . $d('-1 day'), "renovacion:$V1:vencida:" . $d('-10 days'), "renovacion:$A3:vence_pronto:" . $d('+3 days')],
       array_values(array_filter($ids($ab), fn($i) => str_starts_with($i, 'renovacion:'))));
 check('Dominio gratis del pago anual', ["dominio_gratis:$pagoA2"], array_values(array_filter($ids($ab), fn($i) => str_starts_with($i, 'dominio_gratis:'))));
-check('Total de abiertas', 16, count($ab));
-check('estado v1: solicitudes_abiertas', 16, (new TukanCentral($db))->estado($hoy)['solicitudes_abiertas']);
+check('Total de abiertas', 10, count($ab));
+check('estado v1: solicitudes_abiertas', 10, (new TukanCentral($db))->estado($hoy)['solicitudes_abiertas']);
 check('estado v1: huella = la de la lista', TukanCentralV2::huella($ab), (new TukanCentral($db))->estado($hoy)['solicitudes_huella']);
 $s = array_values(array_filter($ab, fn($x) => $x['id'] === "seguimiento_prueba:$P2:vence_hoy:" . $d('today')))[0];
 check('Forma de la solicitud', ['id', 'tipo', 'categoria', 'titulo', 'fecha', 'actualizado', 'cliente_id', 'quien', 'resumen', 'monto', 'estado', 'estado_producto',
@@ -318,7 +328,7 @@ check('Botones: WhatsApp, alargar, pagar, atender, abrir', ['whatsapp', 'extende
 check('Las alta primero', 'alta', $ab[0]['prioridad']);
 $r = $pedir('solicitudes', ['tipos' => ['renovacion']]);
 check('Filtro por tipo y contadores', [3, ['renovacion' => 3]], [$r[1]['total'], (array) $r[1]['contadores']]);
-check('Filtro por cliente', ["registro_nuevo:$A1"], $ids($sols(['cliente_id' => (string) $A1])));
+check('Filtro por cliente', ["renovacion:$A3:vence_pronto:" . $d('+3 days')], $ids($sols(['cliente_id' => (string) $A3])));
 check('Ninguna cerrada todavía', 0, count($sols(['estado' => 'cerradas'])));
 check('solicitud por id', "renovacion:$A3:vence_pronto:" . $d('+3 days'), $pedir('solicitud', ['id' => "renovacion:$A3:vence_pronto:" . $d('+3 days')])[1]['solicitud']['id']);
 check('solicitud que no existe → 404', [404, 'no_encontrado'], $codigo($pedir('solicitud', ['id' => 'renovacion:1:x'])));
@@ -345,7 +355,7 @@ check('Ingresos y pagos de cada mes = suma de la base (sin anulados)', true, $ok
 $mesHoy = $hoy->format('Y-m');
 check('Este mes: 69 + 390 (+ los de este mes del resto)', $esperados[$mesHoy]['ingresos'], $porMes[$mesHoy]['ingresos']);
 check('Totales = suma de los meses', [array_sum(array_column($fz['meses'], 'ingresos')), array_sum(array_column($fz['meses'], 'pagos'))], [$fz['totales']['ingresos'], $fz['totales']['pagos']]);
-check('MRR = ingreso mensual del panel', [$panel->ingresoMensual($hoy), 170.5], [$fz['mrr'], $fz['mrr']]);
+check('MRR = ingreso mensual del panel = lo que pagan al mes con sus módulos (69 + 69 + 39)', [$panel->ingresoMensual($hoy), 177.0], [$fz['mrr'], $fz['mrr']]);
 check('Por plan en este mes', true, in_array(['plan' => 'salon', 'nombre' => 'Planner', 'monto' => 390.0, 'pagos' => 1], $porMes[$mesHoy]['por_plan'], true));
 check('Por período en este mes (anual 12 meses)', true, in_array(['periodo' => 'anual', 'meses' => 12, 'monto' => 390.0, 'pagos' => 1], $porMes[$mesHoy]['por_periodo'], true));
 check('Por forma de pago', 'Transferencia', $porMes[$mesHoy]['por_metodo'][0]['nombre']);
@@ -465,7 +475,8 @@ check('Correo que ya existe → 422 datos.email', [422, 'datos.email'], [$r[0], 
 check('Nombre corto → 422', 'datos.nombre', $ej('crear_demo', ['nombre' => 'Ab', 'email' => 'otro1@ejemplo.com'] + $datosDemo)[1]['campo']);
 check('Teléfono con menos de 9 dígitos → 422', 'datos.telefono', $ej('crear_demo', ['telefono' => '099-12-34-5', 'email' => 'otro2@ejemplo.com'] + $datosDemo)[1]['campo']);
 check('Días fuera de rango → 422', 'datos.dias', $ej('crear_demo', ['dias' => 91, 'email' => 'otro3@ejemplo.com'] + $datosDemo)[1]['campo']);
-check('Pedido de demo (TuPlanner no tiene) → 422', 'datos.solicitud_id', $ej('crear_demo', ['solicitud_id' => 'demo_pedida:4', 'email' => 'otro4@ejemplo.com'] + $datosDemo)[1]['campo']);
+check('Pedido de demo que no existe → 404', [404, 'no_encontrado'], $codigo($ej('crear_demo', ['solicitud_id' => 'demo_pedida:99999', 'email' => 'otro4@ejemplo.com'] + $datosDemo)));
+check('Solicitud que no es pedido de demo → 422', 'datos.solicitud_id', $ej('crear_demo', ['solicitud_id' => 'renovacion:1', 'email' => 'otro5@ejemplo.com'] + $datosDemo)[1]['campo']);
 check('Ningún error creó cuentas', 0, $cuenta("SELECT count(*) FROM usuarios WHERE email LIKE 'otro%@ejemplo.com'"));
 $r = $ej('crear_demo', ['nombre' => 'Salón Sin Plan', 'contacto_nombre' => 'Ana', 'email' => 'ana.demo@ejemplo.com', 'telefono' => '0987777777']);
 check('Sin plan ni días: plan por defecto y días del ajuste', [200, 'quinta', $d('+7 days'), 'Quito'], [$r[0], $r[1]['cliente']['plan']['codigo'], $r[1]['resultado']['prueba_hasta'], $r[1]['cliente']['ciudad']]);
@@ -486,7 +497,7 @@ check('Sin días → 422', 'datos.dias', $ej('extender_prueba', [], $P1)[1]['cam
 $r = $ej('anular_pago', ['pago_id' => (string) $pagoA3, 'motivo' => 'Se registró por error'], $A3);
 check('Anular pago', [200, true], [$r[0], $db->query("SELECT anulada FROM suscripciones WHERE id = $pagoA3")->fetchColumn()]);
 check('Sin pagos que queden: vuelve a la prueba', [null, 'prueba'], array_values($db->query("SELECT activo_hasta, estado FROM negocios WHERE id = $A3")->fetch()));
-check('… y lo dice el mensaje', true, str_contains($r[1]['mensaje'], 'vuelve al estado de prueba'));
+check('… y lo dice el mensaje', true, str_contains($r[1]['mensaje'], 'vuelve al estado de demo'));
 check('Anular otra vez → 409 conflicto', [409, 'conflicto'], $codigo($ej('anular_pago', ['pago_id' => (string) $pagoA3, 'motivo' => 'otra vez'], $A3)));
 check('Anular un pago de OTRO negocio → 404', [404, 'no_encontrado'], $codigo($ej('anular_pago', ['pago_id' => (string) $pagoA2, 'motivo' => 'intento de otro'], $A3)));
 check('… y el pago del otro sigue igual', false, $db->query("SELECT anulada FROM suscripciones WHERE id = $pagoA2")->fetchColumn());
@@ -564,17 +575,19 @@ check('… y la atendida no vuelve', false, in_array($idP3, $abLuego, true));
 check('Atender otra vez igual: sin cambios', true, $ej('atender_solicitud', ['solicitud_id' => $idP3, 'resultado' => 'atendida'])[1]['sin_cambios']);
 $r = $ej('atender_solicitud', ['solicitud_id' => $idP3, 'resultado' => 'descartada']);
 check('Ya atendida y piden descartar → 409 conflicto', [409, 'conflicto', 'ya_atendida', 'atendida'], [$r[0], $r[1]['codigo'], $r[1]['detalle']['motivo'], $r[1]['detalle']['estado']]);
-$idReg = "registro_nuevo:$P2";
+$idReg = "demo_pedida:$PD1";
 $r = $ej('atender_solicitud', ['solicitud_id' => $idReg, 'resultado' => 'en_proceso']);
 check('En proceso: sigue abierta', [200, 'en_proceso'], [$r[0], array_column($sols(), 'estado', 'id')[$idReg] ?? null]);
 check('Cambia la huella del estado v1', true, TukanCentralV2::huella($ab) !== (new TukanCentral($db))->estado($hoy)['solicitudes_huella']);
-check('De en proceso a atendida sí', 200, $ej('atender_solicitud', ['solicitud_id' => $idReg, 'resultado' => 'atendida'])[0]);
+check('Pedido de demo: "atendida" solo creando la demo → 422', 'datos.resultado', $ej('atender_solicitud', ['solicitud_id' => $idReg, 'resultado' => 'atendida'])[1]['campo']);
+check('De en proceso a descartada sí', [200, 'descartada'], [$ej('atender_solicitud', ['solicitud_id' => $idReg, 'resultado' => 'descartada'])[0],
+      $db->query("SELECT estado FROM pedidos_demo WHERE id = $PD1")->fetchColumn()]);
 check('Solicitud que no existe → 404', [404, 'no_encontrado'], $codigo($ej('atender_solicitud', ['solicitud_id' => 'renovacion:1:x:2026-01-01', 'resultado' => 'atendida'])));
 check('Resultado no válido → 422', 'datos.resultado', $ej('atender_solicitud', ['solicitud_id' => $idReg, 'resultado' => 'lista'])[1]['campo']);
 $r = $ej('atender_solicitud', ['solicitud_id' => "dominio_gratis:$pagoA2", 'resultado' => 'atendida', 'dominio' => 'SalonAnual.com']);
 check('Dominio gratis: se guarda en el pago anual', [200, 'salonanual.com'], [$r[0], $db->query("SELECT dominio FROM suscripciones WHERE id = $pagoA2")->fetchColumn()]);
 check('… y la solicitud ya no aparece', false, in_array("dominio_gratis:$pagoA2", $ids($sols(['estado' => 'todas'])), true));
-check('Dominio en una solicitud que no es dominio gratis → 422', 'datos.dominio', $ej('atender_solicitud', ['solicitud_id' => "registro_nuevo:$P1", 'resultado' => 'atendida', 'dominio' => 'no valido'])[1]['campo']);
+check('Dominio en una solicitud que no es dominio gratis → 422', 'datos.dominio', $ej('atender_solicitud', ['solicitud_id' => "seguimiento_prueba:$P2:vence_hoy:" . $d('today'), 'resultado' => 'atendida', 'dominio' => 'no valido'])[1]['campo']);
 $r = $ej('extender_prueba', ['dias' => 3], $P3);
 check('Alargar la prueba reinicia los avisos (borra lo atendido de esa prueba)', [200, 0], [$r[0], $cuenta("SELECT count(*) FROM tukan_central_atenciones WHERE solicitud_id LIKE 'seguimiento_prueba:$P3:%'")]);
 $todasEj = $cuenta("SELECT count(*) FROM tukan_central_operaciones WHERE estado = 'ok'");

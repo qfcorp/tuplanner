@@ -14,7 +14,7 @@ if ($ev) {
     $st->execute([$ev['negocio_id']]);
     $negocio = $st->fetch();
 }
-if (!$ev || !DiaEvento::publicoActivo($negocio) || in_array($ev['estado'], ['perdido', 'cancelado'], true)) {
+if (!$ev || !DiaEvento::publicoActivo(db(), $negocio, 'invitados') || in_array($ev['estado'], ['perdido', 'cancelado'], true)) {
     http_response_code(404);
     if (!empty($_GET['json'])) { header('Content-Type: application/json'); echo json_encode(['error' => 'Enlace no válido']); return; }
     vista_publica('error_publico', ['mensaje' => 'Este enlace de la puerta no es válido o el evento fue cancelado.'], 'Puerta', $negocio ? DiaEvento::marca($negocio) : null);

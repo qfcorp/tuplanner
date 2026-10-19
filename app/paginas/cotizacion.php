@@ -80,6 +80,7 @@ if (es_post()) {
         switch ($accion) {
             case 'crear':
                 $modo = campo('modo', 'paquete');
+                if ($modo === 'paquete' && !modulo_activo($u, 'paquetes')) $modo = 'vacia';   // Anexo B: sin el módulo de paquetes
                 $paq = $modo === 'paquete' ? (int) ($_POST['paquete_id'] ?? 0) : 0;
                 if ($modo === 'paquete' && !$paq) throw new RuntimeException('Elige el paquete.');
                 $nueva = $cot->crear($nid, $id, $paq ?: null, (int) $u['id']);
@@ -132,6 +133,7 @@ if (es_post()) {
                     $cot->agregarProducto($nid, $cid, $prod);
                     aviso('Producto agregado.');
                 } elseif ($despues === 'paquete') {
+                    exigir(modulo_activo($u, 'paquetes'), 'Los paquetes no están en tu plan. Agrégalos en Mi plan.');
                     $paq = (int) ($_POST['paquete_agregar'] ?? 0);
                     if (!$paq) throw new RuntimeException('Elige el paquete que quieres agregar.');
                     $cot->aplicarPaquete($nid, $cid, $paq);
@@ -196,7 +198,7 @@ if (!empty($_GET['c'])) {
 if (!$actual && $versiones) $actual = $cot->obtener($nid, (int) $versiones[0]['id']);
 $editable = $actual && $puede && in_array($actual['estado'], ['borrador', 'enviada'], true);
 $vencida = $actual && in_array($actual['estado'], ['borrador', 'enviada'], true) && $actual['valida_hasta'] < date('Y-m-d');
-$paquetes = $cat->paquetes($nid, false);
+$paquetes = modulo_activo($u, 'paquetes') ? $cat->paquetes($nid, false) : [];
 // Primero los paquetes del mismo tipo de evento
 usort($paquetes, fn($a, $b) => [($a['tipo_evento'] ?? '') !== $ev['tipo'], $a['nombre']] <=> [($b['tipo_evento'] ?? '') !== $ev['tipo'], $b['nombre']]);
 $catalogo = $editable ? $cat->paraBuscador($nid, $dueno) : [];

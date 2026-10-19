@@ -125,10 +125,10 @@ final class DiaEvento
         return ['nombre' => $negocio['nombre'], 'color' => $negocio['color'], 'slug' => $negocio['slug'], 'logo' => $negocio['logo']];
     }
 
-    /** ¿Las páginas públicas del día del evento (invitación, puerta, en vivo) están activas para este negocio? */
-    public static function publicoActivo(array $negocio): bool
+    /** ¿Las páginas públicas del día del evento (invitación, puerta, en vivo, portal del proveedor) están activas? Cuenta al día y con el módulo encendido. */
+    public static function publicoActivo(PDO $db, array $negocio, string $modulo): bool
     {
-        return $negocio['plan_codigo'] === 'quinta' && !in_array($negocio['estado'], ['suspendido', 'cancelado'], true);
+        return !in_array($negocio['estado'], ['suspendido', 'cancelado'], true) && (new Modulos($db))->activo((int) $negocio['id'], $modulo);
     }
 
     // ------------------------------------------------------------------

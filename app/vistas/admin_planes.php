@@ -1,7 +1,7 @@
-<?php /** @var array $lista @var array $a @var array $tabla @var array $registro */ ?>
+<?php /** @var array $lista @var array $a @var array $tabla @var array $registro @var array $catalogo @var array $planesModulos */ ?>
 <div class="cabecera">
     <div><h1>Planes y precios</h1>
-        <p>Lo que cambies aquí se ve al instante en el registro, en la página de planes de cada negocio y en los próximos pagos.</p></div>
+        <p>Cada plan es un precio base + los módulos que trae. Lo que cambies aquí se ve al instante en Mi plan de cada negocio y en los próximos pagos.</p></div>
 </div>
 
 <div class="rejilla rejilla-2">
@@ -34,11 +34,40 @@
     <?php endforeach; ?>
 </div>
 
+<form method="post" class="bloque" id="catalogo">
+    <?= campo_csrf() ?><input type="hidden" name="accion" value="catalogo">
+    <h2>Catálogo de módulos</h2>
+    <p class="g-nota">Precio al mes de cada módulo (lo que paga un cliente que lo agrega a su plan, o lo que se le descuenta si se lo quitas), la descripción que ve en Mi plan y el orden.</p>
+    <div class="desliza"><table class="tabla adm-cat-tabla" style="min-width:640px">
+        <thead><tr><th>Módulo</th><th style="width:110px">Precio al mes ($)</th><th>Descripción</th><th style="width:80px">Orden</th></tr></thead>
+        <tbody><?php foreach ($catalogo as $m): $mid = e($m['id']); ?>
+            <tr><td><strong><?= e($m['icono']) ?> <?= e($m['nombre']) ?></strong><br><small class="suave"><?= e($m['grupo_nombre']) ?><?= $m['depende_de'] ? ' · necesita ' . e(implode(', ', array_map([TuPlanner\Modulos::class, 'nombre'], $m['depende_de']))) : '' ?></small></td>
+                <td><input type="text" inputmode="decimal" name="precio[<?= $mid ?>]" value="<?= e(number_format($m['precio_mensual'], 2, '.', '')) ?>" aria-label="Precio de <?= e($m['nombre']) ?>" required></td>
+                <td><input type="text" name="descripcion[<?= $mid ?>]" value="<?= e($m['descripcion']) ?>" maxlength="400" aria-label="Descripción de <?= e($m['nombre']) ?>"></td>
+                <td><input type="number" name="orden[<?= $mid ?>]" value="<?= (int) $m['orden'] ?>" min="0" max="10000" aria-label="Orden de <?= e($m['nombre']) ?>"></td></tr>
+        <?php endforeach; ?></tbody>
+    </table></div>
+    <h2 style="margin-top:18px">Qué módulos trae cada plan</h2>
+    <div class="adm-cat-planes">
+        <?php foreach ($planesModulos as $pm): $pc = e($pm['codigo']); ?>
+            <fieldset class="adm-mod-grupo"><legend>Plan <?= e($pm['nombre']) ?> · <?= dinero($pm['precio_mensual']) ?></legend>
+                <label class="adm-mod-item"><input type="checkbox" name="plan_todos[<?= $pc ?>]" value="1" <?= $pm['todos'] ? 'checked' : '' ?>>
+                    <span class="adm-mod-nombre"><strong>Todos los módulos</strong><small>También los que se agreguen después</small></span></label>
+                <?php foreach ($catalogo as $m): ?>
+                    <label class="adm-mod-item"><input type="checkbox" name="plan_mod[<?= $pc ?>][<?= e($m['id']) ?>]" value="1" <?= in_array($m['id'], $pm['modulos'], true) ? 'checked' : '' ?>>
+                        <span class="adm-mod-nombre"><?= e($m['icono']) ?> <?= e($m['nombre']) ?></span></label>
+                <?php endforeach; ?>
+            </fieldset>
+        <?php endforeach; ?>
+    </div>
+    <button class="boton" type="submit" style="margin-top:12px" data-confirmar="¿Guardar el catálogo? Cambia lo que tienen y lo que pagan los clientes de cada plan.">Guardar catálogo y planes</button>
+</form>
+
 <form method="post" class="bloque">
     <?= campo_csrf() ?><input type="hidden" name="accion" value="ajustes">
-    <h2>Prueba gratis, promociones y cobro</h2>
+    <h2>Demo, promociones y cobro</h2>
     <div class="rejilla rejilla-3" style="gap:12px">
-        <div class="campo"><label for="dias_prueba">Días de prueba gratis</label>
+        <div class="campo"><label for="dias_prueba">Días de demo</label>
             <input type="number" id="dias_prueba" name="dias_prueba" value="<?= e($a['dias_prueba']) ?>" min="0" max="90" required></div>
         <div class="campo"><label for="dias_gracia">Días de gracia al vencer</label>
             <input type="number" id="dias_gracia" name="dias_gracia" value="<?= e($a['dias_gracia']) ?>" min="0" max="30" required>

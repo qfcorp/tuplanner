@@ -2,7 +2,7 @@
 use TuPlanner\{DiaEvento, Eventos, Invitados};
 
 /**
- * Portal de invitados para los novios u organizadores (público, ?t=token_cliente, solo plan Agencia):
+ * Portal de invitados para los novios u organizadores (público, ?t=token_cliente, módulo invitados):
  * arman su lista, las mesas y mandan las invitaciones desde el celular.
  */
 $token = (string) ($_GET['t'] ?? '');
@@ -13,7 +13,7 @@ if ($ev) {
     $st->execute([$ev['negocio_id']]);
     $negocio = $st->fetch();
 }
-if (!$ev || !DiaEvento::publicoActivo($negocio) || in_array($ev['estado'], ['perdido', 'cancelado'], true)) {
+if (!$ev || !DiaEvento::publicoActivo(db(), $negocio, 'invitados') || in_array($ev['estado'], ['perdido', 'cancelado'], true)) {
     http_response_code(404);
     vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido o ya no está activo. Pide uno nuevo al lugar del evento.'], 'Invitados', $negocio ? DiaEvento::marca($negocio) : null);
     return;

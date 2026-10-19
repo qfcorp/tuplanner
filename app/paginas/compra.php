@@ -96,7 +96,7 @@ $st = db()->prepare('SELECT * FROM negocios WHERE id = ?');
 $st->execute([$nid]);
 $negocio = $st->fetch();
 $items = $compras->items($id);
-$portal = DiaEvento::publicoActivo($negocio) ? url_completa('portal_proveedor', ['t' => $c['proveedor_token']]) : null;
+$portal = DiaEvento::publicoActivo(db(), $negocio, 'portal_proveedor') ? url_completa('portal_proveedor', ['t' => $c['proveedor_token']]) : null;
 $st = db()->prepare("SELECT id, codigo, nombre, fecha FROM eventos WHERE negocio_id = ? AND estado NOT IN ('perdido','cancelado') AND (fecha >= CURRENT_DATE - 60 OR id = ?) ORDER BY fecha LIMIT 300");
 $st->execute([$nid, (int) $c['evento_id']]);
 $st2 = db()->prepare('SELECT m.*, u.nombre AS usuario FROM proveedor_movimientos m LEFT JOIN usuarios u ON u.id = m.usuario_id WHERE m.negocio_id = ? AND m.compra_id = ? ORDER BY m.creado_en DESC, m.id DESC');

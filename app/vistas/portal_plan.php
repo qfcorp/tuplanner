@@ -69,6 +69,7 @@ $visibles = array_values(array_filter($partidas, fn($p) => $p['estado'] !== 'can
     <?php endif; ?>
 </section>
 
+<?php if ($conPresupuesto): ?>
 <section class="bloque" id="presupuesto">
     <h2>Tu presupuesto</h2>
     <?php if (!$visibles && $resumen['organizador'] <= 0): ?>
@@ -138,3 +139,4 @@ $visibles = array_values(array_filter($partidas, fn($p) => $p['estado'] !== 'can
     </ul>
     <?php endif; ?>
 </section>
+<?php endif; ?>

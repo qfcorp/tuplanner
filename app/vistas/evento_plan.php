@@ -43,7 +43,7 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
             <h3>Directo a proveedores</h3>
             <p><?= dinero($resumen['directo']) ?> · pagado <?= dinero($resumen['directo_pagado']) ?> · falta <strong><?= dinero($resumen['directo_saldo']) ?></strong></p>
         </div>
-        <?php if ($resumen['comision'] > 0): ?>
+        <?php if ($resumen['comision'] > 0 && modulo_activo($u, 'comisiones')): ?>
         <div>
             <h3>Tus comisiones</h3>
             <p><?= dinero($resumen['comision']) ?> · cobrado <?= dinero($resumen['comision_cobrada']) ?> · por cobrar <strong><?= dinero($resumen['comision_por_cobrar']) ?></strong></p>
@@ -174,7 +174,7 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
                     <?php else: ?>
                         <p class="suave ayuda-chica">Va en tu contrato: el cliente te paga a ti (pestaña Pagos) y tú le pagas al proveedor en <a href="<?= e(url('compras', ['evento' => $ev['id']])) ?>">Compras</a>.</p>
                     <?php endif; ?>
-                    <?php if ($p['comision_total'] > 0): ?>
+                    <?php if ($p['comision_total'] > 0 && modulo_activo($u, 'comisiones')): ?>
                         <h3 class="pn-sub">Comisión del proveedor: <?= dinero($p['comision_total']) ?> (cobrado <?= dinero((float) $p['comision_cobrada']) ?>)</h3>
                         <?php if ($p['comision_por_cobrar'] > 0): ?>
                         <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>" class="pn-en-linea">

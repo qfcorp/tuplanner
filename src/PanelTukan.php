@@ -13,11 +13,11 @@ use RuntimeException;
 final class PanelTukan
 {
     public const ESTADOS = [
-        'prueba' => 'En prueba', 'prueba_vencida' => 'Prueba terminada', 'activo' => 'Al día',
+        'prueba' => 'En demo', 'prueba_vencida' => 'Demo terminada', 'activo' => 'Al día',
         'por_vencer' => 'Venció (en gracia)', 'vencido' => 'Vencido', 'suspendido' => 'Suspendido', 'cancelado' => 'Cancelado',
     ];
     public const METODOS = ['transferencia' => 'Transferencia', 'deuna' => 'DeUna', 'payphone' => 'Payphone', 'plux' => 'Plux',
-                            'efectivo' => 'Efectivo', 'tarjeta' => 'Tarjeta', 'cortesia' => 'Cortesía (gratis)'];
+                            'efectivo' => 'Efectivo', 'tarjeta' => 'Tarjeta', 'cortesia' => 'Cortesía (sin costo)'];
 
     private Planes $planes;
 
@@ -149,12 +149,18 @@ final class PanelTukan
         return round((float) $st->fetchColumn(), 2);
     }
 
-    /** Ingreso mensual recurrente: lo que vale al mes cada pago vigente. */
+    /**
+     * Ingreso mensual recurrente (Anexo B): lo que paga al mes cada negocio con un pago vigente (no de cortesía),
+     * según su plan y sus módulos (plan + extra − quitados, o su precio acordado).
+     */
     public function ingresoMensual(DateTimeImmutable $hoy): float
     {
-        $st = $this->db->prepare('SELECT COALESCE(sum(monto / meses_recibidos),0) FROM suscripciones WHERE NOT anulada AND ' . self::SQL_PAGO_VIVO . ' AND inicio <= ? AND fin >= ?');
+        $st = $this->db->prepare('SELECT DISTINCT negocio_id FROM suscripciones WHERE NOT anulada AND monto > 0 AND ' . self::SQL_PAGO_VIVO . ' AND inicio <= ? AND fin >= ?');
         $st->execute([$hoy->format('Y-m-d'), $hoy->format('Y-m-d')]);
-        return round((float) $st->fetchColumn(), 2);
+        $mods = new Modulos($this->db);
+        $total = 0.0;
+        foreach ($st->fetchAll(PDO::FETCH_COLUMN) as $nid) $total += $mods->mensual((int) $nid);
+        return round($total, 2);
     }
 
     // ------------------------------------------------------------------
@@ -181,7 +187,7 @@ final class PanelTukan
         if ($st->rowCount() !== 1) throw new RuntimeException('Negocio no encontrado.');
     }
 
-    /** Alarga la prueba gratis N días desde hoy (o desde su fin si aún no termina). */
+    /** Alarga la demo N días desde hoy (o desde su fin si aún no termina). */
     public function extenderPrueba(int $negocioId, int $dias, ?DateTimeImmutable $hoy = null): string
     {
         if ($dias < 1 || $dias > 90) throw new RuntimeException('Elige de 1 a 90 días.');
@@ -235,7 +241,7 @@ final class PanelTukan
         }
         if (!$this->negocio($negocioId)) throw new RuntimeException('Negocio no encontrado.');
         $id = $this->planes->suscribir($negocioId, $plan, $periodo, $fi, $metodo, $dominio, $monto, $pagadoEn);
-        $c = $this->planes->cotizar($plan, $periodo);
+        $c = $this->planes->cotizarNegocio($negocioId, $plan, $periodo);
         return ['id' => $id, 'monto' => $monto ?? $c['monto'], 'plan' => $plan, 'periodo' => $periodo, 'metodo' => $metodo];
     }
 }

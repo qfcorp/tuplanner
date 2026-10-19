@@ -1,6 +1,6 @@
 # Bloc de notas — TuPlanner (wedding planners y organizadores de eventos · marca Tukán)
 
-Última actualización: 14 de octubre de 2026
+Última actualización: 18 de octubre de 2026
 
 ## Qué es
 Programa para **wedding planners y organizadores de eventos** (bodas, quince años y demás). Pedido de Dimi del 14 oct 2026:
@@ -32,7 +32,20 @@ Se hizo **copiando TuEvento** (qfcorp/tuevento, salones y quintas) y adaptándol
 - [x] **Restaurar** dentro de 30 días (desde el Panel Central o desde el Panel Tukán del programa, filtro "Papelera"): vuelve tal cual. A los 30 días la tarea de cada hora lo borra de verdad; la copia se guarda 1 año
 - [x] Pruebas: logica_97 (127) y web_97 (56), migración 097. Totales: lógica 2398/2398 y pantallas 1973/1973
 
+## Hecho (18 oct 2026) — Programa modular (Anexo B) y "todo se pide demo"
+Regla de Dimi: "todos los programas deben ser modulares para encender o apagar las funciones que necesita el cliente, para cobrar más o menos" y "nada se da gratis, todo se pide demo".
+- [x] **Base + módulos**: la base la tienen todos (calendario, eventos, clientes, espacios, catálogo, cotizaciones, cuotas y recibos, Mensajes de hoy, página pública, reportes básicos, usuarios). Módulos con su precio al mes: paquetes $3, contratos con firma $6, portal del cliente $6, cobros en línea Payphone $4, formulario/extras/encuesta $5, día del evento $8, invitados con QR $8, plano $6, mobiliario $5, boda en vivo $5, proveedores y compras $7, portal del proveedor $4, incidencias y puntaje $3, metas y reportes avanzados $4, Telegram $3, exportar Excel/Google Calendar $3. Más los propios del organizador: **planificación $6**, **presupuesto por proveedor $6** (necesita planificación), **comisiones $4** (necesita presupuesto) e **ideas $4**.
+- [x] **Planes = precio base + módulos**: Esencial $19 (solo la base, nuevo), Planner $39 (lo mismo que tenía antes) y Agencia $69 (todo). Precios, descripciones y qué trae cada plan se cambian en Panel Tukán → Planes y precios → Catálogo de módulos
+- [x] **Por cliente**: módulos extra (se cobran), módulos quitados (se descuentan) y precio acordado. Precio al mes = plan + extras − quitados (o el acordado); es el que se sugiere al registrar el pago
+- [x] **Apagar nunca borra datos**: se esconden menús, pestañas, páginas ("Este módulo no está en tu plan" con su precio y el enlace a Mi plan), botones, portales públicos ("No disponible"), PDF, tareas automáticas, Telegram, Mensajes de hoy y tarjetas del Inicio
+- [x] **Mi plan** (dueño): lo que paga, sus módulos encendidos y los que puede agregar con su precio; "Pedir este módulo" → pedido que Tukán aprueba o rechaza (Panel Tukán o Panel Central)
+- [x] **Panel Tukán**: ficha del negocio → Módulos con interruptores (enciende solo las dependencias), total al mes, precio acordado y pedidos; catálogo de módulos y planes; pedidos de demo en el Resumen con "Crear demo"
+- [x] **Nada gratis**: ya no hay registro con prueba gratis. "Solicitar demo" (nombre, negocio, ciudad, WhatsApp, correo, qué necesita y módulos que le interesan) llega como pedido de demo; Tukán crea la demo (todos los módulos o los que elija, por los días que decida). "Tu demo terminó — contáctanos para contratar"
+- [x] **Panel Tukán Central** (revisión 3): acción `modulos`, `cliente.modulos`, `mensual_estimado` con módulos, `cambiar_modulos` y `guardar_modulos` (solo el rol dueño, idempotentes y auditados), solicitudes `cambio_modulos` y `demo_pedida`, `crear_demo` con plan, módulos y pedido de demo, `finanzas.por_modulo`
+- [x] Pruebas: logica_98 y web_98 (migración 098). Totales: **lógica 2515/2515 y pantallas 2060/2060**, sin avisos de PHP; revisado en celular (390 px) y computadora
+
 ## Pendiente
+000. [ ] DIMI: actualizar en el servidor (volver a correr el instalador del README): aplica la migración 098 (módulos y pedidos de demo). Revisar los precios de los módulos en Panel Tukán → Planes y precios
 0. [ ] DIMI: al actualizar en el servidor, volver a correr el instalador del README: crea la carpeta `respaldos/borrados` y pasa las tareas de cada hora al usuario `www-data`
 1. [ ] DIMI: instalar en qfcorp (línea del README) y crear la ruta del túnel `tuplanner.tukanec.com` → HTTP → localhost:80 (Host header)
 2. [ ] DIMI: crear el super usuario (`php /var/www/tuplanner/bin/crear_admin.php`) y conectar al Panel Tukán Central (tipo "TuPlanner")

@@ -20,6 +20,7 @@ if (es_post()) {
                 aviso('Listo: tu contraseña cambió. Úsala la próxima vez que entres.');
                 break;
             case 'tg_conectar':
+                exigir(modulo_activo($u, 'telegram'), 'Los avisos por Telegram no están en tu plan. Agrégalos en Mi plan.');
                 $enlace = $telegram->enlaceConectar($uid);
                 if (!$enlace) throw new RuntimeException('Los avisos por Telegram todavía no están activos en este servidor. Escríbenos y los activamos.');
                 $_SESSION['tg_enlace'] = $enlace;

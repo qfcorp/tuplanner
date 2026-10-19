@@ -401,6 +401,7 @@ entrar "$EMAIL_A" "claveSegura1"
 
 echo "12. Plan Salón y aislamiento entre negocios"
 registrar salon "Salón Ajeno $RANDOM"
+pagar_plan salon
 NID_B=$NID
 check "Plan Salón: compras sí" "200" "$(get "r=compras")"
 check "Otro negocio: compra ajena 404" "404" "$(get "r=compra&id=$C1")"
@@ -423,7 +424,7 @@ post "r=compras" --data-urlencode "accion=crear" --data-urlencode "proveedor_id=
 check "Otro negocio: no le compra a un proveedor ajeno" "0" "$(sql "SELECT count(*) FROM compras WHERE negocio_id=$NID_B")"
 post "r=proveedores" --data-urlencode "accion=crear" --data-urlencode "nombre=DJ Salón" --data-urlencode "servicio=musica" --data-urlencode "telefono=0990001111" > /dev/null
 PB=$(sql "SELECT id FROM proveedores WHERE negocio_id=$NID_B")
-check "Plan Salón: portal del proveedor cerrado" "404" "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/?r=portal_proveedor&t=$(sql "SELECT token FROM proveedores WHERE id=$PB")")"
+check "Plan Salón: portal del proveedor no disponible (módulo apagado)" "403" "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/?r=portal_proveedor&t=$(sql "SELECT token FROM proveedores WHERE id=$PB")")"
 check "Plan Salón: ficha sin enlace al portal" "200" "$(get "r=proveedor&id=$PB")"
 no_contiene "…no muestra el portal" "$TMP/pag.html" "portal_proveedor"
 

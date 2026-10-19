@@ -1,10 +1,12 @@
-<?php /** @var array $d @var ?string $error @var array $listaPlanes */ ?>
+<?php /** @var array $d @var ?string $error @var array $listaPlanes @var ?array $pedido */ ?>
 <div class="cabecera">
-    <div><h1>Nuevo negocio</h1>
-        <p>Créalo por tu cliente. Se carga con datos de ejemplo y el sistema le genera una contraseña temporal que te muestra para que se la envíes.</p></div>
+    <div><h1>Nueva demo</h1>
+        <p>Créala por tu cliente. Se carga con datos de ejemplo y todos los módulos encendidos, y el sistema le genera una contraseña temporal que te muestra para que se la envíes.</p></div>
 </div>
 <form method="post" class="bloque" style="max-width:640px">
     <?= campo_csrf() ?>
+    <?php if ($pedido): ?><input type="hidden" name="pedido" value="<?= (int) $pedido['id'] ?>">
+        <p class="aviso aviso-ok">Con el pedido de demo N.º <?= (int) $pedido['id'] ?><?= $pedido['necesita'] ? ': «' . e(mb_substr($pedido['necesita'], 0, 200)) . '»' : '' ?></p><?php endif; ?>
     <?php if ($error): ?><p class="aviso aviso-error" role="alert"><?= e($error) ?></p><?php endif; ?>
     <div class="campo"><label for="negocio">Nombre del negocio de eventos</label>
         <input type="text" id="negocio" name="negocio" value="<?= e($d['negocio']) ?>" required></div>
@@ -22,5 +24,5 @@
     </div>
     <div class="campo"><label for="plan">Plan</label>
         <select id="plan" name="plan"><?php foreach ($listaPlanes as $p): ?><option value="<?= e($p['codigo']) ?>" <?= $d['plan'] === $p['codigo'] ? 'selected' : '' ?>><?= e($p['nombre']) ?> · <?= dinero($p['precio_mensual']) ?> al mes</option><?php endforeach; ?></select></div>
-    <button class="boton boton-ancho" type="submit">Crear negocio</button>
+    <button class="boton boton-ancho" type="submit">Crear demo</button>
 </form>

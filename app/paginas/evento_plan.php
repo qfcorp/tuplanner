@@ -22,7 +22,7 @@ if (!$ev) {
 $tab = 'evento_plan';
 $plan = new Planificacion(db());
 $comercial = es_comercial($u);
-$verDinero = $u['rol'] !== 'coordinador';
+$verDinero = $u['rol'] !== 'coordinador' && modulo_activo($u, 'presupuesto');   // Anexo B: presupuesto, honorarios y dinero son un módulo
 $volver = function (string $ancla) use ($id): never {
     header('Location: ' . url('evento_plan', ['id' => $id]) . '#' . $ancla);
     exit;
@@ -38,6 +38,8 @@ if (es_post()) {
     try {
         if (!in_array($accion, ['tarea', 'tarea_marcar', 'tarea_editar', 'tarea_borrar', 'lista_tipica'], true)) {
             exigir($comercial, 'Solo el dueño o un vendedor pueden cambiar el presupuesto y los honorarios.');
+            exigir(modulo_activo($u, 'presupuesto'), 'El presupuesto por proveedor no está en tu plan. Agrégalo en Mi plan.');
+            if (in_array($accion, ['comision', 'comision_anular'], true)) exigir(modulo_activo($u, 'comisiones'), 'Las comisiones no están en tu plan. Agrégalas en Mi plan.');
         }
         switch ($accion) {
             case 'tarea':

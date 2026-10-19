@@ -86,7 +86,24 @@ bash tests/run_web.sh
 - Capacidad: `Planificacion::cargaDelDia()` cuenta eventos separados o confirmados ese día; `disponibilidadPublica()` da libre / consultar (queda 1 cupo) / ocupado (lleno o día cerrado). La página pública usa esto, no los lugares.
 - CSS del módulo: `mod_plan.css` (prefijos `pn-` planificación, `id-` ideas).
 
+## Módulos (Anexo B) — reglas para programar
+- `src/Modulos.php` es el registro: `BASE`, `CATALOGO` (nombre, ícono, descripción, precio por defecto, dependencias, grupo),
+  `RUTAS` (cada ruta de `public/index.php` → módulo, o `''` = base), `PDFS` (cada `app/pdf/*.php`), `MENSAJES` (grupos de Mensajes de hoy)
+  y `SIN_CORTE` (rutas de un módulo que el router no corta: `payphone` confirma pagos ya iniciados). Precio, descripción y orden se
+  guardan en la tabla `modulos`; los módulos de cada plan, en `planes.modulos` (`*` = todos).
+- **Una sola pregunta**: `modulo_activo($u o $negocio o $id, 'id')`. `requiere_modulo($u, 'id')` muestra "Este módulo no está en tu plan".
+  El router corta solo las páginas privadas (403 + `modulo_apagado`) y públicas (403 + "No disponible", usa `Papelera::negocioDeRuta`).
+  Dentro de las páginas se esconden secciones, pestañas, botones y enlaces del módulo apagado; los POST de un módulo apagado se niegan.
+- **Ruta nueva = agregarla en `Modulos::RUTAS`** (y PDF nuevo en `PDFS`): `logica_98` falla si una ruta o un PDF no está mapeado.
+- Apagar nunca borra: no se tocan los datos. Tareas automáticas y Telegram revisan el módulo (`Automaticas::correr`, `Telegram::textoAUsuarios`).
+- Precio: `Modulos::estado()` (del_plan, extra, quitados, activos, pagados, precio_plan, precio_extra, descuento, precio_acordado, mensual);
+  `Planes::cotizarNegocio()` lo usa para sugerir el monto. El descuento de los quitados nunca deja el precio en negativo.
+- Demo (estado `prueba`): todos los módulos, o `negocios.modulos_prueba` si Tukán eligió otros. No hay registro con prueba gratis:
+  `PedidosDemo` guarda los pedidos de `/?r=registro`.
+- En las pruebas de pantallas, `registrar` crea la cuenta en demo (como Tukán, con `tests/crear_cuenta.php`) y `pagar_plan salon` la pasa a pagada.
+
 ## Archivos de cada módulo
+- 098 módulos y pedidos de demo: `src/Modulos.php`, `src/PedidosDemo.php`, `app/paginas/planes.php` (Mi plan), `app/paginas/registro.php` (Solicitar demo), `app/vistas/modulo_apagado.php`, `app/vistas/_admin_modulos.php`, `public/assets/mod_modulos.*`, `tests/logica_98_modulos.php`, `tests/web_98_modulos.sh`
 | Módulo | Pruebas | Migración | Clases |
 |---|---|---|---|
 | Núcleo | logica_00, web_00 | schema.sql | Eventos, Cotizaciones, Pagos, Contratos, Planes, Altas, Notificaciones, Telegram, Fotos, Pdf, WhatsApp, Letras |

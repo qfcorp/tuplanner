@@ -17,8 +17,8 @@ $hayFiltro = $filtros['buscar'] !== '' || $filtros['categoria'] !== '';
     <?php if ($puede): ?>
     <div class="acciones">
         <a class="boton" href="<?= e(url('catalogo', ['nuevo' => 1] + array_filter(['cat' => $filtros['categoria']]))) ?>#form-producto">+ Agregar producto</a>
-        <a class="boton boton-claro" href="<?= e(url('paquetes')) ?>">Paquetes</a>
-        <a class="boton boton-claro" href="<?= e(url('extras')) ?>">Extras del portal</a>
+        <?php if (modulo_activo($u, 'paquetes')): ?><a class="boton boton-claro" href="<?= e(url('paquetes')) ?>">Paquetes</a><?php endif; ?>
+        <?php if (modulo_activo($u, 'cuestionarios')): ?><a class="boton boton-claro" href="<?= e(url('extras')) ?>">Extras del portal</a><?php endif; ?>
     </div>
     <?php endif; ?>
 </div>

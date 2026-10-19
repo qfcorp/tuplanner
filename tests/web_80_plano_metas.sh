@@ -172,11 +172,12 @@ check "El plano ajeno sigue entero" "t" "$(sql "SELECT count(*) > 0 FROM plano_e
 get "r=pdf&tipo=plano&id=$P80_P" > /dev/null
 contiene "Otro negocio no saca el PDF ajeno" "$TMP/pag.html" "No se encontró el plano"
 registrar salon "Salón Chico $RANDOM"
-check "Plan Salón: candado en planos" "200" "$(get "r=plano")"
-contiene "Plan Salón: es del plan Agencia" "$TMP/pag.html" "es del plan Agencia"
+pagar_plan salon
+check "Plan Salón (sin el módulo Plano): 403" "403" "$(get "r=plano")"
+contiene "Plan Salón: el módulo no está en su plan" "$TMP/pag.html" "Este módulo no está en tu plan"
 P80_EVS=$(crear_evento_sql "$P80_FECHA" consulta)
 get "r=plano&id=$P80_EVS" > /dev/null
-contiene "Plan Salón: candado en la pestaña del evento" "$TMP/pag.html" "Plano del salón es del plan Agencia"
+contiene "Plan Salón: módulo apagado en la pestaña del evento (con la cabecera)" "$TMP/pag.html" "evento-cabeza"
 r=$(post "r=plano" --data-urlencode "accion=crear_plantilla" --data-urlencode "espacio_id=$(sql "SELECT id FROM espacios WHERE negocio_id=$NID LIMIT 1")" --data-urlencode "nombre=No" --data-urlencode "ancho=10" --data-urlencode "largo=10")
 check "Plan Salón no crea planos" "0" "$(sql "SELECT count(*) FROM planos WHERE negocio_id=$NID")"
 entrar "$P80_EMAIL" "claveSegura1"; NID=$P80_NID

@@ -7,7 +7,7 @@ use PDO;
 use RuntimeException;
 
 /**
- * Alta de un negocio nuevo con su dueño (registro público con prueba gratis y panel de Tukán).
+ * Alta de un negocio nuevo con su dueño: demo creada por Tukán (panel de Tukán o Panel Tukán Central, también desde un pedido de demo).
  * Se carga con datos de ejemplo para que pueda cotizar desde el primer minuto: lugares, catálogo,
  * paquetes, contrato, lista de tareas y mobiliario. Todo se puede cambiar.
  */
@@ -30,14 +30,15 @@ final class Altas
         }
     }
 
-    public const ORIGENES = ['registro', 'super', 'central'];
+    /** registro = se registró solo (ya no existe: solo cuentas viejas), demo_pedida = demo de un pedido de demo, super = panel de Tukán, central = Panel Tukán Central. */
+    public const ORIGENES = ['registro', 'demo_pedida', 'super', 'central'];
 
     /**
-     * $origen: de dónde vino el cliente (registro = se registró solo, super = panel de Tukán, central = Panel Tukán Central).
+     * $origen: de dónde vino el cliente (ORIGENES). Toda cuenta nueva empieza en demo (estado "prueba").
      * @return array{negocio_id:int, usuario_id:int, slug:string}
      */
     public function crearNegocioConDueno(string $negocio, string $nombre, string $telefono, string $email, string $clave, string $plan,
-                                         string $ciudad = 'Quito', string $origen = 'registro'): array
+                                         string $ciudad = 'Quito', string $origen = 'super'): array
     {
         if (!in_array($origen, self::ORIGENES, true)) throw new RuntimeException('Origen no válido.');
         $negocio = trim($negocio);

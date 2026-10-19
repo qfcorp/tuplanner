@@ -76,7 +76,7 @@ $form ??= ['nombre' => '', 'email' => '', 'telefono' => '', 'rol' => 'vendedor']
             <h2>Agregar a alguien</h2>
             <?php if (!$puedeAgregar): ?>
                 <p class="aviso aviso-error">Tu plan <?= e($plan['nombre']) ?> permite <?= (int) $plan['max_usuarios'] ?> usuarios activos y ya los tienes.
-                    Desactiva a alguien que ya no lo use o <a href="<?= e(url('planes')) ?>">pásate al plan Agencia</a> (usuarios sin límite).</p>
+                    Desactiva a alguien que ya no lo use o <a href="<?= e(url('planes')) ?>">cambia de plan en Mi plan</a> (el plan Agencia no tiene límite de usuarios).</p>
             <?php endif; ?>
             <div class="campo"><label for="u-nombre">Nombre</label>
                 <input type="text" id="u-nombre" name="nombre" value="<?= e($form['nombre']) ?>" required <?= $puedeAgregar ? '' : 'disabled' ?>></div>

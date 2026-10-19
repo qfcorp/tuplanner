@@ -682,7 +682,7 @@ final class Ventas
     {
         $max = $this->maxEspacios($negocioId);
         return "Tu plan permite hasta $max " . ($max === 1 ? 'lugar activo' : 'lugares activos')
-             . '. Desactiva uno o pasa al plan Agencia para tener lugares sin límite.';
+             . '. Desactiva uno o cambia de plan en Mi plan (el plan Agencia no tiene límite de lugares).';
     }
 
     /** Crea o edita un lugar. $d: nombre, descripcion, capacidad_banquete, capacidad_coctel, precio_base, color, orden. */

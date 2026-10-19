@@ -35,6 +35,7 @@ if (es_post()) {
     try {
         if (!$activo) throw new RuntimeException('Este evento ya no está activo.');
         if ($negocio['estado'] === 'suspendido') throw new RuntimeException('Por ahora no se pueden guardar cambios. Escríbele a ' . $negocio['nombre'] . '.');
+        if (in_array($accion, ['pago', 'pago_borrar'], true) && !modulo_activo($nid, 'presupuesto')) throw new RuntimeException('Esto no está disponible.');
         switch ($accion) {
             case 'tarea':
                 $plan->marcarTarea($nid, $eid, (int) ($_POST['tarea_id'] ?? 0), ($_POST['hecha'] ?? '') === '1', 'cliente');
@@ -65,12 +66,13 @@ $tareasCliente = $plan->tareas($eid, 'cliente');
 $grupos = Planificacion::porMeses($tareasCliente, $ev['fecha']);
 $avanceCliente = $plan->avance($eid, 'cliente');
 $avancePlanner = $plan->avance($eid, 'planner');
-$partidas = $plan->partidas($nid, $eid, true);
-$resumen = $plan->resumen($nid, $eid, true);
+$conPresupuesto = modulo_activo($nid, 'presupuesto');   // Anexo B: "Tu presupuesto" solo con el módulo de presupuesto
+$partidas = $conPresupuesto ? $plan->partidas($nid, $eid, true) : [];
+$resumen = $conPresupuesto ? $plan->resumen($nid, $eid, true) : null;
 $pagosPor = [];
-foreach ($plan->pagos($nid, $eid) as $pg) $pagosPor[(int) $pg['partida_id']][] = $pg;
+if ($conPresupuesto) foreach ($plan->pagos($nid, $eid) as $pg) $pagosPor[(int) $pg['partida_id']][] = $pg;
 $reuniones = $plan->proximasReuniones($eid);
 $primerNombre = trim(explode(' ', trim((string) $ev['cliente']))[0]);
-vista_publica('portal_plan', compact('ev', 'negocio', 'token', 'activo', 'grupos', 'avanceCliente', 'avancePlanner', 'partidas', 'resumen',
+vista_publica('portal_plan', compact('ev', 'negocio', 'token', 'activo', 'grupos', 'avanceCliente', 'avancePlanner', 'partidas', 'resumen', 'conPresupuesto',
                                       'pagosPor', 'reuniones', 'primerNombre'),
               'Mi planificación · ' . $ev['nombre'], $marca);

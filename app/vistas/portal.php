@@ -2,7 +2,7 @@
 use TuPlanner\Pagos;
 /**
  * Portal del cliente.
- * @var array $ev @var array $negocio @var string $token @var bool $quinta @var bool $activo @var array $res @var array $historial
+ * @var array $ev @var array $negocio @var string $token @var array $mod (módulos encendidos) @var bool $activo @var array $res @var array $historial
  * @var ?array $cotizacion @var ?array $contrato @var bool $payphone @var string $banco @var string $deuna
  * @var ?array $invitados @var array $cronograma @var ?string $waNegocio @var string $primerNombre
  */
@@ -58,7 +58,7 @@ $sugeridoTxt = number_format($sugerido, 2, ',', '');
     </dl>
 </section>
 
-<?php require RAIZ . '/app/vistas/_pt_portal.php'; // formulario del evento, extras y encuesta (migración 070) ?>
+<?php require RAIZ . '/app/vistas/_pt_portal.php'; // formulario del evento, extras y encuesta (migración 070; módulo cuestionarios) ?>
 
 <section class="bloque" id="documentos">
     <h2>Tus documentos</h2>
@@ -181,7 +181,7 @@ $sugeridoTxt = number_format($sugerido, 2, ',', '');
 </section>
 <?php endif; ?>
 
-<?php if ($quinta && $activo): ?>
+<?php if ($mod['invitados'] && $activo): ?>
 <section class="bloque" id="invitados">
     <h2>Tus invitados</h2>
     <?php if ((int) $invitados['registros'] > 0): ?>
@@ -196,7 +196,9 @@ $sugeridoTxt = number_format($sugerido, 2, ',', '');
     <?php endif; ?>
     <a class="boton boton-ancho" href="<?= e(url('portal_invitados', ['t' => $ev['token_cliente']])) ?>"><?= (int) $invitados['registros'] > 0 ? 'Ver y editar mi lista de invitados' : 'Cargar mi lista de invitados' ?></a>
 </section>
+<?php endif; ?>
 
+<?php if ($mod['dia_evento'] && $activo): ?>
 <section class="bloque" id="cronograma">
     <h2>Cronograma del evento</h2>
     <?php if ($cronograma): ?>
@@ -208,8 +210,9 @@ $sugeridoTxt = number_format($sugerido, 2, ',', '');
         <p class="vacio">El negocio está preparando el cronograma (ceremonia, cóctel, entrada, vals, cena, baile…). Aparecerá aquí.</p>
     <?php endif; ?>
 </section>
+<?php endif; ?>
 
-<?php if ($ev['transmision_url']): ?>
+<?php if ($mod['boda_vivo'] && $activo && $ev['transmision_url']): ?>
 <section class="bloque cb-vivo">
     <h2>🔴 Transmisión en vivo</h2>
     <p>Comparte este enlace con la familia que no puede asistir para que vea el evento desde cualquier lugar.</p>
@@ -218,7 +221,6 @@ $sugeridoTxt = number_format($sugerido, 2, ',', '');
         <button type="button" class="boton boton-claro" data-copiar="<?= e($ev['transmision_url']) ?>">Copiar enlace</button>
     </div>
 </section>
-<?php endif; ?>
 <?php endif; ?>
 
 <section class="bloque cb-contacto">

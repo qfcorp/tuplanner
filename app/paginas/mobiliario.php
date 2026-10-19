@@ -2,7 +2,6 @@
 use TuPlanner\DiaEvento;
 
 /** Mobiliario y menaje (plan Agencia): sillas, mesas, mantelería, vajilla... con su uso en los próximos eventos. */
-if (!requiere_quinta($u, 'Mobiliario', 'Lleva la cuenta de tus sillas, mesas, mantelería y vajilla: cuánto se reserva para cada evento, si alcanza cuando hay dos eventos el mismo día y cuánto cobrar por lo que se daña.')) return;
 $nid = (int) $u['negocio_id'];
 $dia = new DiaEvento(db());
 $verId = (int) ($_GET['id'] ?? 0);

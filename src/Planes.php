@@ -8,11 +8,11 @@ use PDO;
 use RuntimeException;
 
 /**
- * Planes, prueba gratis y suscripciones de TuPlanner (mismas reglas que la familia Tukán).
- *  - Planner $39 / Agencia $69 al mes (se cambian en el panel de Tukán)
+ * Planes, demo y suscripciones de TuPlanner (mismas reglas que la familia Tukán).
+ *  - Esencial $19 / Planner $39 / Agencia $69 al mes (se cambian en el panel de Tukán)
  *  - Semestral: paga 5, recibe 6
  *  - Anual: paga 10, recibe 12 + dominio propio (a nombre de Tukán)
- *  - Prueba gratis: 7 días
+ *  - Demo: 7 días (solo la crea Tukán; no hay registro con prueba gratis). Cada plan = base + módulos (Modulos)
  */
 final class Planes
 {
@@ -129,6 +129,20 @@ final class Planes
         return (int) $st->fetchColumn();
     }
 
+    /**
+     * Lo que paga un negocio (Anexo B): precio del plan + módulos extra − módulos quitados (o su precio acordado),
+     * por el periodo elegido. Con $plan distinto al suyo, se calcula con los módulos de ese plan.
+     */
+    public function cotizarNegocio(int $negocioId, string $plan, string $periodo): array
+    {
+        $c = $this->cotizar($plan, $periodo);
+        $mensual = (new Modulos($this->db))->mensual($negocioId, $plan);
+        $c['monto'] = round($mensual * $c['meses_pagados'], 2);
+        $c['precio_por_mes'] = round($c['monto'] / $c['meses_recibidos'], 2);
+        $c['mensual'] = $mensual;
+        return $c;
+    }
+
     public function cotizar(string $plan, string $periodo): array
     {
         $periodos = $this->periodos();
@@ -163,7 +177,7 @@ final class Planes
     public function suscribir(int $negocioId, string $plan, string $periodo, DateTimeImmutable $inicio,
                               string $metodoPago, ?string $dominio = null, ?float $monto = null, ?DateTimeImmutable $pagadoEn = null): int
     {
-        $c = $this->cotizar($plan, $periodo);
+        $c = $this->cotizarNegocio($negocioId, $plan, $periodo);
         if ($monto !== null) {
             if ($monto < 0) throw new RuntimeException('El monto no puede ser negativo.');
             $c['monto'] = round($monto, 2);

@@ -26,7 +26,7 @@ $lugar = trim(implode(', ', array_filter([$negocio['direccion'] ?? '', $negocio[
     </dl>
     <div class="acciones dia-inv-botones">
         <?php if ($mapa): ?><a class="boton boton-claro" href="<?= e($mapa) ?>" target="_blank" rel="noopener">Cómo llegar (mapa)</a><?php endif; ?>
-        <?php if (!empty($ev['transmision_url'])): ?><a class="boton" href="<?= e($ev['transmision_url']) ?>" target="_blank" rel="noopener">Ver en vivo</a><?php endif; ?>
+        <?php if (!empty($ev['transmision_url']) && modulo_activo((int) $ev['negocio_id'], 'boda_vivo')): ?><a class="boton" href="<?= e($ev['transmision_url']) ?>" target="_blank" rel="noopener">Ver en vivo</a><?php endif; ?>
     </div>
 </article>
 

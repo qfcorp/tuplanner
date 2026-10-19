@@ -61,7 +61,7 @@ final class Usuarios
         $st->execute([$negocioId]);
         $p = $st->fetch() ?: ['nombre' => '', 'max_usuarios' => 0];
         return 'Tu plan ' . $p['nombre'] . ' permite ' . (int) $p['max_usuarios'] . ' usuarios activos (contándote a ti). '
-             . 'Desactiva a alguien que ya no use el sistema o pásate al plan Agencia para tener usuarios sin límite.';
+             . 'Desactiva a alguien que ya no use el sistema o cambia de plan en Mi plan (el plan Agencia no tiene límite de usuarios).';
     }
 
     /**

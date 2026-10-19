@@ -5,7 +5,11 @@ use TuPlanner\{Eventos, Pagos, Reportes};
 $pct = fn(float $v, float $max) => $max > 0 ? max(1, (int) round($v * 100 / $max)) : 0;
 $mesActual = $hoy->format('Y-m');
 $corto = fn(float $v) => $v >= 10000 ? '$' . number_format($v / 1000, 1, ',', '.') . 'k' : '$' . number_format($v, 0, ',', '.');
-$descargar = fn(string $tipo, string $txt = 'Descargar para Excel', ?string $d = null, ?string $h = null) =>
+// Anexo B: metas, embudo, ganancia y comisiones son del módulo "Metas y reportes avanzados"; las descargas, de "Exportar"
+$avanzado = modulo_activo($u, 'metas');
+$exportar = modulo_activo($u, 'exportar');
+$satisfaccion = modulo_activo($u, 'cuestionarios');
+$descargar = fn(string $tipo, string $txt = 'Descargar para Excel', ?string $d = null, ?string $h = null) => !$exportar ? '' :
     '<a class="g-descargar" href="' . e($enlaceExportar($tipo, $d, $h)) . '">' . e($txt) . '</a>';
 /** Gráfico de columnas por mes */
 $columnas = function (array $porMes, string $titulo) use ($pct, $mesActual, $corto): string {
@@ -61,16 +65,17 @@ $t = $conversion['total'];
 
 <nav class="g-indice" aria-label="Ir a">
     <a href="#ventas">Ventas</a><a href="#cobros">Cobrado</a><a href="#por-cobrar">Por cobrar</a><a href="#ocupacion">Ocupación</a>
-    <a href="#conversion">Conversión</a><a href="#rentabilidad">Ganancia</a><a href="#comisiones">Comisiones</a><a href="#descargas">Descargas</a>
-    <a href="#satisfaccion">Satisfacción</a>
-    <a href="#metas">Metas</a>
+    <?php if ($avanzado): ?><a href="#conversion">Conversión</a><a href="#rentabilidad">Ganancia</a><a href="#comisiones">Comisiones</a><?php endif; ?>
+    <?php if ($exportar): ?><a href="#descargas">Descargas</a><?php endif; ?>
+    <?php if ($satisfaccion): ?><a href="#satisfaccion">Satisfacción</a><?php endif; ?>
+    <?php if ($avanzado): ?><a href="#metas">Metas</a><?php endif; ?>
 </nav>
 
 <div class="g-cifras">
     <div class="g-cifra"><strong><?= dinero($ventas['valor']) ?></strong><span>Vendido · <?= $ventas['cantidad'] ?> <?= $ventas['cantidad'] === 1 ? 'evento' : 'eventos' ?></span></div>
     <div class="g-cifra"><strong><?= dinero($cobrado['total']) ?></strong><span>Cobrado en el periodo</span></div>
     <div class="g-cifra <?= $porCobrar['vencido'] > 0 ? 'alerta' : '' ?>"><strong><?= dinero($porCobrar['saldo']) ?></strong><span>Por cobrar · <?= dinero($porCobrar['vencido']) ?> vencido</span></div>
-    <div class="g-cifra"><strong><?= $t['pct'] ?> %</strong><span>Conversión · <?= $t['vendidos'] ?> de <?= $t['consultas'] ?> consultas</span></div>
+    <?php if ($avanzado): ?><div class="g-cifra"><strong><?= $t['pct'] ?> %</strong><span>Conversión · <?= $t['vendidos'] ?> de <?= $t['consultas'] ?> consultas</span></div><?php endif; ?>
     <div class="g-cifra"><strong><?= dinero($ventas['ticket']) ?></strong><span>Ticket promedio por evento</span></div>
     <div class="g-cifra"><strong><?= dinero($ventas['por_invitado']) ?></strong><span>Precio promedio por invitado</span></div>
     <div class="g-cifra"><strong><?= $ocupacion['pct_sabados'] ?> %</strong><span>Sábados vendidos (próximos 12 meses)</span></div>
@@ -105,7 +110,7 @@ $t = $conversion['total'];
     <?php endif; ?>
     <div class="g-pie-tabla"><?= $descargar('eventos', 'Descargar eventos para Excel') ?></div>
 </section>
-<?php require RAIZ . '/app/vistas/_metas_reporte.php'; /* metas y año anterior (módulo 080) */ ?>
+<?php if ($avanzado) require RAIZ . '/app/vistas/_metas_reporte.php'; /* metas y año anterior (módulo metas) */ ?>
 
 <div class="rejilla rejilla-2">
     <section class="bloque" id="cobros">
@@ -164,6 +169,7 @@ $t = $conversion['total'];
     </div>
 </section>
 
+<?php if ($avanzado): ?>
 <section class="bloque" id="conversion">
     <h2>Embudo de ventas y conversión</h2>
     <p class="g-nota">De las consultas que llegaron en el periodo, cuántas se vendieron. Sirve para saber qué red social y qué tipo de evento te traen clientes de verdad.</p>
@@ -234,9 +240,11 @@ $t = $conversion['total'];
         <?php endif; ?>
     <?php endif; ?>
 </section>
+<?php endif; ?>
 
-<?php require RAIZ . '/app/vistas/_reporte_satisfaccion.php'; // encuesta de satisfacción (migración 070) ?>
+<?php if ($satisfaccion) require RAIZ . '/app/vistas/_reporte_satisfaccion.php'; // encuesta de satisfacción (070, módulo cuestionarios) ?>
 
+<?php if ($exportar): ?>
 <section class="bloque" id="descargas">
     <h2>Descargar para Excel</h2>
     <p class="g-nota">Archivos del periodo elegido. Se abren directo en Excel o Google Sheets, con tildes y columnas en su lugar.</p>
@@ -247,3 +255,4 @@ $t = $conversion['total'];
         <?php endforeach; ?>
     </div>
 </section>
+<?php endif; ?>

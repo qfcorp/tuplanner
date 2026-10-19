@@ -1,6 +1,7 @@
 <?php
 use TuPlanner\{PanelTukan, Planes, WhatsApp};
-/** @var array $negocio @var array $pagos @var array $registro @var array $listaPlanes @var array $cotizaciones @var string $inicioSugerido @var ?array $claveNueva */
+/** @var array $negocio @var array $pagos @var array $registro @var array $listaPlanes @var array $cotizaciones @var string $inicioSugerido @var ?array $claveNueva
+ *  @var array $modulosEstado @var array $catalogo @var array $pedidosModulos */
 $n = $negocio;
 $telefono = $n['whatsapp'] ?: ($n['telefono'] ?: $n['dueno_telefono']);
 $waDueno = WhatsApp::enlace($telefono, 'Hola ' . explode(' ', (string) $n['dueno'])[0] . ', te escribo de TuPlanner.');
@@ -11,7 +12,7 @@ $accion = fn(string $a) => e(url('admin_negocio', ['id' => $n['id'], 'accion' =>
     <div><h1><?= e($n['nombre']) ?></h1>
         <p><span class="etq est-<?= e($n['estado_cuenta']) ?>"><?= PanelTukan::ESTADOS[$n['estado_cuenta']] ?></span>
            Plan <strong><?= e($n['plan_nombre']) ?></strong> · <?= e($n['ciudad']) ?>
-           <?php if (in_array($n['estado_cuenta'], ['prueba', 'prueba_vencida'], true) && $n['prueba_hasta']): ?> · prueba hasta <?= date('d/m/Y', strtotime($n['prueba_hasta'])) ?>
+           <?php if (in_array($n['estado_cuenta'], ['prueba', 'prueba_vencida'], true) && $n['prueba_hasta']): ?> · demo hasta <?= date('d/m/Y', strtotime($n['prueba_hasta'])) ?>
            <?php elseif ($n['activo_hasta']): ?> · pagado hasta <?= date('d/m/Y', strtotime($n['activo_hasta'])) ?><?php endif; ?></p></div>
     <form method="post" action="<?= e(url('admin_ver', ['id' => $n['id']])) ?>"><?= campo_csrf() ?>
         <button class="boton boton-claro" type="submit">Ver como el negocio (soporte)</button></form>
@@ -102,13 +103,13 @@ $accion = fn(string $a) => e(url('admin_negocio', ['id' => $n['id'], 'accion' =>
     </section>
 
     <section class="bloque">
-        <h2>Plan, estado y prueba</h2>
+        <h2>Plan, estado y demo</h2>
         <form method="post" action="<?= $accion('plan') ?>" class="fila-accion"><?= campo_csrf() ?>
             <label for="cambiar-plan">Cambiar plan (sin cobrar)</label>
             <select id="cambiar-plan" name="plan"><?php foreach ($listaPlanes as $p): ?><option value="<?= e($p['codigo']) ?>" <?= $p['codigo'] === $n['plan_codigo'] ? 'selected' : '' ?>><?= e($p['nombre']) ?> · <?= dinero($p['precio_mensual']) ?></option><?php endforeach; ?></select>
             <button class="boton boton-chico" type="submit">Cambiar</button></form>
         <form method="post" action="<?= $accion('prueba') ?>" class="fila-accion"><?= campo_csrf() ?>
-            <label for="dias">Dar más días de prueba</label>
+            <label for="dias">Dar más días de demo</label>
             <select id="dias" name="dias"><?php foreach ([3, 7, 15, 30] as $d): ?><option value="<?= $d ?>"><?= $d ?> días</option><?php endforeach; ?></select>
             <button class="boton boton-chico" type="submit">Extender</button></form>
         <div class="acciones" style="margin-top:12px">
@@ -134,6 +135,8 @@ $accion = fn(string $a) => e(url('admin_negocio', ['id' => $n['id'], 'accion' =>
         <p class="suave">Solo las ve el equipo de Tukán.</p>
     </section>
 </div>
+
+<?php require RAIZ . '/app/vistas/_admin_modulos.php'; /* Anexo B */ ?>
 
 <section class="bloque">
     <h2>Pagos de suscripción (<?= count($pagos) ?>)</h2>

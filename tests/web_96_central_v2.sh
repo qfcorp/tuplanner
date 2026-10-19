@@ -71,7 +71,7 @@ sql "INSERT INTO suscripciones (negocio_id, plan_codigo, periodo, meses_pagados,
      VALUES ($N7, 'salon', 'mensual', 1, 1, 39, CURRENT_DATE - 23, CURRENT_DATE + 7, 'deuna')" > /dev/null
 sql "UPDATE negocios SET estado='activo', activo_hasta=CURRENT_DATE + 7 WHERE id=$N7" > /dev/null
 registrar quinta "Quinta V2 Registro $RANDOM"; NR=$NID; ER=$EMAIL
-check "Origen de los que se registran solos: registro" "registro" "$(sql "SELECT origen FROM negocios WHERE id=$NR")"
+check "Las cuentas las crea Tukán (no hay registro con prueba gratis): origen super" "super" "$(sql "SELECT origen FROM negocios WHERE id=$NR")"
 
 echo "2. Transporte y códigos (§2, §3)"
 r=$(c96_post capacidades '{}')
@@ -80,7 +80,7 @@ check "JSON" "application/json; charset=utf-8" "$(grep -i '^content-type' "$TMP/
 check "Cache-Control: no-store" "1" "$(grep -ci '^cache-control: no-store' "$TMP/c96.h")"
 check "No abre sesión (sin cookie)" "0" "$(grep -ci '^set-cookie' "$TMP/c96.h")"
 check "protocolo 2 y producto" "2 tuplanner" "$(c96_json protocolo) $(c96_json producto)"
-check "Acciones" '["capacidades","estado","sso","clientes","cliente","cotizar","planes","solicitudes","solicitud","finanzas","ejecutar"]' "$(c96_json acciones)"
+check "Acciones" '["capacidades","estado","sso","clientes","cliente","cotizar","planes","modulos","solicitudes","solicitud","finanzas","ejecutar"]' "$(c96_json acciones)"
 check "sso_ir y rutas_sso" 'true ["/?r=admin"]' "$(c96_json sso_ir) $(c96_json rutas_sso)"
 printf '{}' > "$TMP/c96_body.json"; TOK=$(c96_token capacidades "$TMP/c96_body.json")
 r=$(curl -s -o "$TMP/c96.out" -D "$TMP/c96.h" -w "%{http_code}" -H "X-Tukan-Token: $TOK" "$BASE/tukan_central.php?accion=capacidades")
@@ -187,16 +187,24 @@ r=$(c96_ej registrar_pago '{"periodo":"mensual","metodo":"bitcoin"}' "$NR")
 check "Forma de pago mala: 422 con campo" "422 invalido datos.metodo" "$r $(c96_json codigo) $(c96_json campo)"
 c96_txt "… mensaje en español" "$(c96_json error)" "forma de pago"
 
-echo "6. Solicitudes: el registro nuevo se atiende y deja de salir"
+echo "6. Solicitudes: un pedido de demo (Solicitar demo) se atiende y se convierte en demo"
+rm -f "$JAR"
+NEG_ANTES=$(sql "SELECT count(*) FROM negocios")
+r=$(post "r=registro" --data-urlencode "negocio=Hacienda Pide Demo $RANDOM" --data-urlencode "nombre=Marta Pide" --data-urlencode "ciudad=Ambato" \
+     --data-urlencode "whatsapp=0987771234" --data-urlencode "email=marta$RANDOM@pide.ec" --data-urlencode "necesita=Bodas grandes" --data-urlencode "modulos[]=invitados")
+PDW=$(sql "SELECT id FROM pedidos_demo ORDER BY id DESC LIMIT 1")
+check "Pedir demo no crea cuenta" "$NEG_ANTES" "$(sql "SELECT count(*) FROM negocios")"
 c96_post solicitudes '{"estado":"abiertas","por_pagina":200}' > /dev/null
 check "solicitudes total = estado.solicitudes_abiertas (antes de pagar)" "true" "$( [ "$(c96_json total)" -ge 1 ] && echo true )"
-c96_txt "Sale el registro nuevo" "$(c96_json solicitudes)" "\"id\":\"registro_nuevo:$NR\""
-r=$(c96_ej atender_solicitud "{\"solicitud_id\":\"registro_nuevo:$NR\",\"resultado\":\"atendida\",\"nota\":\"Bienvenida enviada\"}")
-check "Atender: 200" "200 atendida" "$r $(c96_json solicitud.estado)"
+contiene "Sale el pedido de demo" "$TMP/c96.out" "\"id\":\"demo_pedida:$PDW\""
+r=$(c96_ej atender_solicitud "{\"solicitud_id\":\"demo_pedida:$PDW\",\"resultado\":\"en_proceso\",\"nota\":\"Le escribí\"}")
+check "Contactado: 200 en proceso" "200 en_proceso contactada" "$r $(c96_json solicitud.estado) $(sql "SELECT estado FROM pedidos_demo WHERE id=$PDW")"
+r=$(c96_ej crear_demo "{\"nombre\":\"Hacienda Pide Demo\",\"contacto_nombre\":\"Marta Pide\",\"email\":\"marta.demo$RANDOM@pide.ec\",\"telefono\":\"0987771234\",\"solicitud_id\":\"demo_pedida:$PDW\"}")
+check "Crear demo desde el pedido: 200 y pedido atendido" "200 atendida demo_creada" "$r $(c96_json solicitud.estado) $(sql "SELECT estado FROM pedidos_demo WHERE id=$PDW")"
 c96_post solicitudes '{"estado":"abiertas","por_pagina":200}' > /dev/null
-no_contiene "Ya no sale en abiertas" "$TMP/c96.out" "\"id\":\"registro_nuevo:$NR\""
+no_contiene "Ya no sale en abiertas" "$TMP/c96.out" "\"id\":\"demo_pedida:$PDW\""
 c96_post solicitudes '{"estado":"cerradas","por_pagina":200}' > /dev/null
-contiene "Sale en cerradas" "$TMP/c96.out" "\"id\":\"registro_nuevo:$NR\""
+contiene "Sale en cerradas" "$TMP/c96.out" "\"id\":\"demo_pedida:$PDW\""
 c96_post solicitud "{\"id\":\"renovacion:$N7:vence_pronto:$(date -d '+7 days' +%F)\"}" > /dev/null
 check "Renovación a 7 días todavía no (es a 5)" "no_encontrado" "$(c96_json codigo)"
 

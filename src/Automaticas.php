@@ -19,6 +19,8 @@ use RuntimeException;
  *  7) Reporte del mes al dueño, el día 1 desde las 7:00
  *  8) 8:00: a cada vendedor/dueño con Telegram, su lista de seguimientos del día
  *  9) Proveedores (AvisosProveedores): pagos que vencen o vencieron, documentos por vencer, proveedores sin confirmar a 3 días
+ * Anexo B: cada tarea de un módulo solo corre si el negocio lo tiene encendido (8 = Telegram, 9 = Proveedores y compras).
+ * Lo que sale por Telegram, además, lo filtra Telegram::textoAUsuarios.
  */
 final class Automaticas
 {
@@ -314,6 +316,7 @@ final class Automaticas
             error_log('TuPlanner tareas papelera: ' . $e->getMessage());
         }
         $planes = new Planes($this->db);
+        $modulos = new Modulos($this->db);
         // Ni los pausados (suspendidos) ni los que están en la papelera reciben tareas ni avisos
         $negocios = $this->db->query("SELECT id, estado, prueba_hasta, activo_hasta FROM negocios WHERE estado IN ('prueba','activo') AND eliminado_en IS NULL ORDER BY id")->fetchAll();
         foreach ($negocios as $n) {
@@ -329,8 +332,11 @@ final class Automaticas
                 $total['precios'] += $this->avisarRevisarPrecio($id, $ahora);
                 $total['semana'] += $this->avisarSemana($id, $ahora);
                 $total['reportes'] += $this->enviarReporteMes($id, $ahora) ? 1 : 0;
-                $total['seguimientos'] += $this->enviarSeguimientos($id, $ahora);
-                foreach ((new AvisosProveedores($this->db))->correr($id, $ahora) as $k => $v) $total[$k] += $v;   // pagos, documentos y confirmaciones de proveedores
+                $activos = $modulos->activos($id);
+                if (in_array('telegram', $activos, true)) $total['seguimientos'] += $this->enviarSeguimientos($id, $ahora);
+                if (in_array('proveedores', $activos, true)) {   // pagos, documentos y confirmaciones de proveedores
+                    foreach ((new AvisosProveedores($this->db))->correr($id, $ahora) as $k => $v) $total[$k] += $v;
+                }
             } catch (\Throwable $e) {
                 $total['errores']++;
                 error_log("TuPlanner tareas negocio $id: " . $e->getMessage());

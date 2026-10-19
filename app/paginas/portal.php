@@ -3,8 +3,8 @@ use TuPlanner\{Eventos, Pagos, Contratos, Cotizaciones, PdfCobros, PdfDocumentos
 
 /**
  * Portal del cliente (público, con el enlace secreto): /?r=portal&t=<token_cliente>
- *  - Plan Salón: datos del evento, documentos y pagos.
- *  - Plan Quinta: además invitados, cronograma y transmisión en vivo.
+ *  - Siempre: datos del evento y pagos. Con cada módulo encendido (Anexo B): cotización, contrato, invitados,
+ *    cronograma (día del evento) y transmisión en vivo.
  *  - &recibo=<pago_id>: recibo en PDF de uno de sus pagos.  &contrato=pdf: su contrato firmado en PDF.
  */
 $token = (string) ($_GET['t'] ?? '');
@@ -39,7 +39,7 @@ if (isset($_GET['recibo'])) {
     }
 }
 // Contrato firmado en PDF
-if (($_GET['contrato'] ?? '') === 'pdf') {
+if (($_GET['contrato'] ?? '') === 'pdf' && modulo_activo($nid, 'contratos')) {
     $c = $contratos->vigente($nid, $eid);
     if ($c && $c['estado'] === 'firmado' && class_exists(PdfDocumentos::class)) {
         $pdf = PdfDocumentos::contrato($negocio, $c, url_completa('verificar', ['c' => $c['codigo_verificacion']]));
@@ -50,7 +50,8 @@ if (($_GET['contrato'] ?? '') === 'pdf') {
     redirigir('portal', ['t' => $token]);
 }
 
-$quinta = $negocio['plan_codigo'] === 'quinta';
+$mod = [];
+foreach (['contratos', 'invitados', 'dia_evento', 'boda_vivo'] as $m) $mod[$m] = modulo_activo($nid, $m);
 $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
 $res = $pagos->resumen($eid);
 $historial = array_values(array_filter($pagos->pagos($nid, $eid), fn($p) => in_array($p['estado'], ['confirmado', 'por_revisar', 'rechazado'], true)));
@@ -61,7 +62,7 @@ if (!$cotizacion) {
     $cid = $st->fetchColumn();
     $cotizacion = $cid ? (new Cotizaciones(db()))->obtener($nid, (int) $cid) : null;
 }
-$contrato = $contratos->vigente($nid, $eid);
+$contrato = $mod['contratos'] ? $contratos->vigente($nid, $eid) : null;
 if ($contrato && $contrato['estado'] === 'borrador') $contrato = null;
 $payphone = $activo && $res['saldo'] > 0 && $pagos->payphoneListo($nid);
 $banco = trim((string) $negocio['pago_banco']);
@@ -69,7 +70,7 @@ $deuna = trim((string) $negocio['pago_deuna']);
 
 $invitados = null;
 $cronograma = [];
-if ($quinta) {
+if ($mod['invitados']) {
     $st = db()->prepare("SELECT count(*) AS registros, COALESCE(sum(pases),0) AS pases,
                                 COALESCE(sum(COALESCE(confirmados, pases)) FILTER (WHERE estado = 'confirmado'),0) AS confirmados,
                                 count(*) FILTER (WHERE estado = 'pendiente') AS pendientes,
@@ -77,6 +78,8 @@ if ($quinta) {
                            FROM invitados WHERE evento_id = ?");
     $st->execute([$eid]);
     $invitados = $st->fetch();
+}
+if ($mod['dia_evento']) {
     $st = db()->prepare('SELECT hora, duracion_min, actividad FROM cronograma WHERE evento_id = ? ORDER BY hora, orden');
     $st->execute([$eid]);
     $cronograma = $st->fetchAll();
@@ -93,6 +96,6 @@ $lugares = $st->fetchAll();
 $telNegocio = $negocio['whatsapp'] ?: $negocio['telefono'];
 $primerNombre = trim(explode(' ', trim((string) $ev['cliente']))[0]);
 $waNegocio = \TuPlanner\WhatsApp::enlace($telNegocio, "Hola, soy $primerNombre ({$ev['codigo']} · {$ev['nombre']}). Te escribo desde mi portal del evento.");
-vista_publica('portal', compact('ev', 'negocio', 'token', 'quinta', 'activo', 'res', 'historial', 'cotizacion', 'contrato', 'payphone', 'banco', 'deuna',
+vista_publica('portal', compact('ev', 'negocio', 'token', 'mod', 'activo', 'res', 'historial', 'cotizacion', 'contrato', 'payphone', 'banco', 'deuna',
                                  'invitados', 'cronograma', 'waNegocio', 'primerNombre', 'lugares'),
               'Mi evento · ' . $negocio['nombre'], $marca);

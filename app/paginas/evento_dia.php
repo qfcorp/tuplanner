@@ -14,18 +14,12 @@ if (!$ev) {
     return;
 }
 $tab = 'evento_dia';
-if (!es_quinta($u)) {
-    // Cabecera y pestañas del evento + candado
-    ob_start();
-    require RAIZ . '/app/vistas/_evento_tabs.php';
-    $cab = ob_get_clean();
-    vista('dia_candado', ['cab' => $cab, 'que' => 'Día del evento',
-        'explicacion' => 'Arma el cronograma minuto a minuto con modo en vivo para el DJ y el fotógrafo, asigna meseros y personal con aviso por WhatsApp, anota proveedores, reserva mobiliario y saca la hoja del evento en PDF.'],
-        'Día del evento · TuPlanner');
-    return;
-}
 $secciones = ['cronograma' => 'Cronograma', 'personal' => 'Personal', 'proveedores' => 'Proveedores', 'mobiliario' => 'Mobiliario', 'detalles' => 'Montaje y menú', 'vivo' => 'Boda en vivo'];
 $secciones = array_slice($secciones, 0, 3, true) + ['incidencias' => 'Incidencias'] + array_slice($secciones, 3, null, true);   // 060
+// Anexo B: cada sección de otro módulo solo sale con ese módulo encendido
+foreach (['proveedores' => 'proveedores', 'incidencias' => 'incidencias', 'mobiliario' => 'mobiliario', 'vivo' => 'boda_vivo'] as $sec => $mod) {
+    if (!modulo_activo($u, $mod)) unset($secciones[$sec]);
+}
 $ver = (string) ($_GET['ver'] ?? 'cronograma');
 if (!isset($secciones[$ver])) $ver = 'cronograma';
 $dia = new DiaEvento(db());
@@ -34,6 +28,13 @@ if (es_post()) {
     verificar_csrf();
     exigir(puede_editar($u), 'Tu usuario solo puede mirar.');
     $accion = (string) ($_POST['accion'] ?? '');
+    $moduloAccion = match (true) {
+        str_starts_with($accion, 'prov_') => 'proveedores',
+        in_array($accion, ['mobiliario', 'danados'], true) => 'mobiliario',
+        in_array($accion, ['transmision', 'pedir_transmision'], true) => 'boda_vivo',
+        default => '',
+    };
+    exigir(modulo_activo($u, $moduloAccion), 'Ese módulo no está en tu plan. Agrégalo en Mi plan.');
     $volver = (string) ($_POST['ver'] ?? $ver);
     if (!isset($secciones[$volver])) $volver = 'cronograma';
     try {

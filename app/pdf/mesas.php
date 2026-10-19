@@ -2,6 +2,5 @@
 /** Plano de mesas: /?r=pdf&tipo=mesas&id=<evento>. Recibe $u, $negocio, $id. */
 use TuPlanner\{DiaEvento, Invitados, Pdf, PdfDia};
 
-if (!requiere_quinta($u, 'Plano de mesas', 'El plano de mesas con los invitados de cada mesa es del plan Agencia.')) return;
 $ev = (new DiaEvento(db()))->evento((int) $u['negocio_id'], $id);
 Pdf::enviar(PdfDia::mesas($negocio, $ev, (new Invitados(db()))->plano((int) $u['negocio_id'], $id)), 'mesas-' . $ev['codigo'] . '.pdf');

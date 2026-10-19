@@ -19,7 +19,7 @@ if ($i) {
     $st->execute([$ev['negocio_id']]);
     $negocio = $st->fetch();
 }
-if (!$i || !DiaEvento::publicoActivo($negocio)) {
+if (!$i || !DiaEvento::publicoActivo(db(), $negocio, 'invitados')) {
     http_response_code(404);
     vista_publica('ingreso', ['estado' => 'invalido', 'ev' => null, 'negocio' => $negocio, 'i' => null, 'r' => null], 'Ingreso', $negocio ? DiaEvento::marca($negocio) : null);
     return;

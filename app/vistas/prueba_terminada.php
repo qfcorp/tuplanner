@@ -1,7 +1,7 @@
 <?php /** @var string $estadoCuenta @var array $guardado */
 $hasta = !empty($u['activo_hasta']) ? (new DateTimeImmutable($u['activo_hasta']))->format('d/m/Y') : '—';
 $textos = [
-    'prueba_vencida' => ['Tu prueba gratis terminó', 'Elige un plan para seguir usando TuPlanner justo donde lo dejaste.', 'terminó mi prueba'],
+    'prueba_vencida' => ['Tu demo terminó — contáctanos para contratar', 'Eliges tu plan y tus módulos y sigues justo donde lo dejaste.', 'terminó mi demo'],
     'vencido'        => ['Tu plan venció', "Tu plan estaba pagado hasta el $hasta. Renuévalo y sigues donde lo dejaste.", 'venció mi plan'],
     'suspendido'     => ['Tu cuenta está pausada', 'Escríbenos para reactivarla.', 'mi cuenta está pausada'],
     'cancelado'      => ['Tu cuenta está cerrada', 'Si quieres volver, escríbenos y la reactivamos con todos tus datos.', 'quiero reactivar mi cuenta'],
@@ -33,8 +33,8 @@ if ($pausada) {   // Anexo A: cuenta pausada por Tukán, con el motivo (genéric
         </div>
     <?php elseif (es_dueno($u)): ?>
         <div class="acciones">
-            <a class="boton" href="<?= e(url('planes')) ?>">Ver planes y precios</a>
-            <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+            <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Contáctanos para contratar</a>
+            <a class="boton boton-claro" href="<?= e(url('planes')) ?>">Ver planes, módulos y precios</a>
         </div>
     <?php else: ?>
         <p>Pídele al dueño del negocio que renueve el plan.</p>

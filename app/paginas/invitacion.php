@@ -17,7 +17,7 @@ if ($i) {
     $st->execute([$ev['negocio_id']]);
     $negocio = $st->fetch();
 }
-if (!$i || !DiaEvento::publicoActivo($negocio) || in_array($ev['estado'], ['perdido', 'cancelado'], true)) {
+if (!$i || !DiaEvento::publicoActivo(db(), $negocio, 'invitados') || in_array($ev['estado'], ['perdido', 'cancelado'], true)) {
     if (!empty($_GET['qr'])) { http_response_code(404); return; }
     http_response_code(404);
     vista_publica('error_publico', ['mensaje' => 'Esta invitación no es válida o el evento fue cancelado. Escribe a quien te invitó.'], 'Invitación', $negocio ? DiaEvento::marca($negocio) : null);

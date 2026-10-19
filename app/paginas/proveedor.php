@@ -65,7 +65,7 @@ $datosVista = [
     'puntaje' => $ficha->puntaje($nid, $id),
     'toleranciaProv' => $ficha->tolerancia($nid),
     'documentos' => $ficha->documentos($nid, $id),
-    'portal' => $negocio['plan_codigo'] === 'quinta' ? url_completa('portal_proveedor', ['t' => $p['token']]) : null,
+    'portal' => modulo_activo($nid, 'portal_proveedor') ? url_completa('portal_proveedor', ['t' => $p['token']]) : null,
 ];
 $datosVista['cuenta'] = $verDinero ? $compras->cuentaProveedor($nid, $id) : null;
 if ($ver === 'cuenta') {

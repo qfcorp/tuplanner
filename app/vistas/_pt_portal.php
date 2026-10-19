@@ -8,27 +8,30 @@ use TuPlanner\{Cuestionarios, Encuestas, Extras};
 $ptNid = (int) $ev['negocio_id'];
 $ptEid = (int) $ev['id'];
 $ptHoy = date('Y-m-d');
-$ptForm = $activo && in_array($ev['estado'], Cuestionarios::ESTADOS_CLIENTE, true) ? (new Cuestionarios(db()))->deEvento($ptNid, $ptEid) : null;
+$ptMod = modulo_activo($ptNid, 'cuestionarios');   // Anexo B: formulario, extras y encuesta son un módulo
+$ptForm = $ptMod && $activo && in_array($ev['estado'], Cuestionarios::ESTADOS_CLIENTE, true) ? (new Cuestionarios(db()))->deEvento($ptNid, $ptEid) : null;
 $ptExtras = new Extras(db());
-$ptOfrecidos = $activo ? $ptExtras->ofrecidos($ptNid) : [];
+$ptOfrecidos = $ptMod && $activo ? $ptExtras->ofrecidos($ptNid) : [];
 $ptMotivo = $ptExtras->motivoNoDisponible($ptNid, $ptEid);
-$ptPedidos = $ptExtras->deEvento($ptNid, $ptEid);
+$ptPedidos = $ptMod ? $ptExtras->deEvento($ptNid, $ptEid) : [];
 $ptPend = count(array_filter($ptPedidos, fn($p) => $p['estado'] === 'pendiente'));
-$ptEncuesta = in_array($ev['estado'], Encuestas::ESTADOS, true) && $ev['fecha'] < $ptHoy && Encuestas::motivoCerrada($ev + ['cuenta' => $negocio['estado']]) === null;
+$ptEncuesta = $ptMod && in_array($ev['estado'], Encuestas::ESTADOS, true) && $ev['fecha'] < $ptHoy && Encuestas::motivoCerrada($ev + ['cuenta' => $negocio['estado']]) === null;
 $ptRespondio = $ptEncuesta ? (new Encuestas(db()))->deEvento($ptNid, $ptEid) : null;
-$ptAnexos = (new \TuPlanner\Anexos(db()))->deEvento($ptNid, $ptEid);   // anexos por extras aprobados (090)
+$ptAnexos = modulo_activo($ptNid, 'contratos') ? (new \TuPlanner\Anexos(db()))->deEvento($ptNid, $ptEid) : [];   // anexos por extras aprobados (090)
 $ptPorFirmar = array_values(array_filter($ptAnexos, fn($a) => $a['firmable']));
 $ptFirmados = array_values(array_filter($ptAnexos, fn($a) => $a['estado'] === 'firmado'));
 // Planificación con el organizador (migración 100): presupuesto, tareas e ideas
 $ptPlan = new \TuPlanner\Planificacion(db());
 $ptAvance = $ptPlan->avance($ptEid, 'cliente');
-$ptRes = $ptPlan->resumen($ptNid, $ptEid, true);
+$ptConPlan = modulo_activo($ptNid, 'planificacion');   // Anexo B: tarjetas de planificación e ideas según sus módulos
+$ptConIdeas = modulo_activo($ptNid, 'ideas');
+$ptRes = modulo_activo($ptNid, 'presupuesto') ? $ptPlan->resumen($ptNid, $ptEid, true) : ['partidas' => 0, 'contratadas' => 0, 'falta' => 0];
 $ptReuniones = $ptPlan->proximasReuniones($ptEid);
 $st = db()->prepare('SELECT count(*) FROM evento_ideas WHERE evento_id = ?');
 $st->execute([$ptEid]);
 $ptIdeas = (int) $st->fetchColumn();
 ?>
-<?php if ($activo): ?>
+<?php if ($activo && $ptConPlan): ?>
 <section class="bloque pt-tarjeta" id="mi-plan">
     <div class="pt-tarjeta-icono" aria-hidden="true">📋</div>
     <div class="pt-tarjeta-cuerpo">
@@ -37,9 +40,11 @@ $ptIdeas = (int) $st->fetchColumn();
            <?php if ($ptRes['partidas']): ?> Presupuesto: <?= (int) $ptRes['contratadas'] ?> de <?= (int) $ptRes['partidas'] ?> proveedores contratados<?= $ptRes['falta'] > 0 ? ', falta pagar ' . dinero($ptRes['falta']) : '' ?>.<?php endif; ?>
            <?php if (!$ptAvance['total'] && !$ptRes['partidas']): ?>Aquí verás tu lista de tareas, el presupuesto por proveedor y lo que falta pagar.<?php endif; ?></p>
         <?php if ($ptReuniones): $r0 = $ptReuniones[0]; ?><p>Próxima reunión: <strong><?= e(fecha_corta(substr($r0['programada_para'], 0, 10))) ?> a las <?= e(substr($r0['programada_para'], 11, 5)) ?></strong> · <?= e($r0['texto']) ?></p><?php endif; ?>
-        <a class="boton" href="<?= e(url('portal_plan', ['t' => $token])) ?>">Ver mis tareas y presupuesto</a>
+        <a class="boton" href="<?= e(url('portal_plan', ['t' => $token])) ?>"><?= modulo_activo($ptNid, 'presupuesto') ? 'Ver mis tareas y presupuesto' : 'Ver mis tareas' ?></a>
     </div>
 </section>
+<?php endif; ?>
+<?php if ($activo && $ptConIdeas): ?>
 <section class="bloque pt-tarjeta" id="mis-ideas">
     <div class="pt-tarjeta-icono" aria-hidden="true">💡</div>
     <div class="pt-tarjeta-cuerpo">

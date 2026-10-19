@@ -14,15 +14,6 @@ if (!$ev) {
     return;
 }
 $tab = 'invitados';
-if (!es_quinta($u)) {
-    ob_start();
-    require RAIZ . '/app/vistas/_evento_tabs.php';
-    $cab = ob_get_clean();
-    vista('dia_candado', ['cab' => $cab, 'que' => 'Invitados con QR',
-        'explicacion' => 'Lista de invitados con pases y mesas, invitación digital por WhatsApp donde cada invitado confirma su asistencia, código QR de ingreso y modo puerta para controlar quién entró. Los novios también pueden armar su lista desde su celular.'],
-        'Invitados · TuPlanner');
-    return;
-}
 $inv = new Invitados(db());
 $st = db()->prepare('SELECT * FROM negocios WHERE id = ?');
 $st->execute([$nid]);

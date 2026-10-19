@@ -115,12 +115,12 @@ c95_pedir "$BASE" estado "$(c95_token estado)" > /dev/null
 pn() { grep -o "<strong>[0-9]*</strong> $1</a>" "$TMP/pag.html" | head -1 | sed 's/<strong>\([0-9]*\)<.*/\1/'; }
 get "r=admin" > /dev/null
 contiene "Total = panel (Negocios registrados)" "$TMP/pag.html" "<div class=\"cifra\">$(c95_json negocios.total)</div><p class=\"cifra-nombre\">Negocios registrados"
-check "En prueba = panel" "$(pn 'En prueba')" "$(c95_json negocios.prueba)"
+check "En demo = panel" "$(pn 'En demo')" "$(c95_json negocios.prueba)"
 # Regla única del protocolo v2 (§4.2): por vencer = al día que vence en 0 a 7 días; los que están en gracia ya cuentan como vencidos
 PV=$(sql "SELECT count(*) FROM negocios WHERE estado='activo' AND activo_hasta BETWEEN CURRENT_DATE AND CURRENT_DATE + 7")
 check "Por vencer = al día que vence en 7 días" "$PV" "$(c95_json negocios.por_vencer)"
 check "Activos = panel (Al día) − por vencer" "$(( $(pn 'Al día') - PV ))" "$(c95_json negocios.activos)"
-check "Vencidos = panel (Vencido + Prueba terminada + en gracia)" "$(( $(pn 'Vencido') + $(pn 'Prueba terminada') + $(pn 'Venció (en gracia)') ))" "$(c95_json negocios.vencidos)"
+check "Vencidos = panel (Vencido + Demo terminada + en gracia)" "$(( $(pn 'Vencido') + $(pn 'Demo terminada') + $(pn 'Venció (en gracia)') ))" "$(c95_json negocios.vencidos)"
 check "Suspendidos = panel (Suspendido + Cancelado)" "$(( $(pn 'Suspendido') + $(pn 'Cancelado') ))" "$(c95_json negocios.suspendidos)"
 COBRADO=$(php -r 'echo "$" . number_format((float) $argv[1], 2, ",", ".");' "$(c95_json ingresos_mes)")
 contiene "Ingresos del mes = Cobrado este mes del panel ($COBRADO)" "$TMP/pag.html" "<div class=\"cifra\">$COBRADO</div><p class=\"cifra-nombre\">Cobrado este mes"

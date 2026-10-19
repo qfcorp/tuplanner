@@ -372,7 +372,7 @@ check('Pagado hasta (12 meses)', '2027-10-11', $N2['activo_hasta']);
 check('Dominio guardado en minúsculas', 'laspalmas.com', $db->query("SELECT dominio FROM suscripciones WHERE id = {$pg['id']}")->fetchColumn());
 $res = $panel->resumen($hoy);
 check('Cobrado del mes', 390.0, $res['cobrado_mes']);
-check('Ingreso mensual recurrente', 32.5, $res['mensual']);
+check('Ingreso mensual recurrente = lo que paga al mes con su plan y módulos (Salón)', 39.0, $res['mensual']);
 check_error('Pago sin fecha', 'fecha de inicio', fn() => $panel->registrarPago($nidSalon, ['plan' => 'salon', 'periodo' => 'mensual', 'inicio' => '', 'metodo' => 'efectivo']));
 check_error('Pago sin método', 'cómo pagó', fn() => $panel->registrarPago($nidSalon, ['plan' => 'salon', 'periodo' => 'mensual', 'inicio' => '2026-10-12', 'metodo' => 'bitcoin']));
 check_error('Dominio malo', 'dominio no es válido', fn() => $panel->registrarPago($nidSalon, ['plan' => 'salon', 'periodo' => 'anual', 'inicio' => '2026-10-12', 'metodo' => 'efectivo', 'dominio' => 'no válido']));

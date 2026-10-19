@@ -328,20 +328,25 @@ if command -v pdftotext > /dev/null; then
 fi
 check "PDF de evento ajeno: no se ve" "0" "$(curl -s -b "$JAR" "$BASE/?r=pdf&tipo=hoja&id=999999" | head -c 4 | grep -c '%PDF')"
 
-echo "12. Plan Salón: candado"
+echo "12. Plan Salón pagado: los módulos del día del evento están apagados (Anexo B)"
 registrar salon "Salón Candado $RANDOM"
+pagar_plan salon
 EVS=$(crear_evento_sql "$FECHA" separado)
-check "Día del evento en plan Salón abre" "200" "$(get "r=evento_dia&id=$EVS")"
-contiene "Candado en Día del evento" "$TMP/pag.html" "es del plan Agencia"
-check "Invitados en plan Salón abre" "200" "$(get "r=invitados&id=$EVS")"
-contiene "Candado en Invitados" "$TMP/pag.html" "es del plan Agencia"
-check "Mobiliario en plan Salón" "200" "$(get "r=mobiliario")"
-contiene "Candado en Mobiliario" "$TMP/pag.html" "es del plan Agencia"
-check "Personal sí está en plan Salón" "200" "$(get "r=personal")"
-no_contiene "Personal sin candado" "$TMP/pag.html" "es del plan Agencia"
+check "Día del evento sin el módulo: 403" "403" "$(get "r=evento_dia&id=$EVS")"
+contiene "Explica que no está en el plan" "$TMP/pag.html" "Este módulo no está en tu plan"
+contiene "… con la cabecera del evento" "$TMP/pag.html" "evento-cabeza"
+check "Invitados sin el módulo: 403" "403" "$(get "r=invitados&id=$EVS")"
+contiene "Módulo apagado en Invitados" "$TMP/pag.html" "Invitados con QR"
+check "Mobiliario sin el módulo: 403" "403" "$(get "r=mobiliario")"
+contiene "Módulo apagado en Mobiliario" "$TMP/pag.html" "Este módulo no está en tu plan"
+check "Personal es del día del evento: 403" "403" "$(get "r=personal")"
+get "r=evento&id=$EVS" > /dev/null
+no_contiene "Sin pestaña Día del evento" "$TMP/pag.html" "r=evento_dia&amp;id=$EVS"
+no_contiene "Sin pestaña Invitados" "$TMP/pag.html" "r=invitados&amp;id=$EVS"
 TPS=$(sql "SELECT token_puerta FROM eventos WHERE id=$EVS")
-check "Puerta pública de un negocio Salón: 404" "404" "$(get "r=puerta&t=$TPS")"
-check "PDF hoja en plan Salón: candado" "0" "$(curl -s -b "$JAR" "$BASE/?r=pdf&tipo=hoja&id=$EVS" | head -c 4 | grep -c '%PDF')"
+check "Puerta pública sin el módulo: no disponible (403)" "403" "$(get "r=puerta&t=$TPS")"
+contiene "… dice no disponible" "$TMP/pag.html" "No disponible"
+check "PDF hoja sin el módulo: no sale" "0" "$(curl -s -b "$JAR" "$BASE/?r=pdf&tipo=hoja&id=$EVS" | head -c 4 | grep -c '%PDF')"
 
 echo "13. Otro negocio no ve nada"
 registrar quinta "Quinta Intrusa $RANDOM"

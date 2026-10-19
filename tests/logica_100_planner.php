@@ -37,7 +37,7 @@ check('Lugares de ejemplo con dirección y tipo', 'ceremonia',
 check('Reglas por defecto: 2 eventos por día, tarifa fija, 10 % de comisión', ['2', 'fija', '10.00'],
       array_values($db->query("SELECT max_eventos_dia::text, honorario_modo, comision_pct::text FROM negocios WHERE id = $nid")->fetch(PDO::FETCH_NUM) ?: []));
 check('Plan Planner sin límite de lugares', null, $db->query("SELECT max_espacios FROM planes WHERE codigo = 'salon'")->fetchColumn());
-check('Nombres de los planes', ['Planner', 'Agencia'], $db->query("SELECT nombre FROM planes ORDER BY precio_mensual")->fetchAll(PDO::FETCH_COLUMN));
+check('Nombres de los planes (Esencial = solo la base, Anexo B)', ['Esencial', 'Planner', 'Agencia'], $db->query("SELECT nombre FROM planes ORDER BY precio_mensual")->fetchAll(PDO::FETCH_COLUMN));
 
 titulo('2. Evento sin lugar y tipos nuevos');
 $boda = $ev->crear($nid, ['cliente' => ['nombre' => 'Ana Torres', 'telefono' => '0991112233'], 'tipo' => 'boda', 'fecha' => $fecha,

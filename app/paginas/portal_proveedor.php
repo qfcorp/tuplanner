@@ -2,7 +2,7 @@
 use TuPlanner\{Compras, DiaEvento, PdfCompras, Pdf, ProveedoresFicha};
 
 /**
- * Portal del proveedor (público, ?t=<token del proveedor>, sin contraseña; plan Agencia):
+ * Portal del proveedor (público, ?t=<token del proveedor>, sin contraseña; módulo portal_proveedor):
  * sus próximos eventos (dirección, mapa, hora de llegada, bloques del cronograma, coordinador), confirmar que va,
  * "Ya llegué" el día del evento, sus órdenes de compra (confirmar o rechazar, PDF), subir su factura (PDF, foto o XML),
  * y sus pagos y saldo. Todo queda en la bitácora con origen "proveedor".
@@ -17,7 +17,7 @@ if ($p) {
     $st->execute([$p['negocio_id']]);
     $negocio = $st->fetch();
 }
-if (!$p || !$p['activo'] || !DiaEvento::publicoActivo($negocio)) {
+if (!$p || !$p['activo'] || !DiaEvento::publicoActivo(db(), $negocio, 'portal_proveedor')) {
     http_response_code(404);
     vista_publica('error_publico', ['mensaje' => 'Este enlace no es válido. Pide uno nuevo al negocio que te contrató.'], 'Portal del proveedor', $negocio ? DiaEvento::marca($negocio) : null);
     return;

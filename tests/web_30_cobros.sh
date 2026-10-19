@@ -243,8 +243,9 @@ r=$(post_desde "r=mensajes" "r=mensajes&accion=deshacer" --data-urlencode "tipo=
 get "r=mensajes" > /dev/null
 contiene "Deshacer: vuelve a la lista" "$TMP/pag.html" "Cuotas que vencen o ya vencieron"
 
-echo "11. Plan Salón: portal básico"
+echo "11. Plan Salón (pagado): portal sin los módulos de Quinta"
 registrar salon "Salón Básico $RANDOM"
+pagar_plan salon
 EVS=$(crear_evento_sql "$(date -d "+40 days" +%F)" separado)
 TOKS=$(sql "SELECT token_cliente FROM eventos WHERE id = $EVS")
 check "Portal del plan Salón" "200" "$(get "r=portal&t=$TOKS")"

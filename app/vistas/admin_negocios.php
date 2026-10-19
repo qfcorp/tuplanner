@@ -4,7 +4,7 @@ use TuPlanner\{PanelTukan, WhatsApp};
 <div class="cabecera">
     <div><h1>Negocios (<?= count($negocios) ?>)</h1>
         <p>Todos los organizadores y agencias de eventos que usan TuPlanner.</p></div>
-    <a class="boton" href="<?= e(url('admin_nuevo')) ?>">+ Nuevo negocio</a>
+    <a class="boton" href="<?= e(url('admin_nuevo')) ?>">+ Nueva demo</a>
 </div>
 
 <form method="get" class="bloque filtros-admin" style="grid-template-columns:unset">

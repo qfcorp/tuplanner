@@ -60,10 +60,16 @@ final class Telegram
         if (!self::configurado() || !$usuarioIds) return 0;
         $ids = array_values(array_unique(array_map('intval', $usuarioIds)));
         $marcas = implode(',', array_fill(0, count($ids), '?'));
-        $st = $this->db->prepare("SELECT telegram_chat_id FROM usuarios WHERE id IN ($marcas) AND telegram_chat_id IS NOT NULL AND activo");
+        $st = $this->db->prepare("SELECT telegram_chat_id, negocio_id FROM usuarios WHERE id IN ($marcas) AND telegram_chat_id IS NOT NULL AND activo");
         $st->execute($ids);
         $n = 0;
-        foreach ($st->fetchAll(PDO::FETCH_COLUMN) as $chat) {
+        $modulos = new Modulos($this->db);
+        $conModulo = [];
+        foreach ($st->fetchAll() as $f) {
+            // Anexo B: sin el módulo "Avisos por Telegram" no sale nada por Telegram (los avisos de la campana siguen)
+            $nid = (int) $f['negocio_id'];
+            if (!($conModulo[$nid] ??= $modulos->activo($nid, 'telegram'))) continue;
+            $chat = $f['telegram_chat_id'];
             if ($this->api('sendMessage', ['chat_id' => $chat, 'text' => mb_substr($texto, 0, 3500)])) $n++;
         }
         return $n;

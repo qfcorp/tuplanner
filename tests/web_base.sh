@@ -5,6 +5,7 @@ BASE=${BASE:-http://127.0.0.1:8199}
 DB=${DB:-tuplanner_web_prueba}
 export PGPASSWORD=${PGPASSWORD:-prueba}
 export TZ=America/Guayaquil
+export PGTZ=America/Guayaquil   # CURRENT_DATE de psql en la hora de Ecuador (igual que el programa)
 TMP=${TMP:-$(mktemp -d)}
 JAR="$TMP/cookies_$$"
 OK=${OK:-0}; FALLAS=${FALLAS:-0}
@@ -42,15 +43,18 @@ post_desde() {
   curl -s -b "$JAR" -c "$JAR" -o "$TMP/post.html" -w "%{http_code} %{redirect_url}" \
        --data-urlencode "csrf=$t" "$@" "$BASE/?$ruta"
 }
-# Crea una cuenta nueva (plan quinta por defecto) y deja la sesión iniciada. Deja NID (negocio) y EMAIL.
+# Crea una cuenta nueva EN DEMO (plan quinta por defecto), como la crea Tukán, y deja la sesión iniciada. Deja NID (negocio) y EMAIL.
+# (Ya no hay registro con prueba gratis: /?r=registro es el pedido de demo.)
 registrar() { # [plan] [nombre del negocio]
   local plan=${1:-quinta} nombre=${2:-Quinta de Prueba $RANDOM}
   rm -f "$JAR"
   EMAIL="dueno$RANDOM$RANDOM@prueba.ec"
-  post "r=registro" --data-urlencode "negocio=$nombre" --data-urlencode "nombre=Dimitry Prueba" \
-       --data-urlencode "telefono=0990000000" --data-urlencode "email=$EMAIL" --data-urlencode "clave=claveSegura1" \
-       --data-urlencode "plan=$plan" --data-urlencode "ciudad=Quito" > /dev/null
-  NID=$(sql "SELECT negocio_id FROM usuarios WHERE email='$EMAIL'")
+  NID=$(TUPLANNER_DB_NAME=$DB TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=$PGPASSWORD php tests/crear_cuenta.php "$plan" "$nombre" "$EMAIL")
+  entrar "$EMAIL" claveSegura1
+}
+# Pasa la cuenta NID de demo a pagada con ese plan (para probar los módulos de un plan): pagar_plan salon
+pagar_plan() {
+  sql "UPDATE negocios SET estado='activo', plan_codigo='${1:-quinta}', activo_hasta=CURRENT_DATE + 30 WHERE id=$NID" > /dev/null
 }
 entrar() { # email clave
   rm -f "$JAR"

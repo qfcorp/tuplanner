@@ -290,7 +290,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
     </section>
 
     <!-- Cotización y contrato -->
-    <section class="bloque" aria-labelledby="t-docs">
+        <section class="bloque" aria-labelledby="t-docs">
         <h2 id="t-docs">Cotización y contrato</h2>
         <ul class="filas">
             <li>
@@ -305,6 +305,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                 </span>
                 <a class="boton <?= $cotizacion ? 'boton-claro' : '' ?> boton-chico derecha" href="<?= e(url('cotizacion', ['id' => $ev['id']])) ?>"><?= $cotizacion ? 'Abrir' : 'Hacer cotización' ?></a>
             </li>
+            <?php if (modulo_activo($u, 'contratos')): ?>
             <li>
                 <span>
                     <strong>Contrato</strong>
@@ -317,15 +318,18 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                 </span>
                 <a class="boton boton-claro boton-chico derecha" href="<?= e(url('contrato', ['id' => $ev['id']])) ?>"><?= $contrato ? 'Abrir' : 'Preparar' ?></a>
             </li>
+            <?php endif; ?>
         </ul>
     </section>
 
-    <!-- Portal del cliente -->
+    <!-- Portal del cliente (módulo portal_cliente) -->
+    <?php if (modulo_activo($u, 'portal_cliente')): ?>
     <section class="bloque" aria-labelledby="t-portal">
         <h2 id="t-portal">Portal del cliente</h2>
-        <?php if (es_quinta($u)):
+        <?php 
             $portal = url_completa('portal', ['t' => $ev['token_cliente']]);
-            $waPortal = WhatsApp::enlace($cliente['telefono'], "Hola $primerNombre, este es el enlace de tu evento en {$u['negocio']}: ahí puedes ver tus pagos, tu contrato y la lista de invitados. Guárdalo: $portal"); ?>
+            $waPortal = WhatsApp::enlace($cliente['telefono'], "Hola $primerNombre, este es el enlace de tu evento en {$u['negocio']}: ahí puedes ver tus pagos"
+                . (modulo_activo($u, 'contratos') ? ', tu contrato' : '') . (modulo_activo($u, 'invitados') ? ' y la lista de invitados' : '') . ". Guárdalo: $portal"); ?>
             <p class="suave">El cliente ve sus pagos, su contrato y su lista de invitados, sin claves.</p>
             <div class="enlace-copiar">
                 <input type="text" readonly value="<?= e($portal) ?>" aria-label="Enlace del portal del cliente" onclick="this.select()">
@@ -334,11 +338,8 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                 <button class="boton boton-claro boton-chico" type="button" data-copiar="<?= e($portal) ?>">Copiar enlace</button>
                 <?php if ($waPortal): ?><a class="boton boton-wa boton-chico" href="<?= e($waPortal) ?>" target="_blank" rel="noopener">Enviar por WhatsApp</a><?php endif; ?>
             </div>
-        <?php else: ?>
-            <p class="candado">Es del plan Agencia.</p>
-            <p class="suave">Con el plan Agencia, tu cliente tiene su propio enlace para ver sus pagos, firmar y armar su lista de invitados.</p>
-        <?php endif; ?>
     </section>
+    <?php endif; ?>
     <?php endif; ?>
 
     <!-- Coordinador -->

@@ -6,6 +6,7 @@ set -u
 cd "$(dirname "$0")/.."
 export DB=${DB:-tuplanner_web_prueba}
 export PGPASSWORD=${PGPASSWORD:-prueba}
+export PGTZ=America/Guayaquil
 PUERTO=${PUERTO:-8199}
 export BASE="http://127.0.0.1:$PUERTO"
 export TMP=$(mktemp -d)

@@ -1,5 +1,5 @@
 <?php
-use TuPlanner\{PanelTukan, Planes};
+use TuPlanner\{Modulos, PanelTukan, Planes};
 
 $id = (int) ($_GET['id'] ?? 0);
 $panel = new PanelTukan(db());
@@ -43,8 +43,8 @@ if (es_post()) {
                 break;
             case 'prueba':
                 $hasta = $panel->extenderPrueba($id, (int) ($_POST['dias'] ?? 0));
-                registrar_admin('Prueba extendida hasta ' . $hasta, $id);
-                aviso('Prueba gratis hasta el ' . date('d/m/Y', strtotime($hasta)) . '.');
+                registrar_admin('Demo extendida hasta ' . $hasta, $id);
+                aviso('Demo hasta el ' . date('d/m/Y', strtotime($hasta)) . '.');
                 break;
             case 'notas':
                 $panel->guardarNotas($id, (string) ($_POST['notas'] ?? ''));
@@ -57,6 +57,28 @@ if (es_post()) {
                 (new TuPlanner\Papelera(db()))->restaurar($id);
                 registrar_admin('Restaurado de la papelera', $id);
                 aviso('Negocio restaurado: vuelve tal como estaba.');
+                break;
+            case 'modulos':   // Anexo B: encender y apagar módulos, precio acordado y módulos de la demo
+                $mods = modulos();
+                $antes = $mods->estado($id);
+                $marcados = array_values(array_filter(array_keys((array) ($_POST['modulo'] ?? [])), fn($m) => is_string($m) && Modulos::existe($m)));
+                $base = $antes['pagados'];
+                $acordadoTxt = trim((string) ($_POST['precio_acordado'] ?? ''));
+                if ($acordadoTxt !== '' && !is_numeric(str_replace(',', '.', $acordadoTxt))) throw new RuntimeException('Escribe el precio acordado con números (vacío = el calculado).');
+                $acordado = $acordadoTxt === '' ? null : round((float) str_replace(',', '.', $acordadoTxt), 2);
+                $r = $mods->cambiar($id, array_values(array_diff($marcados, $base)), array_values(array_diff($base, $marcados)), $acordado);
+                if ($antes['demo']) $mods->elegirDemo($id, !empty($_POST['demo_igual']) ? $mods->estado($id)['pagados'] : null);
+                registrar_admin('Módulos: ' . $r['texto'] . ' · ' . dinero($mods->estado($id)['mensual']) . ' al mes', $id);
+                aviso($r['sin_cambios'] ? 'Sin cambios en los módulos.' : 'Módulos guardados. ' . $r['texto'] . '.');
+                break;
+            case 'solicitud_modulos':
+                $sid = (int) ($_POST['solicitud'] ?? 0);
+                $sol = modulos()->solicitud($sid);
+                if (!$sol || (int) $sol['negocio_id'] !== $id) throw new RuntimeException('Ese pedido no es de este negocio.');
+                $resultado = ($_POST['resultado'] ?? '') === 'aprobada' ? 'aprobada' : 'rechazada';
+                $r = modulos()->atender($sid, $resultado, (string) ($_POST['respuesta'] ?? ''), (superadmin()['nombre'] ?? 'Panel Tukán'));
+                registrar_admin('Pedido de módulos N.º ' . $sid . ' ' . $resultado . ($r ? ': ' . $r['texto'] : ''), $id);
+                aviso($resultado === 'aprobada' ? 'Pedido aprobado: ' . $r['texto'] . '.' : 'Pedido rechazado.');
                 break;
             case 'clave':
                 $_SESSION['clave_nueva_' . $id] = $panel->nuevaClaveDueno($id);
@@ -75,7 +97,11 @@ $pagos = $panel->pagos($id);
 $registro = $panel->registro($id, 20);
 $listaPlanes = $planes->lista();
 $cotizaciones = [];
-foreach ($listaPlanes as $p) foreach (array_keys(Planes::PERIODOS_NOMBRE) as $per) $cotizaciones[$p['codigo']][$per] = $planes->cotizar($p['codigo'], $per);
+foreach ($listaPlanes as $p) foreach (array_keys(Planes::PERIODOS_NOMBRE) as $per) $cotizaciones[$p['codigo']][$per] = $planes->cotizarNegocio($id, $p['codigo'], $per);
 $inicioSugerido = $planes->inicioSugerido($id)->format('Y-m-d');
-vista_admin('admin_negocio', compact('negocio', 'pagos', 'registro', 'listaPlanes', 'cotizaciones', 'inicioSugerido', 'claveNueva'),
+$modulosEstado = modulos()->estado($id);
+$catalogo = modulos()->catalogo();
+$pedidosModulos = modulos()->solicitudesDe($id);
+vista_admin('admin_negocio', compact('negocio', 'pagos', 'registro', 'listaPlanes', 'cotizaciones', 'inicioSugerido', 'claveNueva',
+                                     'modulosEstado', 'catalogo', 'pedidosModulos'),
             $negocio['nombre'] . ' · Panel Tukán');

@@ -338,7 +338,7 @@ get "r=espacios" > /dev/null
 contiene "Explica el límite" "$TMP/pag.html" "permite 2 lugares activos"
 no_contiene "Sin botón de nuevo espacio" "$TMP/pag.html" "nuevo=1"
 r=$(post_desde "r=espacios" "r=espacios&accion=guardar" --data-urlencode "nombre=Terraza")
-contiene "Mensaje para pasar al plan Agencia" "$TMP/post.html" "pasa al plan Agencia"
+contiene "Mensaje para cambiar de plan" "$TMP/post.html" "cambia de plan en Mi plan"
 check "No se creó" "2" "$(sql "SELECT count(*) FROM espacios WHERE negocio_id=$NID")"
 sql "UPDATE planes SET max_espacios = NULL WHERE codigo = 'salon'" > /dev/null
 check "Calendario vacío también abre" "200" "$(get "r=calendario")"
