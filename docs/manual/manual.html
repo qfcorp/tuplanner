@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="es-EC">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual de TuPlanner</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root { --marino: #14213D; --marino-2: #22315A; --amarillo: #FFC93C; --naranja: #FF8A1F; --agua: #2A9D8F; --tinta: #1C2333; --suave: #5B6478;
+        --linea: #DDE1EA; --fondo: #F4F5F8; --consejo: #EAF6EE; --consejo-borde: #2E9B57; --ojo: #FFF2E6; }
+@page { size: A4; margin: 16mm 15mm 18mm 15mm; }
+@page portada { margin: 0; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font-family: "DM Sans", system-ui, sans-serif; font-size: 10.4pt; line-height: 1.5; color: var(--tinta); background: #fff; }
+h1, h2, h3 { font-family: "Space Grotesk", "DM Sans", sans-serif; color: var(--marino); line-height: 1.2; }
+p { margin: 0 0 7px; }
+.portada { page: portada; width: 210mm; height: 297mm; background: var(--marino); color: #fff; position: relative; overflow: hidden; padding: 26mm 20mm; display: flex; flex-direction: column; break-after: page; }
+.portada .marca { font-family: "Space Grotesk"; font-size: 15pt; font-weight: 700; letter-spacing: .5px; }
+.portada .marca i { color: var(--amarillo); font-style: normal; }
+.portada .marca small { display: block; font-family: "DM Sans"; font-weight: 400; font-size: 9.5pt; opacity: .75; }
+.portada h1 { color: #fff; font-size: 44pt; margin: 30mm 0 4mm; letter-spacing: -1px; }
+.portada h1 em { font-style: normal; color: var(--amarillo); }
+.portada .raya { width: 46mm; height: 5px; background: var(--amarillo); border-radius: 3px; margin-bottom: 8mm; }
+.portada .bajada { font-size: 14pt; max-width: 96mm; opacity: .92; line-height: 1.45; }
+.portada .lema { max-width: 92mm; margin-top: 6mm; color: var(--amarillo); font-weight: 700; font-size: 12pt; }
+.portada .telefonos { position: absolute; right: 14mm; bottom: 30mm; display: flex; gap: 6mm; align-items: flex-end; }
+.portada .telefonos img { width: 52mm; height: 106mm; object-fit: cover; object-position: top; border: 7px solid #0A1530; border-radius: 26px; box-shadow: 0 14px 40px rgba(0,0,0,.45); background: #fff; }
+.portada .telefonos img + img { width: 46mm; height: 94mm; margin-bottom: 14mm; }
+.portada .pie { margin-top: auto; font-size: 9.5pt; opacity: .85; line-height: 1.6; max-width: 90mm; }
+.portada .pie b { color: var(--amarillo); }
+.portada .franja { position: absolute; left: 0; right: 0; bottom: 0; height: 9mm; background: linear-gradient(90deg, var(--amarillo) 0 70%, var(--naranja) 70%); }
+.indice { break-after: page; }
+.indice h1 { font-size: 22pt; margin: 0 0 4mm; }
+.intro-caja { background: var(--fondo); border-radius: 10px; padding: 10px 14px; margin-bottom: 5mm; font-size: 10pt; }
+.indice ol { list-style: none; padding: 0; margin: 0; }
+.indice li { display: flex; align-items: baseline; gap: 10px; padding: 3.6px 0; border-bottom: 1px solid var(--linea); }
+.indice li .n { font-family: "Space Grotesk"; font-weight: 700; color: #fff; background: var(--marino); border-radius: 6px; padding: 1px 7px; font-size: 9pt; min-width: 26px; text-align: center; }
+.indice li a { text-decoration: none; color: var(--tinta); font-weight: 700; flex: 1; }
+.indice li small { display: block; font-weight: 400; color: var(--suave); font-size: 8.8pt; }
+.indice li .pag { font-family: "Space Grotesk"; color: var(--marino); font-weight: 700; min-width: 18px; text-align: right; }
+section.cap { break-before: page; }
+section.cap > h1 { font-size: 21pt; margin: 0 0 3mm; padding-bottom: 3mm; border-bottom: 4px solid var(--amarillo); display: flex; align-items: center; gap: 10px; }
+section.cap > h1 .num { background: var(--marino); color: var(--amarillo); border-radius: 8px; padding: 2px 9px; font-size: 15pt; }
+.plan { display: inline-block; font-size: 8.6pt; color: var(--marino); background: #E8ECF5; border-radius: 999px; padding: 2px 10px; margin: 0 0 4mm; }
+.plan::before { content: "◆ "; color: var(--naranja); }
+h2 { font-size: 13.5pt; margin: 6mm 0 2.5mm; break-after: avoid; }
+h3 { font-size: 11pt; margin: 4mm 0 2mm; break-after: avoid; }
+.tarea { display: grid; grid-template-columns: 1fr 50mm; gap: 7mm; align-items: start; break-inside: avoid; margin-bottom: 4mm; }
+ol.pasos { list-style: none; counter-reset: paso; padding: 0; margin: 0 0 3mm; }
+ol.pasos > li { counter-increment: paso; position: relative; padding: 0 0 0 30px; margin: 0 0 6px; min-height: 22px; }
+ol.pasos > li::before { content: counter(paso); position: absolute; left: 0; top: 0; width: 21px; height: 21px; border-radius: 50%; background: var(--amarillo); color: var(--marino); font-weight: 700; font-size: 9.5pt; display: flex; align-items: center; justify-content: center; }
+ul.lista { margin: 0 0 3mm; padding-left: 18px; } ul.lista li { margin-bottom: 3px; }
+figure { margin: 0 0 4mm; break-inside: avoid; }
+figcaption { font-size: 8.4pt; color: var(--suave); text-align: center; margin-top: 2mm; }
+figure.cel img { width: 100%; max-height: 106mm; object-fit: cover; object-position: top; display: block; border: 6px solid #10192F; border-radius: 22px; box-shadow: 0 6px 16px rgba(20,33,61,.18); background: #fff; }
+figure.pc img { width: 100%; max-height: 104mm; object-fit: cover; object-position: top; display: block; border: 1px solid var(--linea); border-radius: 8px; box-shadow: 0 6px 18px rgba(20,33,61,.12); }
+figure.pc.bajo img { max-height: 76mm; }
+.consejo, .ojo, .nota { border-radius: 9px; padding: 8px 12px; margin: 0 0 4mm; font-size: 9.8pt; break-inside: avoid; }
+.consejo { background: var(--consejo); border-left: 5px solid var(--consejo-borde); }
+.ojo { background: var(--ojo); border-left: 5px solid var(--naranja); }
+.nota { background: var(--fondo); border-left: 5px solid var(--marino); }
+.consejo > b:first-child, .ojo > b:first-child, .nota > b:first-child { display: block; font-family: "Space Grotesk"; font-size: 9.5pt; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 2px; }
+.consejo > b:first-child { color: var(--consejo-borde); } .ojo > b:first-child { color: #C25A0C; } .nota > b:first-child { color: var(--marino); }
+table.t { width: 100%; border-collapse: collapse; margin: 0 0 4mm; font-size: 9.3pt; break-inside: avoid; }
+table.t th { background: var(--marino); color: #fff; text-align: left; padding: 5px 8px; font-weight: 700; }
+table.t td { padding: 4px 8px; border-bottom: 1px solid var(--linea); vertical-align: top; }
+table.t tr:nth-child(even) td { background: #FAFBFD; }
+.pregunta { break-inside: avoid; margin-bottom: 3.5mm; }
+.pregunta h3 { margin: 0 0 1mm; font-size: 10.6pt; }
+.contacto { background: var(--marino); color: #fff; border-radius: 10px; padding: 10px 14px; margin-top: 5mm; break-inside: avoid; }
+.contacto b { color: var(--amarillo); }
+</style>
+</head>
+<body>
+
+<div class="portada">
+  <div class="marca">tukán<i>.</i><small>Sistemas que trabajan por tu negocio</small></div>
+  <h1>Manual de <em>TuPlanner</em></h1>
+  <div class="raya"></div>
+  <p class="bajada">Para wedding planners y organizadores de eventos: la planificación por meses, el presupuesto por proveedor, tus honorarios y comisiones, y los cobros de cada evento.</p>
+  <p class="lema">Todo es por módulos: enciendes solo lo que tu negocio necesita.</p>
+  <div class="telefonos"><img src="capturas/18_plan_celular.png" alt=""><img src="capturas/26_portal.png" alt=""></div>
+  <p class="pie">Capturas reales del negocio de ejemplo <b>Planner Demo Tukanec</b>.<br>tuplanner.tukanec.com<br>WhatsApp 099 640 8397 · info@tukansoftware.com · tukansoftware.com</p>
+  <div class="franja"></div>
+</div>
+
+<div class="indice">
+  <h1>Contenido</h1>
+  <div class="intro-caja"><b>Cómo leer este manual.</b> Cada capítulo es una parte de TuPlanner. Arriba de cada uno dice si es de la <b>base</b> (lo tienen todos los negocios) o de un <b>módulo</b> (se enciende en <i>Mi plan</i>). Si un módulo no está en tu plan, su pantalla dice «Este módulo no está en tu plan» y te deja pedirlo.</div>
+  <ol>
+    <li><span class="n">1</span><a href="#c1">Qué es TuPlanner y cómo se arma<small>Base, módulos y planes</small></a><span class="pag" data-pag="c1"></span></li>
+    <li><span class="n">2</span><a href="#c2">Entrar y la pantalla de Inicio<small>Celular, computadora y primeros pasos</small></a><span class="pag" data-pag="c2"></span></li>
+    <li><span class="n">3</span><a href="#c3">Tu equipo y sus permisos<small>Dueño, vendedor, coordinador y solo consulta</small></a><span class="pag" data-pag="c3"></span></li>
+    <li><span class="n">4</span><a href="#c4">Configuración: tu negocio y tus reglas<small>Datos, reglas, honorarios, comisión y página pública</small></a><span class="pag" data-pag="c4"></span></li>
+    <li><span class="n">5</span><a href="#c5">Lugares, catálogo y lista de tareas<small>Dónde trabajas, qué vendes y qué hay que hacer</small></a><span class="pag" data-pag="c5"></span></li>
+    <li><span class="n">6</span><a href="#c6">Calendario y eventos<small>Consultas, estados y nuevo evento</small></a><span class="pag" data-pag="c6"></span></li>
+    <li><span class="n">7</span><a href="#c7">Planificación: la lista de tareas<small>Módulo · tareas por meses, tuyas y de tu cliente</small></a><span class="pag" data-pag="c7"></span></li>
+    <li><span class="n">8</span><a href="#c8">Presupuesto por proveedor<small>Módulo · partidas, quién paga y dinero del evento</small></a><span class="pag" data-pag="c8"></span></li>
+    <li><span class="n">9</span><a href="#c9">Honorarios y comisiones<small>Módulos · tarifa fija o porcentaje, lo que te deben los proveedores</small></a><span class="pag" data-pag="c9"></span></li>
+    <li><span class="n">10</span><a href="#c10">Ideas e inspiración<small>Módulo · tablero de fotos, temática y colores</small></a><span class="pag" data-pag="c10"></span></li>
+    <li><span class="n">11</span><a href="#c11">Cotización y contrato<small>Cotización con enlace · contrato firmado en el celular</small></a><span class="pag" data-pag="c11"></span></li>
+    <li><span class="n">12</span><a href="#c12">Pagos y cobros<small>Plan de pagos, recibos, comprobantes y cuotas vencidas</small></a><span class="pag" data-pag="c12"></span></li>
+    <li><span class="n">13</span><a href="#c13">El portal del cliente<small>Módulo · su evento, pagos, tareas, presupuesto e ideas</small></a><span class="pag" data-pag="c13"></span></li>
+    <li><span class="n">14</span><a href="#c14">Seguimiento, mensajes y avisos<small>Nada se queda sin respuesta</small></a><span class="pag" data-pag="c14"></span></li>
+    <li><span class="n">15</span><a href="#c15">El día del evento y los demás módulos<small>Cronograma, personal, invitados, proveedores y más</small></a><span class="pag" data-pag="c15"></span></li>
+    <li><span class="n">16</span><a href="#c16">Reportes<small>Ventas, cobros, ocupación y más</small></a><span class="pag" data-pag="c16"></span></li>
+    <li><span class="n">17</span><a href="#c17">Mi plan y las demos<small>Agregar módulos y pedir una demo</small></a><span class="pag" data-pag="c17"></span></li>
+    <li><span class="n">18</span><a href="#c18">Preguntas frecuentes<small>Y cómo pedir ayuda</small></a><span class="pag" data-pag="c18"></span></li>
+  </ol>
+</div>
+
+<section class="cap" id="c1">
+  <h1><span class="num">1</span> Qué es TuPlanner y cómo se arma</h1>
+  <p>TuPlanner es el sistema para <b>wedding planners y organizadores de eventos</b> de Ecuador: bodas, quince años, pedidas de mano, baby showers, graduaciones, eventos corporativos y más. Está pensado para quien no tiene local propio: trabajas en las quintas, haciendas e iglesias de otros y llevas todo el evento, desde la primera consulta hasta el día de la fiesta.</p>
+  <p>Funciona en el celular, la tablet y la computadora, sin instalar nada: entras a <b>tuplanner.tukanec.com</b> con tu correo y tu contraseña.</p>
+  <h2>La base (la tienen todos)</h2>
+  <ul class="lista">
+    <li><b>Calendario sin doble reserva</b>: un lugar separado no se puede separar dos veces a la misma hora (lo impide el sistema). También ves los próximos sábados libres.</li>
+    <li><b>Eventos</b> con sus estados (consulta, cotizado, separado, confirmado, realizado), seguimiento, tareas y lista de espera.</li>
+    <li><b>Clientes</b> con su historial · <b>Lugares</b> (quintas, haciendas, iglesias) y <b>catálogo</b> de servicios con precios.</li>
+    <li><b>Cotizaciones</b> con IVA, descuento y versiones, en PDF con QR y con un enlace para que el cliente la acepte.</li>
+    <li><b>Plan de pagos</b>, cuotas, recibos en PDF y comprobantes · <b>Mensajes de WhatsApp</b> del día listos para enviar.</li>
+    <li><b>Página pública</b> con «¿Está libre tu fecha?» y formulario de consulta · <b>reportes</b> de ventas, cobros, por cobrar y ocupación.</li>
+    <li><b>Usuarios con roles</b> y avisos en la campana · se instala en el celular como una app.</li>
+  </ul>
+  <h2>Los módulos (se encienden o se apagan)</h2>
+  <table class="t">
+    <tr><th>Módulo</th><th>Para qué sirve</th></tr>
+    <tr><td>🗓️ Planificación</td><td>Lista de tareas por meses para ti y para tu cliente, con «Tu planificación» en su portal</td></tr>
+    <tr><td>💰 Presupuesto por proveedor</td><td>Partidas por proveedor, pagos directos del cliente, tus honorarios y el dinero del evento (necesita Planificación)</td></tr>
+    <tr><td>🤝 Comisiones de proveedores</td><td>Lo que cada proveedor te debe de comisión y el recordatorio por WhatsApp (necesita Presupuesto)</td></tr>
+    <tr><td>💡 Ideas e inspiración</td><td>Tablero de fotos tuyo y de tu cliente, temática y paleta de colores</td></tr>
+    <tr><td>🎁 Paquetes y simulador</td><td>Paquetes armados que cargan toda la cotización en un toque</td></tr>
+    <tr><td>✍️ Contratos con firma</td><td>Contrato que el cliente firma con el dedo, con QR de verificación y anexos por extras</td></tr>
+    <tr><td>📱 Portal del cliente</td><td>El enlace del cliente, sin claves: su evento, pagos, contrato y comprobantes</td></tr>
+    <tr><td>💳 Cobros en línea (Payphone)</td><td>El cliente paga sus cuotas con tarjeta desde su portal (necesita el portal)</td></tr>
+    <tr><td>📝 Formulario, extras y encuesta</td><td>Formulario del evento, extras pedidos en línea y encuesta de satisfacción (necesita el portal)</td></tr>
+    <tr><td>⏱️ Día del evento</td><td>Cronograma minuto a minuto con modo en vivo, personal y hoja del evento en PDF</td></tr>
+    <tr><td>🎟️ Invitados con QR</td><td>Invitación digital, confirmación, mesas y control de ingreso con QR</td></tr>
+    <tr><td>🗺️ Plano del salón · 🪑 Mobiliario y menaje</td><td>Plano de mesas de cada lugar · tu decoración y menaje reservados por evento</td></tr>
+    <tr><td>🎥 Boda en vivo</td><td>Transmisión con el botón «Ver en vivo» en el portal y la invitación (necesita Día del evento)</td></tr>
+    <tr><td>🚚 Proveedores y compras · 🔗 Portal del proveedor · ⭐ Incidencias</td><td>Ficha del proveedor, órdenes de compra, facturas, por pagar, su portal y su puntaje</td></tr>
+    <tr><td>🎯 Metas y reportes avanzados</td><td>Metas de ventas, embudo, ganancia por evento y comisiones de vendedores</td></tr>
+    <tr><td>📲 Avisos por Telegram · 📤 Exportar</td><td>Avisos al celular del equipo · descargas para Excel y Google Calendar</td></tr>
+  </table>
+  <div class="nota"><b>Planes</b><b>Esencial</b> = la base. <b>Planner</b> = la base + lo del organizador (planificación, presupuesto, comisiones, ideas), paquetes, contratos, portal del cliente con cobros en línea, formulario y encuesta, proveedores e incidencias, metas, Telegram y exportar. <b>Agencia</b> = todos los módulos y usuarios sin límite. A cualquier plan se le puede sumar o quitar un módulo. El valor de tu plan te lo cotiza Tukán por WhatsApp según lo que necesita tu negocio. <b>Apagar un módulo no borra nada</b>: sus pantallas se esconden y, al volver a encenderlo, todo sigue como estaba.</div>
+</section>
+
+<section class="cap" id="c2">
+  <h1><span class="num">2</span> Entrar y la pantalla de Inicio</h1>
+  <span class="plan">Base</span>
+  <div class="tarea">
+    <div>
+      <ol class="pasos">
+        <li>Abre <b>tuplanner.tukanec.com</b> en el navegador del celular o de la computadora.</li>
+        <li>Escribe tu <b>Correo</b> y tu <b>Contraseña</b> y toca <b>Entrar</b>.</li>
+        <li>Si entraste con una contraseña temporal, el Inicio te lo recuerda: cámbiala en <b>Mi cuenta</b>.</li>
+      </ol>
+      <p>En la <b>computadora</b> el menú está a la izquierda. En el <b>celular</b> tienes abajo <b>Inicio, Calendario, Eventos, Cobros</b> y <b>Más</b>, donde está todo lo demás (clientes, seguimiento, mensajes, catálogo, lugares, reportes, configuración, usuarios, Mi plan y Mi cuenta).</p>
+      <div class="consejo"><b>Consejo</b>Instala TuPlanner como app: en el Inicio aparece «Instala TuPlanner en tu celular» con el botón <b>Instalar</b> (o en Chrome, menú ⋮ → «Agregar a la pantalla principal»). Se abre con su ícono, a pantalla completa.</div>
+    </div>
+    <figure class="cel"><img src="capturas/01_login.png" alt=""><figcaption>La pantalla para entrar.</figcaption></figure>
+  </div>
+  <h2>El Inicio</h2>
+  <p>Arriba tienes los accesos <b>Nuevo evento</b>, <b>Calendario</b> y <b>Cobros</b>. Después: los comprobantes que subieron tus clientes, tus cifras (eventos del mes, próximos 30 días, vencido por cobrar, comprobantes por revisar y consultas nuevas), los <b>Próximos 7 días</b>, los <b>Avisos sin leer</b>, los <b>Seguimientos de hoy</b>, las <b>Tareas por vencer</b>, las <b>Cuotas vencidas o por vencer</b> y lo que está <b>Para atender</b>.</p>
+  <figure class="pc bajo"><img src="capturas/02_inicio_compu.png" alt=""><figcaption>El Inicio en la computadora: un comprobante por revisar, el evento de esta semana y los avisos.</figcaption></figure>
+</section>
+
+<section class="sigue" id="c2b">
+  <div class="tarea">
+    <div>
+      <h2>Primeros pasos</h2>
+      <p>Cuando tu cuenta es nueva, el Inicio muestra la guía <b>Primeros pasos</b>, que se va tachando sola:</p>
+      <ol class="pasos">
+        <li><b>Completa los datos de tu negocio</b>: dirección, RUC y WhatsApp (salen en las cotizaciones y contratos).</li>
+        <li><b>Sube tu logo</b>: sale en la cotización, el contrato y tu página pública.</li>
+        <li><b>Revisa tus lugares y precios</b>: vienen ejemplos para que los cambies por los tuyos. Cuando termines, toca <b>Ya lo hice</b>.</li>
+        <li><b>Crea tu primer evento</b>: anota una consulta real y cotízala.</li>
+      </ol>
+      <p>Cada paso tiene su botón <b>Hacerlo</b>. Si ya sabes usarlo, toca <b>Ya sé usarlo, ocultar</b> (se puede volver a mostrar desde Configuración → Más).</p>
+    </div>
+    <figure class="cel"><img src="capturas/03_inicio_celular.png" alt=""><figcaption>El Inicio en el celular.</figcaption></figure>
+  </div>
+  <figure class="pc bajo"><img src="capturas/04_primeros_pasos.png" alt=""><figcaption>La guía «Primeros pasos» de una cuenta nueva.</figcaption></figure>
+</section>
+
+<section class="cap" id="c3">
+  <h1><span class="num">3</span> Tu equipo y sus permisos</h1>
+  <span class="plan">Base</span>
+  <p>Cada persona de tu equipo entra con <b>su propio correo y su contraseña</b>. Lo que ve en el menú depende de su rol y de los módulos que tienes.</p>
+  <table class="t">
+    <tr><th>Rol</th><th>Qué puede hacer</th></tr>
+    <tr><td><b>Dueño</b></td><td>Todo, incluida la configuración, los usuarios y el plan.</td></tr>
+    <tr><td><b>Vendedor</b></td><td>Atiende consultas, cotiza, hace contratos y registra cobros.</td></tr>
+    <tr><td><b>Coordinador</b></td><td>Ve los eventos y organiza el día: personal, proveedores, invitados y mobiliario. Ve y marca las tareas y las ideas. <b>No ve dinero</b> (no tiene Cobros, Cotización, Contrato ni Pagos).</td></tr>
+    <tr><td><b>Solo consulta</b></td><td>Ve todo (eventos, cobros, reportes) pero no puede cambiar nada. Ideal para el contador o un socio.</td></tr>
+  </table>
+  <h2>Agregar a alguien</h2>
+  <ol class="pasos">
+    <li>Ve a <b>Más → Usuarios</b> (solo el dueño).</li>
+    <li>En <b>Agregar a alguien</b> escribe el nombre, el correo y el celular, y elige qué va a hacer: <b>Vendedor</b>, <b>Coordinador</b> o <b>Solo consulta</b>.</li>
+    <li>Toca <b>Crear usuario</b>. El sistema crea una contraseña temporal y la muestra <b>solo esa vez</b>: mándala con <b>Enviar por WhatsApp</b> o <b>Copiar el mensaje</b>. Al entrar, la persona la cambia.</li>
+  </ol>
+  <figure class="pc bajo"><img src="capturas/05_usuarios.png" alt=""><figcaption>Usuarios: el dueño, una vendedora, un coordinador y la contadora con «Solo consulta».</figcaption></figure>
+  <ul class="lista">
+    <li><b>Cambiar</b>: le cambias el rol. <b>Nueva contraseña</b>: si la olvidó (la anterior deja de funcionar).</li>
+    <li><b>Desactivar</b>: ya no puede entrar, pero lo que hizo se guarda. Puedes volver a <b>Activar</b>lo.</li>
+  </ul>
+  <div class="ojo"><b>Ojo</b>Cada plan permite un número de usuarios activos. Si llegaste al límite, desactiva a quien ya no lo use o pide más en <b>Mi plan</b> (el plan Agencia no tiene límite de usuarios).</div>
+</section>
+
+<section class="cap" id="c4">
+  <h1><span class="num">4</span> Configuración: tu negocio y tus reglas</h1>
+  <span class="plan">Base · solo el dueño</span>
+  <p>En <b>Más → Configuración</b> tienes las pestañas <b>Negocio</b>, <b>Reglas</b>, <b>Cobros en línea</b>, <b>Página pública</b>, <b>Tareas</b>, <b>Google Calendar</b> (con el módulo Exportar) y <b>Más</b>.</p>
+  <h2>Negocio</h2>
+  <p>Nombre comercial, razón social, RUC, teléfono, <b>WhatsApp del negocio</b>, correo, ciudad, dirección, enlace de Google Maps, Instagram, Facebook, enlace para dejar reseña en Google, la descripción para tu página pública y el color de tu marca. Toca <b>Guardar datos del negocio</b>. Tu logo se sube con <b>Guardar logo</b>.</p>
+  <h2>Reglas</h2>
+  <p>Son las reglas con las que TuPlanner arma tus cotizaciones, tus planes de pago y la organización de cada evento. Los cambios valen para lo nuevo; lo que ya hiciste no cambia.</p>
+  <figure class="pc bajo"><img src="capturas/06_config_reglas.png" alt=""><figcaption>Reglas: reserva, número de pagos, máximo de eventos por día, honorarios y comisión.</figcaption></figure>
+  <table class="t">
+    <tr><th>Regla</th><th>Para qué sirve</th></tr>
+    <tr><td>IVA · Días que vale una cotización</td><td>El IVA de tus cotizaciones y hasta cuándo vale cada una.</td></tr>
+    <tr><td>Días que se retiene una fecha cotizada</td><td>La fecha queda «retenida» (sin bloquearla) mientras el cliente decide.</td></tr>
+    <tr><td>Reserva para separar la fecha (%) · Número de pagos · El saldo se paga hasta</td><td>Con esto se arma solo el plan de pagos de cada evento.</td></tr>
+    <tr><td>Máximo de eventos por día</td><td>Cuántos eventos puede atender tu equipo el mismo día. Te avisamos si te pasas y tu página pública dice «quedan pocos cupos» o «sin cupo».</td></tr>
+    <tr><td>Cómo cobras tus honorarios · Tus honorarios si cobras por porcentaje (%)</td><td>Tarifa fija o porcentaje del presupuesto, para los eventos nuevos (cada evento se puede cambiar).</td></tr>
+    <tr><td>Comisión que pides a los proveedores (%)</td><td>Se propone en cada partida nueva del presupuesto. 0 = no cobras comisión.</td></tr>
+    <tr><td>Condiciones que salen en la cotización</td><td>Tu letra pequeña: validez, reserva, saldo, número final de invitados.</td></tr>
+  </table>
+  <p>También están la garantía por daños, la hora máxima de fin, las horas de montaje y desmontaje, invitados por mesero, el aviso para revisar el precio y la comisión del vendedor. Toca <b>Guardar reglas</b>.</p>
+  <h2>Cobros en línea y página pública</h2>
+  <ul class="lista">
+    <li><b>Cobros en línea</b>: tus <b>Datos para transferencia</b> y tu <b>Celular de DeUna</b> (salen en el portal del cliente). Con el módulo <i>Cobros en línea (Payphone)</i>, también el token de Payphone para cobrar con tarjeta.</li>
+    <li><b>Página pública</b>: el enlace de tu página para Instagram y WhatsApp (<b>Copiar</b>, <b>Ver mi página</b>, <b>Compartir por WhatsApp</b>) y su <b>código QR</b> para imprimir.</li>
+  </ul>
+</section>
+
+<section class="cap" id="c5">
+  <h1><span class="num">5</span> Lugares, catálogo y lista de tareas</h1>
+  <span class="plan">Base</span>
+  <h2>Lugares</h2>
+  <p>En <b>Más → Lugares</b> anotas las quintas, haciendas, iglesias y terrazas donde trabajas. Vienen dos de ejemplo: tócalos en <b>Editar</b> para poner los tuyos, o crea otro con <b>Nuevo lugar</b>. De cada uno: nombre, <b>Tipo</b> (recepción, ceremonia o ambos), capacidad sentados y de pie, alquiler (opcional), <b>Dirección</b>, <b>Enlace de Google Maps</b>, contacto del lugar con su celular, descripción, color en el calendario y foto para tu página pública.</p>
+  <figure class="pc bajo"><img src="capturas/07_lugares.png" alt=""><figcaption>Los lugares del negocio de ejemplo y las fechas cerradas.</figcaption></figure>
+  <p>En <b>Fechas cerradas</b> marcas los días que no trabajas (feriado, vacaciones): ese día no se puede separar y tu página pública lo muestra ocupado.</p>
+  <h2>Catálogo y precios</h2>
+  <p>En <b>Más → Catálogo y precios</b> está todo lo que cotizas, por categoría: tus servicios de <b>Organización (honorarios)</b> (organización integral, coordinación del día, asesoría por horas) y lo que revendes (menú, bebidas, decoración, música, foto y video, flores…). De cada producto: precio al cliente sin IVA, lo que te cuesta (solo lo ves tú), cómo se cobra (por evento, por persona, por unidad o por hora) y si cobra IVA.</p>
+  <ul class="lista">
+    <li><b>+ Agregar producto</b>, <b>Editar</b> y <b>Desactivar</b> (ya no sale para cotizar; se puede volver a activar).</li>
+    <li><b>Subir precios en bloque</b>: por ejemplo +5 % a todo el menú a inicio de año.</li>
+    <li>Con el módulo <i>Paquetes y simulador</i>, en <b>Paquetes</b> armas combos (ej. «Organización integral de boda») que cargan toda la cotización en un toque, y el botón <b>¿Cuánto sale?</b> calcula el precio por número de invitados.</li>
+  </ul>
+  <figure class="pc bajo"><img src="capturas/08_catalogo.png" alt=""><figcaption>Catálogo y precios: tus honorarios con su margen.</figcaption></figure>
+</section>
+
+<section class="sigue" id="c5b">
+  <h2>La lista de tareas de cada evento</h2>
+  <p>En <b>Configuración → Tareas</b> está la lista que se copia sola a cada evento nuevo, con su fecha contada desde el día del evento. Ya viene una lista típica de <b>boda</b>, otra de <b>quince años</b> y una para los demás eventos.</p>
+  <ol class="pasos">
+    <li>En <b>Agregar una tarea</b> escribe la tarea (ej. «Prueba de peinado y maquillaje»).</li>
+    <li>Elige <b>Para qué eventos</b> y <b>¿Quién la hace?</b>: el <b>Organizador</b> (tú) o el <b>Cliente</b> (la marca en su portal).</li>
+    <li>Escribe los <b>Días antes del evento</b> (0 = el mismo día; un número negativo = después del evento, ej. −8 para devolver la garantía) y toca <b>Agregar tarea</b>.</li>
+  </ol>
+    <div class="nota"><b>Cambiar la plantilla</b>Cambiar aquí no toca los eventos que ya creaste. En cada evento puedes agregar, cambiar o borrar tareas (capítulo 7).</div>
+  <figure class="pc bajo"><img src="capturas/09_config_tareas.png" alt=""><figcaption>La plantilla de tareas: para quién es cada una y cuántos días antes.</figcaption></figure>
+</section>
+
+<section class="cap" id="c6">
+  <h1><span class="num">6</span> Calendario y eventos</h1>
+  <span class="plan">Base</span>
+  <h2>El calendario</h2>
+  <p>En <b>Calendario</b> ves el mes con tus eventos y su estado. Toca un día para ver qué lugares están libres y crear ahí un <b>Nuevo evento</b>. Puedes filtrar por lugar y ver los <b>Próximos sábados</b>.</p>
+  <figure class="pc bajo"><img src="capturas/10_calendario.png" alt=""><figcaption>El calendario de octubre con el lanzamiento corporativo y la boda del sábado.</figcaption></figure>
+  <h2>Los estados de un evento</h2>
+  <table class="t">
+    <tr><th>Estado</th><th>Qué quiere decir</th></tr>
+    <tr><td>Consulta</td><td>El cliente preguntó. La fecha no está guardada.</td></tr>
+    <tr><td>Cotizado</td><td>Ya tiene cotización. La fecha queda <b>retenida</b> unos días, sin bloquearla.</td></tr>
+    <tr><td>Separado</td><td>Pagó la reserva: la fecha y el lugar quedan <b>bloqueados</b>. Pasa solo cuando registras el pago de la reserva.</td></tr>
+    <tr><td>Confirmado</td><td>Contrato firmado. El evento va.</td></tr>
+    <tr><td>Realizado</td><td>El evento ya pasó.</td></tr>
+    <tr><td>Perdido · Cancelado</td><td>No contrató · se canceló después de separar. Se pide el motivo (sirve para saber por qué se pierden ventas).</td></tr>
+  </table>
+  <p>En <b>Eventos</b> los ves en <b>Lista</b> o en el <b>Tablero de ventas</b> (una columna por estado), con buscador y filtros por tipo, vendedor y fechas.</p>
+  <figure class="pc bajo"><img src="capturas/11_eventos_tablero.png" alt=""><figcaption>El tablero de ventas: de la consulta a la confirmación.</figcaption></figure>
+</section>
+
+<section class="sigue" id="c6b">
+  <h2>Crear un evento</h2>
+  <ol class="pasos">
+    <li>Toca <b>Nuevo evento</b> (en el Inicio, el Calendario o Eventos).</li>
+    <li><b>1 Cliente</b>: <b>Cliente nuevo</b> (nombre, celular para WhatsApp, cédula o RUC y correo opcionales) o <b>Ya está registrado</b> (búscalo). Anota <b>¿Cómo nos conoció?</b></li>
+    <li><b>2 Evento</b>: <b>¿Qué celebran?</b>, nombre (opcional), fecha, hora de inicio y fin, invitados y montaje. Marca los <b>lugares</b>; si todavía no lo eligen, déjalos sin marcar y queda «Lugar por definir».</li>
+    <li><b>3 Venta</b>: el <b>Presupuesto del cliente</b> (lo que piensa gastar), el vendedor y notas. Toca <b>Crear evento</b>.</li>
+  </ol>
+  <figure class="pc bajo"><img src="capturas/12_evento_nuevo.png" alt=""><figcaption>Nuevo evento: con nombre, celular y fecha basta para empezar.</figcaption></figure>
+  <div class="ojo"><b>Sin choques</b>Si el lugar ya está separado a esa hora, TuPlanner te avisa. Puedes cambiar la fecha, la hora o el lugar, o guardarlo igual <b>como consulta en lista de espera</b> (no se podrá separar mientras el otro evento tenga la fecha).</div>
+  <h2>El resumen del evento</h2>
+  <p>Cada evento tiene sus pestañas: <b>Resumen</b>, <b>Planificación</b>, <b>Cotización</b>, <b>Contrato</b>, <b>Pagos</b>, y las de los módulos que tengas (Día del evento, Invitados, Formulario y extras, Plano, Ideas). En el Resumen ves el <b>Estado</b> con sus botones (ej. <b>Separar la fecha</b>, <b>Confirmar evento</b>, <b>Marcar como perdido</b>), el dinero, los datos, el cliente con <b>Escribir por WhatsApp</b>, la cotización y el contrato, el enlace del portal, el coordinador del día, el seguimiento, <b>Copiar a otra fecha</b> y el historial de cambios.</p>
+  <figure class="pc bajo"><img src="capturas/13_evento_resumen.png" alt=""><figcaption>El resumen de la boda de ejemplo, ya confirmada.</figcaption></figure>
+</section>
+
+<section class="sigue" id="c6c">
+  <div class="tarea">
+    <div>
+      <h2>Consultas desde tu página pública</h2>
+      <p>Tu negocio tiene su propia página (<b>Configuración → Página pública</b>) con tus lugares, lo que celebras y el botón <b>Consulta tu fecha</b>. El visitante revisa si su fecha está libre (<b>¿Está libre tu fecha?</b>) y llena <b>Pide información</b>.</p>
+      <p>Al tocar <b>Enviar consulta</b>, el evento entra solo a TuPlanner como <b>Consulta</b>, te llega un aviso a la campana y aparece en <b>Consultas nuevas sin atender</b> en el Inicio y en Seguimiento.</p>
+      <div class="consejo"><b>Consejo</b>Pon el enlace de tu página en la biografía de Instagram y en tu estado de WhatsApp. El código QR de Configuración sirve para ferias de bodas.</div>
+    </div>
+    <figure class="cel"><img src="capturas/35_sitio_celular.png" alt=""><figcaption>La página pública en el celular del cliente.</figcaption></figure>
+  </div>
+</section>
+
+<section class="cap" id="c7">
+  <h1><span class="num">7</span> Planificación: la lista de tareas</h1>
+  <span class="plan">Módulo «Planificación»</span>
+  <p>En la pestaña <b>Planificación</b> de cada evento está la <b>Lista de tareas</b>, agrupada por meses: «6 meses antes», «3 meses antes»… «El último mes» y «Después del evento». Arriba ves cuántas están hechas, cuántas están atrasadas (en rojo) y cuántas hizo el cliente.</p>
+  <figure class="pc bajo"><img src="capturas/17_plan_tareas.png" alt=""><figcaption>Lista de tareas de la boda: unas del Organizador y otras del Cliente.</figcaption></figure>
+  <ul class="lista">
+    <li>Al crear el evento se copia sola la lista de tu plantilla. Si la borraste, toca <b>Cargar la lista típica de boda</b> (o del tipo de evento): no repite las que ya están. Si el evento es pronto, las tareas que ya debían estar hechas quedan para hoy.</li>
+    <li>Toca el cuadro de una tarea para marcarla <b>hecha</b> (o pendiente otra vez).</li>
+    <li>En <b>Cambiar</b> editas la tarea, la fecha (<b>Hasta</b>), <b>Para</b> quién es y una <b>Nota</b>; o la quitas con <b>Borrar tarea</b>.</li>
+    <li>Abajo, en <b>Nueva tarea</b>, agregas las tuyas (ej. «Prueba de menú con los novios») y tocas <b>Agregar</b>.</li>
+  </ul>
+  <div class="nota"><b>Tareas del cliente</b>Las tareas «Cliente» le salen a tu cliente en su portal, en <b>Tu planificación</b>, y él las marca cuando las termina. Tú ves «la marcó el cliente». Las del organizador solo las marca tu equipo.</div>
+  <div class="nota"><b>Sin el módulo</b>Las tareas del evento también salen en el <b>Resumen</b> (base), sin la agrupación por meses ni las tareas del cliente en su portal.</div>
+  <div class="consejo"><b>Equipo y día</b>Si ese día tu equipo ya tiene otro evento, la Planificación te avisa arriba, y en rojo si llegaste a tu máximo de eventos por día.</div>
+</section>
+
+<section class="cap" id="c8">
+  <h1><span class="num">8</span> Presupuesto por proveedor</h1>
+  <span class="plan">Módulo «Presupuesto por proveedor» (necesita Planificación)</span>
+  <p>Una <b>partida</b> es cada cosa que hay que contratar: el lugar, el banquete, las fotos, las flores, el vestido… De cada una anotas el proveedor, cuánto se estima, cuánto se contrató, en qué va y <b>quién le paga</b>.</p>
+  <h2>Arrancar en un clic</h2>
+  <ol class="pasos">
+    <li>En la Planificación del evento, escribe el <b>Presupuesto total del cliente</b> (ej. 18.000).</li>
+    <li>Toca <b>Repartir con los porcentajes típicos</b>: TuPlanner arma las partidas típicas de una boda, unos quince años u otro evento en Ecuador (lugar, banquete, foto y video, decoración…) con su estimado.</li>
+    <li>Después cambias lo que quieras, o agregas más con <b>+ Agregar partida</b>.</li>
+  </ol>
+  <figure class="pc bajo"><img src="capturas/15_plan_presupuesto.png" alt=""><figcaption>Presupuesto por proveedor: cada partida con su estado, quién paga y cuánto falta.</figcaption></figure>
+  <h2>Quién le paga al proveedor</h2>
+  <table class="t">
+    <tr><th>Opción</th><th>Cómo funciona</th></tr>
+    <tr><td><b>El cliente le paga directo</b></td><td>El cliente contrata y paga al proveedor. Anotas sus pagos (tú o el cliente desde su portal) y TuPlanner te dice cuánto falta y hasta cuándo pagarle.</td></tr>
+    <tr><td><b>Va en nuestro contrato</b></td><td>Tú lo revendes: lo cobras en tu cotización y le pagas al proveedor (con el módulo Proveedores y compras, en Compras). <b>El cliente no ve ese costo.</b></td></tr>
+  </table>
+  <p>Cada partida tiene un estado: <b>Idea</b>, <b>Pidiendo precios</b>, <b>Contratado</b> o <b>Descartado</b>. Si desmarcas «El cliente la ve en su portal», la partida sale como <b>Oculta al cliente</b>.</p>
+</section>
+
+<section class="sigue" id="c8b">
+  <div class="tarea">
+    <div>
+      <h2>Cambiar una partida y anotar pagos</h2>
+      <ol class="pasos">
+        <li>Toca <b>Cambiar, pagos y comisión</b> en la partida.</li>
+        <li>Cambia la categoría, <b>¿Qué es?</b>, el proveedor (de tu lista o escrito), el <b>Estado</b>, <b>¿Quién le paga al proveedor?</b>, el <b>Estimado</b> y el <b>Precio contratado</b> cuando ya cerraste. Pon <b>Pagarle hasta</b> si hay fecha.</li>
+        <li>Si el cliente paga directo, en <b>Pagos del cliente a este proveedor</b> escribe el monto, la fecha y la forma, y toca <b>Anotar pago</b>.</li>
+      </ol>
+      <p>Una partida sin pagos ni comisión cobrada se puede quitar con <b>Borrar esta partida</b>.</p>
+    </div>
+    <figure class="cel"><img src="capturas/18_plan_celular.png" alt=""><figcaption>El presupuesto en el celular.</figcaption></figure>
+  </div>
+  <figure class="pc bajo"><img src="capturas/16_plan_partida.png" alt=""><figcaption>La partida de fotografía y video abierta: proveedor, estado, quién paga, precio y comisión.</figcaption></figure>
+</section>
+
+<section class="sigue" id="c8c">
+  <h2>El dinero del evento</h2>
+  <p>Arriba de la Planificación ves todo el dinero del evento en un solo lugar:</p>
+  <ul class="lista">
+    <li><b>Presupuesto del cliente</b>, <b>Costo total del evento</b> y si <b>Queda del presupuesto</b> o <b>Se pasa del presupuesto</b>.</li>
+    <li><b>Con tu negocio (contrato)</b>: lo que el cliente te paga a ti, lo pagado y lo que falta (aparece cuando el cliente acepta la cotización).</li>
+    <li><b>Directo a proveedores</b>: lo que el cliente paga directo, lo pagado y lo que falta.</li>
+    <li><b>Tus comisiones</b> (con el módulo Comisiones): lo cobrado y lo que falta por cobrar.</li>
+  </ul>
+  <figure class="pc"><img src="capturas/14_plan_dinero.png" alt=""><figcaption>El dinero de la boda: presupuesto, costo, lo que queda, lo pagado y tus honorarios.</figcaption></figure>
+  <div class="ojo"><b>Solo para el dueño y los vendedores</b>El coordinador ve la lista de tareas pero no el presupuesto ni el dinero.</div>
+</section>
+
+<section class="cap" id="c9">
+  <h1><span class="num">9</span> Honorarios y comisiones</h1>
+  <span class="plan">Honorarios: módulo «Presupuesto por proveedor» · Comisiones: módulo «Comisiones de proveedores»</span>
+  <h2>Tus honorarios</h2>
+  <p>En la Planificación, en <b>Tus honorarios</b>, eliges <b>¿Cómo cobras en este evento?</b>:</p>
+  <ul class="lista">
+    <li><b>Tarifa fija</b>: escribes tu valor. También puedes cargarlo como producto de «Organización» de tu catálogo.</li>
+    <li><b>Porcentaje del presupuesto</b>: escribes el porcentaje y toca <b>Guardar</b>. TuPlanner calcula: «10 % de lo que suman las partidas = tus honorarios + IVA».</li>
+  </ul>
+  <ol class="pasos">
+    <li>Primero crea la cotización del evento (capítulo 11).</li>
+    <li>En <b>Honorarios ($, sin IVA)</b> revisa el valor y elige <b>En la cotización</b>.</li>
+    <li>Toca <b>Poner en la cotización</b>. Si ya tenía una línea de honorarios, se reemplaza por la nueva.</li>
+  </ol>
+  <div class="nota"><b>Cotización aceptada</b>Una cotización aceptada ya no se cambia. Para poner otros honorarios, crea una versión nueva de la cotización.</div>
+  <h2>Comisiones de los proveedores</h2>
+  <p>Muchos proveedores te pagan una comisión por llevarles clientes. En cada partida escribes <b>Tu comisión (%)</b> o una <b>comisión fija ($)</b>; solo cuenta cuando la partida está <b>Contratada</b>. Cuando el proveedor te paga, en la partida escribe <b>Te pagó ($)</b> y toca <b>Anotar comisión cobrada</b> (si fue un error, <b>Borrar lo cobrado</b>).</p>
+  <p>En <b>Más → Comisiones</b> ves todo lo que te deben, por proveedor y por evento:</p>
+  <ul class="lista">
+    <li><b>Por cobrar</b>: cada proveedor con su total, <b>Recordarle por WhatsApp</b> (con el mensaje listo) y <b>Ya me pagó</b> en cada evento.</li>
+    <li><b>Cobradas</b>: lo que ya te pagaron, por periodo (este mes, mes pasado, este año u otras fechas).</li>
+  </ul>
+  <figure class="pc bajo"><img src="capturas/19_comisiones.png" alt=""><figcaption>Comisiones por cobrar: lo que te deben Foto Estudio Luz y DJ Max Sonido.</figcaption></figure>
+</section>
+
+<section class="cap" id="c10">
+  <h1><span class="num">10</span> Ideas e inspiración</h1>
+  <span class="plan">Módulo «Ideas e inspiración»</span>
+  <p>La pestaña <b>Ideas</b> de cada evento es un tablero para ponerse de acuerdo con el cliente en cómo se verá el evento.</p>
+  <ol class="pasos">
+    <li>En <b>Temática y colores</b> toca <b>Cambiar temática y colores</b>: escribe la temática (ej. «Jardín romántico al atardecer») y toca cada cuadro para elegir los colores de la paleta (deja en blanco los que no uses). Toca <b>Guardar</b>.</li>
+    <li>En el <b>Tablero de ideas</b> sube <b>Fotos</b> (hasta 12 a la vez) de decoración, flores, vestido, pastel… con su <b>Categoría</b> y una <b>Nota</b>. Toca <b>Subir</b>.</li>
+    <li>En cada foto marca <b>❤️ Va</b>, <b>✕ No va</b> o <b>Sin decidir</b>. En <b>Nota o borrar</b> le cambias la nota o la quitas.</li>
+  </ol>
+  <figure class="pc"><img src="capturas/20_ideas.png" alt=""><figcaption>Tablero de ideas de la boda: la temática, la paleta y las fotos del organizador y de la novia.</figcaption></figure>
+  <div class="nota"><b>El cliente también sube</b>Tu cliente ve el tablero en su portal (<b>Ideas para tu evento</b>), sube sus propias fotos y marca <b>❤️ Me encanta</b> o <b>✕ No va</b>. Tú ves cuántas son del cliente y cuántas están aprobadas.</div>
+</section>
+
+<section class="cap" id="c11">
+  <h1><span class="num">11</span> Cotización y contrato</h1>
+  <span class="plan">Cotización: base · Contrato con firma: módulo «Contratos con firma»</span>
+  <h2>Armar la cotización</h2>
+  <ol class="pasos">
+    <li>En la pestaña <b>Cotización</b> del evento elige cómo empezar: <b>Desde un paquete</b> (con el módulo Paquetes), <b>Copiar la versión anterior</b> o <b>En blanco</b>.</li>
+    <li>En <b>Qué incluye</b> agrega productos del catálogo (<b>Agregar</b>) o un paquete completo, y cambia cantidad, precio y si lleva IVA. Lo que es «por persona» se recalcula solo con los invitados.</li>
+    <li>Pon un <b>Descuento</b> si hay, las <b>Notas para el cliente</b> y las <b>Condiciones</b>.</li>
+    <li>Toca <b>Guardar y enviar por WhatsApp</b> (o <b>Guardar y marcar como enviada</b>). El evento pasa a <b>Cotizado</b>.</li>
+  </ol>
+  <figure class="pc bajo"><img src="capturas/21_cotizacion.png" alt=""><figcaption>La cotización del baby shower: armar, enviar, el cliente acepta y contrato.</figcaption></figure>
+  <ul class="lista">
+    <li><b>Ver PDF</b>: la cotización con tu logo y un código QR. <b>Comparar versiones</b>: si el cliente pidió cambios.</li>
+    <li>Si el cliente aceptó por teléfono o en persona: <b>Aceptar en nombre del cliente</b>. Si no la aceptó: <b>Marcar como rechazada</b> con el motivo.</li>
+    <li>Si pidió cambios: <b>Nueva versión</b>. La anterior queda reemplazada y su enlace se lo avisa.</li>
+  </ul>
+</section>
+
+<section class="sigue" id="c11b">
+  <div class="tarea">
+    <div>
+      <h2>Lo que ve tu cliente</h2>
+      <p>Tu cliente abre el enlace en su celular y ve su evento, el <b>Total con IVA</b>, el valor por persona, lo que incluye, las notas y las condiciones. Puede <b>Descargar en PDF</b>, escribirte con <b>Tengo dudas · WhatsApp</b> o, al final, escribir su nombre y tocar <b>Aceptar cotización</b>.</p>
+      <p>Al aceptar, el valor pasa al evento y <b>se arma solo el plan de pagos</b> (reserva, cuotas y saldo, según tus reglas).</p>
+      <div class="ojo"><b>Ojo</b>La cotización vale hasta la fecha que dice. Vencida, el cliente ya no puede aceptarla y te pide una actualizada.</div>
+    </div>
+    <figure class="cel"><img src="capturas/22_cotizacion_cliente.png" alt=""><figcaption>La cotización en el celular del cliente.</figcaption></figure>
+  </div>
+</section>
+
+<section class="sigue" id="c11c">
+  <h2>El contrato con firma en el celular</h2>
+  <p>Con el módulo <i>Contratos con firma</i>, la pestaña <b>Contrato</b> te guía en 4 pasos: el cliente acepta la cotización → generas el contrato con tu <b>Plantilla</b> (se llena con los datos del cliente y del evento) → lo revisas y lo envías → el cliente lo firma en su celular.</p>
+  <ol class="pasos">
+    <li>Genera el contrato, revisa el texto y toca <b>Guardar cambios</b> si corriges algo.</li>
+    <li>Envíalo por WhatsApp (o déjalo listo para firmar). <b>Desde ese momento el texto queda fijo.</b></li>
+    <li>El cliente lo lee, escribe su nombre y su cédula o RUC, firma con el dedo, marca «Leí y acepto el contrato» y toca <b>Firmar contrato</b>.</li>
+  </ol>
+  <p>Al firmar, te llega un aviso y, si el evento estaba separado, pasa solo a <b>Confirmado</b>. El contrato firmado guarda la firma, la fecha, la cédula, la IP y una huella, con un <b>código QR de verificación</b>: <b>Ver la página de verificación</b> muestra si alguien cambió el texto.</p>
+  <figure class="pc bajo"><img src="capturas/23_contrato.png" alt=""><figcaption>Contrato firmado por la novia, con su firma y el código de verificación.</figcaption></figure>
+  <div class="tarea">
+    <div>
+      <ul class="lista">
+        <li>Tus plantillas están en <b>Más → Plantillas de contrato</b>, con variables (nombre del cliente, fecha, valor…).</li>
+        <li>Si cambió algo importante (fecha, valor) o hubo un error: <b>Anular contrato</b> con el motivo, y haces uno nuevo. El enlace de firma anterior deja de funcionar.</li>
+        <li>Con el módulo <i>Formulario, extras y encuesta</i>, los extras que el cliente pide después de firmar se firman como <b>anexo de contrato</b>.</li>
+      </ul>
+    </div>
+    <figure class="cel"><img src="capturas/24_firmar_celular.png" alt=""><figcaption>El cliente lee su contrato antes de firmar.</figcaption></figure>
+  </div>
+</section>
+
+<section class="cap" id="c12">
+  <h1><span class="num">12</span> Pagos y cobros</h1>
+  <span class="plan">Base · el pago con tarjeta es del módulo «Cobros en línea (Payphone)»</span>
+  <h2>Los pagos de un evento</h2>
+  <p>En la pestaña <b>Pagos</b> del evento ves el valor, lo pagado, lo que falta, lo vencido y los comprobantes por revisar, con los botones <b>Registrar un pago</b>, <b>Recordar el pago por WhatsApp</b>, <b>Estado de cuenta (PDF)</b> y el enlace del portal.</p>
+  <figure class="pc bajo"><img src="capturas/25_pagos_evento.png" alt=""><figcaption>Pagos de los quince años: una cuota vencida y un comprobante que subió el cliente.</figcaption></figure>
+  <ul class="lista">
+    <li><b>Plan de pagos</b>: se arma solo al aceptar la cotización. Puedes <b>Armar el plan automático</b> otra vez (número de pagos y reserva) o <b>Cambiar el plan a mano</b> (<b>+ Agregar otro pago</b>, <b>Guardar plan</b>).</li>
+    <li><b>Registrar un pago recibido</b>: valor, forma de pago, fecha, referencia y foto del comprobante (opcional). Toca <b>Guardar pago y generar recibo</b>: sale el recibo en PDF. Si era la reserva, la fecha <b>queda separada sola</b>.</li>
+    <li><b>Comprobantes por revisar</b>: lo que subió tu cliente desde su portal. Revisa en tu banco y toca <b>Confirmar: el dinero llegó</b>, o <b>Rechazar comprobante</b> con el motivo.</li>
+    <li><b>Anular pago</b>: si fue un error (se resta de lo pagado y no se puede deshacer).</li>
+    <li><b>Garantía por daños</b>: registrar la garantía recibida, devolverla o retener por daños.</li>
+    <li><b>Gastos del evento</b> y <b>Ganancia del evento</b>: lo que calculaste frente a lo que gastaste de verdad. Con el módulo Proveedores y compras, también las <b>Compras a proveedores</b>.</li>
+  </ul>
+</section>
+
+<section class="sigue" id="c12b">
+  <h2>Cobros: todo lo que te deben</h2>
+  <p>En <b>Cobros</b> (menú principal) ves lo cobrado este mes y el anterior, el total por cobrar, lo vencido, los <b>Comprobantes por revisar</b> (con <b>Confirmar</b> o <b>Revisar</b>), las <b>Cuotas vencidas</b>, lo que está <b>Por vencer</b> (7, 15 o 30 días) y las <b>Garantías por devolver</b>. En cada cuota tienes <b>WhatsApp</b> (recordatorio listo), <b>Ver evento</b> y <b>Registrar pago</b>.</p>
+  <figure class="pc"><img src="capturas/28_cobros.png" alt=""><figcaption>Cobros: un comprobante por confirmar y una cuota vencida.</figcaption></figure>
+  <div class="consejo"><b>Tus clientes pagan desde su portal</b>Con el portal del cliente, tus datos de transferencia y DeUna salen en su enlace, y el cliente sube la foto de su comprobante. Con <i>Cobros en línea (Payphone)</i> también paga con tarjeta y el pago se registra solo.</div>
+</section>
+
+<section class="cap" id="c13">
+  <h1><span class="num">13</span> El portal del cliente</h1>
+  <span class="plan">Módulo «Portal del cliente» · sus tarjetas dependen de tus módulos</span>
+  <div class="tarea">
+    <div>
+      <p>Tu cliente tiene su propio enlace, <b>sin claves</b>. Lo copias o lo envías desde el Resumen o los Pagos del evento (<b>Copiar enlace del portal</b>, <b>Enviar portal por WhatsApp</b>). Ahí ve:</p>
+      <ul class="lista">
+        <li><b>Tu evento</b>: fecha, lugar con su dirección y mapa, y cuánto falta.</li>
+        <li><b>Tus documentos</b>: la cotización, el contrato (<b>Firmar contrato</b> o su PDF).</li>
+        <li><b>Tus pagos</b>: plan de pagos, historial y <b>Pagar</b> (subir comprobante de transferencia o DeUna, o tarjeta con Payphone).</li>
+        <li><b>Tu planificación</b> (módulo Planificación) e <b>Ideas para tu evento</b> (módulo Ideas).</li>
+        <li>Con otros módulos: formulario del evento, extras, invitados, cronograma, transmisión en vivo y la encuesta.</li>
+        <li><b>¿Tienes alguna duda?</b>: escribirte por WhatsApp o llamarte.</li>
+      </ul>
+    </div>
+    <figure class="cel"><img src="capturas/26_portal.png" alt=""><figcaption>El portal de Valeria: su boda y la cuenta regresiva.</figcaption></figure>
+  </div>
+  <div class="tarea">
+    <div>
+      <h2>Tu planificación (para el cliente)</h2>
+      <ul class="lista">
+        <li><b>Próximas reuniones</b> que agendaste en el seguimiento.</li>
+        <li><b>Tus tareas</b>: las del cliente, que marca tocando el cuadro. También ve cuántas tareas tuyas están listas.</li>
+        <li><b>Tu presupuesto</b> (módulo Presupuesto): cada proveedor, cuánto cuesta y qué falta pagar. En las partidas que paga directo, abre <b>Mis pagos a este proveedor</b> y toca <b>Anotar mi pago</b>.</li>
+      </ul>
+      <div class="ojo"><b>Lo que el cliente no ve</b>Las partidas ocultas, tus comisiones ni el costo de lo que revendes «en tu contrato».</div>
+    </div>
+    <figure class="cel"><img src="capturas/27_portal_plan.png" alt=""><figcaption>«Tu planificación» en el portal.</figcaption></figure>
+  </div>
+</section>
+
+<section class="cap" id="c14">
+  <h1><span class="num">14</span> Seguimiento, mensajes y avisos</h1>
+  <span class="plan">Base</span>
+  <h2>Seguimiento</h2>
+  <p>En <b>Más → Seguimiento</b> ves a quién llamar, escribir o recibir: los <b>Pendientes</b> (atrasados, para hoy y próximos) con <b>Hecho</b>, <b>WhatsApp</b>, <b>Llamar</b> y <b>Reagendar</b>; las <b>Visitas y degustaciones de la semana</b>; las <b>Consultas sin atender</b>; las <b>Cotizaciones sin respuesta</b> (<b>Preguntar</b>) y las <b>Fechas retenidas que vencen</b> (<b>Recordar</b>). Puedes ver <b>Todo el equipo</b> o <b>Solo lo mío</b>.</p>
+  <figure class="pc bajo"><img src="capturas/30_seguimiento.png" alt=""><figcaption>Seguimiento: el WhatsApp, la llamada y la reunión de hoy.</figcaption></figure>
+  <p>Para agendar una llamada, visita, degustación o reunión, ve al Resumen del evento (o a la ficha del cliente) → <b>Seguimiento</b>: elige <b>Qué fue</b>, la fecha en <b>Agendar para</b> (vacío = ya se hizo) y una nota, y toca <b>Guardar</b>.</p>
+  <h2>Mensajes por WhatsApp de hoy</h2>
+  <p>En <b>Más → Mensajes por WhatsApp</b> (o <b>Mensajes de hoy</b> en Cobros) TuPlanner te deja listos los mensajes del día: cuotas que vencen o ya vencieron, contratos que falta firmar, cotizaciones sin respuesta, pedir la lista de invitados, agradecer y pedir una reseña, y los de tus módulos. Toca <b>Enviar por WhatsApp</b>, revisa el texto en WhatsApp y mándalo; luego <b>✓ Marcar como enviado</b>.</p>
+  <figure class="pc bajo"><img src="capturas/29_mensajes.png" alt=""><figcaption>Mensajes de hoy: el recordatorio de la cuota y pedir la lista de invitados.</figcaption></figure>
+  <div class="nota"><b>Avisos</b>La campana (<b>Avisos</b>) te cuenta lo que pasó: consultas nuevas desde tu página, comprobantes subidos, cotizaciones aceptadas y contratos firmados. Con el módulo <i>Avisos por Telegram</i> te llegan al celular: conéctalo en <b>Mi cuenta</b> → <b>Conectar mi Telegram</b>.</div>
+</section>
+
+<section class="cap" id="c15">
+  <h1><span class="num">15</span> El día del evento y los demás módulos</h1>
+  <span class="plan">Módulos «Día del evento», «Invitados con QR», «Plano del salón», «Mobiliario y menaje», «Proveedores y compras» y otros</span>
+  <h2>Día del evento</h2>
+  <p>La pestaña <b>Día del evento</b> tiene el <b>Cronograma</b> minuto a minuto (<b>Cargar cronograma de ejemplo</b>, <b>Agregar al cronograma</b>, <b>Ordenar por hora</b>, PDF), el <b>Modo en vivo</b> para el coordinador, el DJ y el fotógrafo (<b>Abrir modo en vivo</b>, <b>WhatsApp al DJ</b>, <b>Al fotógrafo</b>, <b>Al coordinador</b>), el <b>Personal</b> del evento, los <b>Proveedores</b> con su hora de llegada, las incidencias, el mobiliario, el montaje y el menú, y la <b>Hoja del evento (PDF)</b> para todo el equipo.</p>
+  <figure class="pc bajo"><img src="capturas/32_dia_evento.png" alt=""><figcaption>El día del evento de la boda de este sábado: modo en vivo y cronograma.</figcaption></figure>
+  <table class="t">
+    <tr><th>Módulo</th><th>Dónde está y qué hace</th></tr>
+    <tr><td>Invitados con QR</td><td>Pestaña <b>Invitados</b>: agregar o <b>Pegar lista</b>, invitación por WhatsApp, confirmación, mesas y control de ingreso con QR en la puerta.</td></tr>
+    <tr><td>Plano del salón</td><td>Pestaña <b>Plano</b> y <b>Más → Planos del salón</b>: distribución de mesas de cada lugar, unida a las mesas de los invitados, en PDF.</td></tr>
+    <tr><td>Mobiliario y menaje</td><td><b>Más → Decoración y menaje</b>: lo tuyo que llevas a los eventos (bases, velas, mantelería), cuánto se reserva y los daños.</td></tr>
+    <tr><td>Proveedores y compras</td><td><b>Más → Proveedores</b> y <b>Por pagar</b>: ficha del proveedor, documentos que vencen, órdenes de compra, facturas (también el XML del SRI) y pagos.</td></tr>
+    <tr><td>Portal del proveedor · Incidencias</td><td>El proveedor ve sus eventos y confirma órdenes · problemas con foto, puntualidad y puntaje (<b>Más → Incidencias</b>).</td></tr>
+    <tr><td>Formulario, extras y encuesta</td><td>Pestaña <b>Formulario y extras</b>, <b>Más → Formularios del evento</b> y <b>Extras del portal</b>: el cliente llena su formulario, pide extras en línea y responde la encuesta.</td></tr>
+    <tr><td>Boda en vivo · Metas · Exportar</td><td>Transmisión con «Ver en vivo» · <b>Más → Metas de ventas</b> · descargas para Excel y Google Calendar.</td></tr>
+  </table>
+</section>
+
+<section class="cap" id="c16">
+  <h1><span class="num">16</span> Reportes</h1>
+  <span class="plan">Base · lo avanzado es del módulo «Metas y reportes avanzados»; las descargas, de «Exportar»</span>
+  <p>En <b>Más → Reportes</b> eliges el periodo (<b>Este mes</b>, <b>Mes pasado</b>, <b>Este año</b> u <b>Otras fechas</b>) y ves:</p>
+  <ul class="lista">
+    <li><b>Ventas</b> (un evento cuenta como vendido el día que se separó o se confirmó), <b>Cobrado por mes</b> con cómo te pagaron, <b>Por cobrar</b> y la <b>Ocupación de los próximos 12 meses</b> (sábados vendidos y por lugar).</li>
+    <li>Con <i>Metas y reportes avanzados</i>: el <b>Embudo de ventas y conversión</b> (por cómo llegaron, por tipo de evento, por vendedor y por qué se pierden), la <b>Ganancia por evento</b> y la <b>Comisión de vendedores</b>.</li>
+    <li>Con <i>Formulario, extras y encuesta</i>: la satisfacción de tus clientes. Con <i>Exportar</i>: <b>Descargar para Excel</b>.</li>
+  </ul>
+  <figure class="pc"><img src="capturas/31_reportes.png" alt=""><figcaption>Reportes de octubre: vendido, cobrado, por cobrar, conversión y ticket promedio.</figcaption></figure>
+  <div class="consejo"><b>Consejo</b>El usuario <b>Solo consulta</b> ve los reportes sin poder cambiar nada: es ideal para tu contador.</div>
+</section>
+
+<section class="cap" id="c17">
+  <h1><span class="num">17</span> Mi plan y las demos</h1>
+  <span class="plan">Para el dueño</span>
+  <p>En <b>Más → Mi plan</b> ves tu plan, tus módulos <b>Encendidos</b>, los que puedes agregar y lo que viene <b>Siempre incluido</b>. En un módulo que no tienes, toca <b>Pedir este módulo</b>: el pedido le llega a Tukán, que te escribe para activarlo. Para cualquier duda de tu plan, <b>Preguntar por WhatsApp</b>.</p>
+  <figure class="pc bajo"><img src="capturas/33_mi_plan.png" alt=""><figcaption>Mi plan: los módulos de la organización del evento y de ventas, encendidos.</figcaption></figure>
+  <p>Si alguien de tu equipo abre una pantalla de un módulo que no tienes, ve <b>«🔒 Este módulo no está en tu plan»</b> con lo que hace y el botón <b>Ver Mi plan</b> (al que no es dueño, le pide hablar con el dueño). Si ya lo usaste antes, tus datos siguen guardados.</p>
+  <figure class="pc bajo"><img src="capturas/34_modulo_apagado.png" alt=""><figcaption>Un negocio en plan Esencial abre la Planificación de un evento.</figcaption></figure>
+</section>
+
+<section class="sigue" id="c17b">
+  <h2>Pedir una demo</h2>
+  <p>TuPlanner no tiene registro abierto: todo empieza con una <b>demo</b>. Quien quiere conocerlo llena <b>Solicitar demo</b> (nombre del negocio, su nombre, ciudad, WhatsApp, correo, qué necesita y los módulos que le interesan) y toca <b>Solicitar demo</b>.</p>
+  <figure class="pc bajo"><img src="capturas/36_solicitar_demo.png" alt=""><figcaption>Solicitar demo.</figcaption></figure>
+  <ul class="lista">
+    <li>Tukán prepara tu demo y te manda por WhatsApp tu correo y tu contraseña. La demo trae los módulos encendidos para que veas todo.</li>
+    <li>Mientras dura, arriba dice «Demo: te quedan X días» y el enlace <b>Ver Mi plan</b>.</li>
+    <li>Al contratar te quedas con los módulos de tu plan y los que agregues: <b>nada de lo que cargaste se pierde</b>.</li>
+  </ul>
+  <div class="contacto">¿Quieres una demo o una cotización para tu negocio? Escríbenos: <b>WhatsApp 099 640 8397</b> · <b>info@tukansoftware.com</b> · <b>tukansoftware.com</b></div>
+</section>
+
+<section class="cap" id="c18">
+  <h1><span class="num">18</span> Preguntas frecuentes</h1>
+  <div class="pregunta"><h3>Olvidé mi contraseña. ¿Qué hago?</h3><p>Pídele al dueño que entre a <b>Usuarios</b> y toque <b>Nueva contraseña</b>: te llega una temporal por WhatsApp. Si eres el dueño, escríbele a Tukán por WhatsApp. Para cambiar la tuya: <b>Mi cuenta → Cambiar mi contraseña</b>.</p></div>
+  <div class="pregunta"><h3>¿Puedo crear un evento sin saber todavía el lugar?</h3><p>Sí. En <b>Nuevo evento</b> deja los lugares sin marcar: queda «Lugar por definir». Lo eliges después con <b>Editar</b> en el Resumen.</p></div>
+  <div class="pregunta"><h3>¿Por qué no puedo separar una fecha?</h3><p>Porque ese lugar ya está separado a esa hora por otro evento: TuPlanner no deja reservar dos veces el mismo lugar. Cambia la fecha, la hora o el lugar, o guárdalo como consulta en lista de espera.</p></div>
+  <div class="pregunta"><h3>¿Cuándo pasa un evento a «Separado» y a «Confirmado»?</h3><p>A <b>Separado</b>, cuando registras (o confirmas) el pago de la reserva. A <b>Confirmado</b>, cuando el cliente firma el contrato. También puedes cambiar el estado a mano en el Resumen.</p></div>
+  <div class="pregunta"><h3>¿El cliente ve lo que gano?</h3><p>No. En su portal no ve tus comisiones, las partidas ocultas ni el costo de lo que revendes en tu contrato. Ve sus pagos y lo que le falta pagar.</p></div>
+  <div class="pregunta"><h3>¿Mis honorarios se calculan solos?</h3><p>Si cobras por <b>porcentaje del presupuesto</b>, TuPlanner calcula el valor sobre lo que suman las partidas; tú decides cuándo ponerlo en la cotización con <b>Poner en la cotización</b>.</p></div>
+  <div class="pregunta"><h3>¿Puedo cambiar una cotización que el cliente ya aceptó?</h3><p>No se cambia: crea una <b>Nueva versión</b>. Si el contrato ya está firmado, los extras se firman como anexo.</p></div>
+  <div class="pregunta"><h3>Mi coordinador no ve los pagos. ¿Es un error?</h3><p>No: el rol <b>Coordinador</b> no ve dinero. Si necesita verlo, cámbiale el rol en <b>Usuarios</b>.</p></div>
+  <div class="pregunta"><h3>No veo un menú o una pestaña que sale en este manual.</h3><p>Puede ser de un módulo que no tienes encendido o de un rol distinto al tuyo. Revisa <b>Mi plan</b> o pregúntale al dueño.</p></div>
+  <div class="pregunta"><h3>¿Si apagan un módulo pierdo mis datos?</h3><p>No. Se esconden sus pantallas, pero todo queda guardado y vuelve al encenderlo.</p></div>
+  <div class="pregunta"><h3>¿Cuánto cuesta TuPlanner?</h3><p>Depende de los módulos que necesites. Escríbenos y te enviamos una cotización para tu negocio.</p></div>
+  <div class="contacto"><b>¿Necesitas ayuda?</b><br>WhatsApp de Tukán: <b>099 640 8397</b> · Correo: <b>info@tukansoftware.com</b> · Web: <b>tukansoftware.com</b></div>
+</section>
+
+</body>
+</html>

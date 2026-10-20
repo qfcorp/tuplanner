@@ -6,6 +6,7 @@ Dirección: **tuplanner.tukanec.com** (servidor qfcorp). Web de la marca: tukans
 
 - Plan, avance y pendientes: [BLOC_DE_NOTAS.md](BLOC_DE_NOTAS.md)
 - Cómo está hecho y reglas para programar: [docs/GUIA_DESARROLLO.md](docs/GUIA_DESARROLLO.md)
+- **Manual para el cliente** (planner y su equipo, con capturas reales): [docs/Manual_TuPlanner.pdf](docs/Manual_TuPlanner.pdf) · por módulo: [docs/MANUAL.md](docs/MANUAL.md) · se regenera con `bash docs/manual/generar/generar.sh`
 
 ## Qué hace
 **Lo propio del organizador** (migración 100):
