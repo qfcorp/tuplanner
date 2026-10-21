@@ -24,7 +24,7 @@ Dirección: **tuplanner.tukanec.com** (servidor qfcorp). Web de la marca: tukans
 - **Lugares** (antes "espacios"): las quintas, haciendas e iglesias donde trabaja, con dirección, mapa, contacto y tipo (ceremonia o recepción). Un evento puede quedar con **lugar por definir**.
 - **Máximo de eventos por día** del equipo: aviso en el evento y la página pública dice "quedan pocos cupos" o "sin cupo".
 - Tipos de evento nuevos: pedida de mano, baby shower y despedida de soltera/o. Categorías nuevas: honorarios, flores, pastel y postres, vestido y traje, maquillaje y peinado, invitaciones, transporte.
-- Planes: **Planner $39** (3 usuarios, todo lo del organizador) y **Agencia $69** (usuarios sin límite + invitados con QR, día del evento, plano de mesas, decoración y menaje, portal de proveedores y boda en vivo).
+- Planes (precio por cotización): **Planner** (3 usuarios, todo lo del organizador) y **Agencia** (usuarios sin límite + invitados con QR, día del evento, plano de mesas, decoración y menaje, portal de proveedores y boda en vivo).
 
 **Heredado de TuEvento:**
 - Calendario por espacios **sin doble reserva** (la base de datos lo impide), con horas de montaje y desmontaje, fechas cerradas y "próximos sábados".
@@ -54,41 +54,45 @@ botones, portales públicos ("No disponible"), PDF, tareas automáticas, avisos 
 **Base** (todos): calendario sin doble reserva, eventos, seguimiento y tareas, clientes, espacios y catálogo, cotizaciones con PDF,
 plan de pagos y recibos, Mensajes de WhatsApp del día, página pública con consulta, reportes básicos, usuarios y roles, app instalable.
 
-| Plan | Precio base | Módulos incluidos |
-|---|---|---|
-| Esencial | $19/mes (1 usuario más el dueño) | Solo la base |
-| Planner | $39/mes (3 usuarios) | Paquetes, contratos, portal del cliente, cobros en línea, formulario/extras/encuesta, proveedores y compras, incidencias, metas, Telegram, exportar, planificación, presupuesto, comisiones e ideas |
-| Agencia | $69/mes (sin límite) | Todos |
+**Precios: por cotización (se definen en el Panel Tukán Central).** Nunca se publican; el cliente pide cotización.
 
-| Módulo | Qué trae | $/mes | Necesita |
-|---|---|---|---|
-| Paquetes y simulador | Paquetes armados que cargan la cotización en un toque; simulador por invitados | 3 | — |
-| Contratos con firma | Contrato que el cliente firma con el dedo, QR de verificación, anexos por extras | 6 | — |
-| Portal del cliente | Enlace del cliente sin claves: pagos, contrato, comprobantes | 6 | — |
-| Cobros en línea (Payphone) | El cliente paga con tarjeta desde su portal | 4 | Portal del cliente |
-| Formulario, extras y encuesta | Formulario del evento, extras pedidos en línea, encuesta NPS y reseña | 5 | Portal del cliente |
-| Día del evento | Cronograma con modo en vivo, personal con su portal, hoja del evento | 8 | — |
-| Invitados con QR | Invitación, confirmación, mesas, control de ingreso con QR | 8 | — |
-| Plano del salón | Plano de cada espacio y de cada evento, PDF a escala | 6 | — |
-| Mobiliario y menaje | Sillas, mesas, mantelería: reservas, disponibilidad y daños | 5 | — |
-| Boda en vivo | Transmisión con el botón "Ver en vivo" en portal e invitación | 5 | Día del evento |
-| Proveedores y compras | Ficha, documentos, órdenes de compra, facturas (XML del SRI), por pagar | 7 | — |
-| Portal del proveedor | El proveedor ve sus eventos, confirma órdenes, sube facturas | 4 | Proveedores |
-| Incidencias y puntaje | Problemas con foto, puntualidad y puntaje configurable | 3 | Proveedores |
-| Metas y reportes avanzados | Metas de ventas, embudo, ganancia por evento, comisiones | 4 | — |
-| Avisos por Telegram | Pagos, firmas, consultas, cuotas y seguimientos al celular | 3 | — |
-| Exportar a Excel y Google Calendar | Descargas para Excel y calendario externo | 3 | — |
-| Planificación | Lista de tareas por meses (organizador y cliente) y "Tu planificación" en el portal | 6 | — |
-| Presupuesto por proveedor | Partidas por proveedor, pagos directos del cliente, honorarios, dinero del evento | 6 | Planificación |
-| Comisiones de proveedores | Comisiones por cobrar y cobradas, recordatorio por WhatsApp | 4 | Presupuesto por proveedor |
-| Ideas e inspiración | Tablero de fotos con el cliente, temática y paleta de colores | 4 | — |
+| Plan | Límites | Módulos incluidos |
+|---|---|---|
+| Esencial | 1 usuario más el dueño | Solo la base |
+| Planner | 3 usuarios | Paquetes, contratos, portal del cliente, cobros en línea, formulario/extras/encuesta, proveedores y compras, incidencias, metas, Telegram, exportar, planificación, presupuesto, comisiones e ideas |
+| Agencia | sin límite | Todos |
+
+| Módulo | Qué trae | Necesita |
+|---|---|---|
+| Paquetes y simulador | Paquetes armados que cargan la cotización en un toque; simulador por invitados | — |
+| Contratos con firma | Contrato que el cliente firma con el dedo, QR de verificación, anexos por extras | — |
+| Portal del cliente | Enlace del cliente sin claves: pagos, contrato, comprobantes | — |
+| Cobros en línea (Payphone) | El cliente paga con tarjeta desde su portal | Portal del cliente |
+| Formulario, extras y encuesta | Formulario del evento, extras pedidos en línea, encuesta NPS y reseña | Portal del cliente |
+| Día del evento | Cronograma con modo en vivo, personal con su portal, hoja del evento | — |
+| Invitados con QR | Invitación, confirmación, mesas, control de ingreso con QR | — |
+| Plano del salón | Plano de cada espacio y de cada evento, PDF a escala | — |
+| Mobiliario y menaje | Sillas, mesas, mantelería: reservas, disponibilidad y daños | — |
+| Boda en vivo | Transmisión con el botón "Ver en vivo" en portal e invitación | Día del evento |
+| Proveedores y compras | Ficha, documentos, órdenes de compra, facturas (XML del SRI), por pagar | — |
+| Portal del proveedor | El proveedor ve sus eventos, confirma órdenes, sube facturas | Proveedores |
+| Incidencias y puntaje | Problemas con foto, puntualidad y puntaje configurable | Proveedores |
+| Metas y reportes avanzados | Metas de ventas, embudo, ganancia por evento, comisiones | — |
+| Avisos por Telegram | Pagos, firmas, consultas, cuotas y seguimientos al celular | — |
+| Exportar a Excel y Google Calendar | Descargas para Excel y calendario externo | — |
+| Planificación | Lista de tareas por meses (organizador y cliente) y "Tu planificación" en el portal | — |
+| Presupuesto por proveedor | Partidas por proveedor, pagos directos del cliente, honorarios, dinero del evento | Planificación |
+| Comisiones de proveedores | Comisiones por cobrar y cobradas, recordatorio por WhatsApp | Presupuesto por proveedor |
+| Ideas e inspiración | Tablero de fotos con el cliente, temática y paleta de colores | — |
 
 - **Precio al mes** de cada cliente = plan + módulos extra − módulos quitados (o un **precio acordado** fijo). Es el que sugiere
   "Registrar pago", el `cotizar` y el `mensual_estimado` del Panel Central. Precios, descripciones y qué trae cada plan se cambian en
   Panel Tukán → **Planes y precios → Catálogo de módulos**.
-- **Mi plan** (dueño): ve sus módulos encendidos y los que puede agregar con su precio; **Pedir este módulo** crea un pedido
-  (solicitud `cambio_modulos`) que Tukán aprueba o rechaza.
-- **Nada se da gratis, todo se pide demo**: no hay registro con prueba gratis. `/?r=registro` es **Solicitar demo** (nombre, negocio,
+- **Mi plan** (dueño): ve sus módulos encendidos y lo que paga por su plan (su contrato). Los módulos y planes que no tiene
+  **no muestran precio** («Precio por cotización»): **Pedir cotización** (en Mi plan, en cada plan y en la pantalla del módulo
+  apagado) crea un pedido (solicitud `cambio_modulos`) que llega al Panel Tukán Central, que cotiza, aprueba o rechaza.
+  El superusuario de Tukán y el Panel Central sí ven los precios.
+- **Todo se pide demo**: no hay registro abierto ni periodo de prueba. En textos de venta se habla de «meses de regalo». `/?r=registro` es **Solicitar demo** (nombre, negocio,
   ciudad, WhatsApp, correo, qué necesita y módulos que le interesan) y llega como solicitud `demo_pedida` al Panel Central y al Resumen
   del Panel Tukán (**Crear demo**). La demo tiene todos los módulos encendidos (o los que elija Tukán) por los días que Tukán decida.
 

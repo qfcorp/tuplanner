@@ -21,7 +21,7 @@ use Throwable;
  *            del Anexo B: cambiar_modulos, guardar_modulos — ver Modulos).
  * Las reglas del negocio son las de TuPlanner (Planes, PanelTukan, Altas); aquí solo se validan los datos,
  * se arma la respuesta y se garantiza que una operación repetida no se haga dos veces (tukan_central_operaciones).
- * Solicitudes: pedidos de demo (no hay registro con prueba gratis), pedidos de módulos desde "Mi plan" y los recordatorios
+ * Solicitudes: pedidos de demo (no hay registro abierto con periodo de prueba), pedidos de módulos desde "Mi plan" y los recordatorios
  * que se arman al momento (demos por terminar, renovaciones, dominios incluidos). TuPlanner no tiene comprobantes ni soporte.
  */
 final class TukanCentralV2
@@ -241,7 +241,7 @@ final class TukanCentralV2
             ],
             'limites' => ['por_pagina_max' => 200, 'meses_finanzas_max' => 24, 'dias_prueba_max' => 90],
             'modulos' => true,
-            'registro_abierto' => false,   // no hay prueba gratis: quien quiere probar pide una demo (demo_pedida)
+            'registro_abierto' => false,   // no hay registro abierto: quien quiere probar pide una demo (demo_pedida)
         ];
     }
 
@@ -817,7 +817,7 @@ final class TukanCentralV2
                      'en_gracia' => $nat === 'por_vencer']);
             }
         }
-        // Dominio gratis por registrar (pago anual sin dominio)
+        // Dominio incluido por registrar (pago anual sin dominio)
         $filas = null;
         foreach ($this->db->query("SELECT su.id, su.negocio_id, su.pagado_en, su.monto, su.inicio, su.fin, pl.nombre AS plan_nombre, su.plan_codigo
                                      FROM suscripciones su JOIN planes pl ON pl.codigo = su.plan_codigo
@@ -838,7 +838,7 @@ final class TukanCentralV2
             if (!$n) continue;
             $items[] = $this->solModulos($n, $ms);
         }
-        // Pedidos de demo (no hay registro con prueba gratis): tabla propia pedidos_demo
+        // Pedidos de demo (no hay registro abierto con periodo de prueba): tabla propia pedidos_demo
         foreach ((new PedidosDemo($this->db))->lista($hace(400)) as $pd) $items[] = $this->solDemo($pd);
         // Estado según lo que el Central ya atendió (los de tabla propia ya traen su estado)
         if ($items) {

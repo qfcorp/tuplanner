@@ -7,7 +7,7 @@ use PDO;
 use RuntimeException;
 
 /**
- * "Nada se da gratis, todo se pide demo": ya no hay registro con prueba gratis. Quien quiere conocer TuPlanner llena
+ * "Todo se pide demo": ya no hay registro abierto con periodo de prueba. Quien quiere conocer TuPlanner llena
  * el formulario de /?r=registro (pedido de demo); Tukán lo ve en el Panel Tukán Central (solicitud demo_pedida) o en
  * el panel de Tukán del programa y, si corresponde, crea la demo (crear_demo) con los módulos que le interesan.
  * Estados: nueva → contactada → demo_creada (o descartada).

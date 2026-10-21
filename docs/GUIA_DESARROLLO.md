@@ -98,7 +98,7 @@ bash tests/run_web.sh
 - Apagar nunca borra: no se tocan los datos. Tareas automáticas y Telegram revisan el módulo (`Automaticas::correr`, `Telegram::textoAUsuarios`).
 - Precio: `Modulos::estado()` (del_plan, extra, quitados, activos, pagados, precio_plan, precio_extra, descuento, precio_acordado, mensual);
   `Planes::cotizarNegocio()` lo usa para sugerir el monto. El descuento de los quitados nunca deja el precio en negativo.
-- Demo (estado `prueba`): todos los módulos, o `negocios.modulos_prueba` si Tukán eligió otros. No hay registro con prueba gratis:
+- Demo (estado `prueba`): todos los módulos, o `negocios.modulos_prueba` si Tukán eligió otros. No hay registro abierto con periodo de prueba:
   `PedidosDemo` guarda los pedidos de `/?r=registro`.
 - En las pruebas de pantallas, `registrar` crea la cuenta en demo (como Tukán, con `tests/crear_cuenta.php`) y `pagar_plan salon` la pasa a pagada.
 

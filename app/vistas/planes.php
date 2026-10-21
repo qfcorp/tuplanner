@@ -61,10 +61,11 @@ $encendidos = count($me['pagados']);
                     <p><?= e($m['descripcion']) ?></p>
                     <?php if ($faltan && !$on): ?><p class="ayuda-chica">Viene junto con: <?= e(implode(', ', array_map([Modulos::class, 'nombre'], $faltan))) ?>.</p><?php endif; ?>
                     <div class="mp-mod-pie">
-                        <span class="mp-mod-precio"><?= $on && in_array($id, $me['del_plan'], true) ? 'Incluido en tu plan' : '+' . dinero($m['precio_mensual']) . ' al mes' ?></span>
+                        <?php /* Regla del dueño: el precio de un módulo que el cliente no tiene no se muestra; se pide cotización */ ?>
+                        <span class="mp-mod-precio"><?= !$on ? 'Precio por cotización' : (in_array($id, $me['del_plan'], true) ? 'Incluido en tu plan' : 'Agregado a tu plan: +' . dinero($m['precio_mensual']) . ' al mes') ?></span>
                         <?php if (!$on && !$pedido): ?>
                             <form method="post"><?= campo_csrf() ?><input type="hidden" name="accion" value="pedir"><input type="hidden" name="modulo" value="<?= e($id) ?>">
-                                <button class="boton boton-chico" type="submit">Pedir este módulo</button></form>
+                                <button class="boton boton-chico" type="submit">Pedir cotización</button></form>
                         <?php endif; ?>
                     </div>
                 </article>
@@ -101,16 +102,22 @@ $encendidos = count($me['pagados']);
 
 <section class="bloque" aria-labelledby="mp-t-planes">
     <h2 id="mp-t-planes">Planes</h2>
-    <p class="g-nota">Cada plan es un precio base con módulos incluidos. Puedes cambiar de plan o agregar módulos sueltos.</p>
+    <p class="g-nota">Cada plan trae la base y un grupo de módulos. Puedes cambiar de plan o agregar módulos sueltos: pide la cotización y Tukán te escribe con el valor.</p>
     <div class="mp-planes">
         <?php foreach ($listaPlanes as $pl): $pm = $planesMod[$pl['codigo']] ?? null; if (!$pm) continue; ?>
             <div class="mp-plan <?= $pl['codigo'] === $u['plan_codigo'] ? 'actual' : '' ?>">
                 <h3>Plan <?= e($pl['nombre']) ?><?= $pl['codigo'] === $u['plan_codigo'] ? ' <small class="suave">(el tuyo)</small>' : '' ?></h3>
-                <p><strong><?= dinero($pl['precio_mensual']) ?></strong> al mes · <?= $pm['todos'] ? 'todos los módulos' : count($pm['modulos']) . ' módulos' ?></p>
+                <p><?= $pm['todos'] ? 'Todos los módulos' : count($pm['modulos']) . ' módulos' ?><?= $pl['codigo'] === $u['plan_codigo'] ? '' : ' · precio por cotización' ?></p>
                 <p><?= $pl['max_espacios'] ? 'Hasta ' . (int) $pl['max_espacios'] . ' espacios' : 'Espacios sin límite' ?> · <?= $pl['max_usuarios'] ? 'hasta ' . (int) $pl['max_usuarios'] . ' usuarios' : 'usuarios sin límite' ?></p>
                 <p><?= e($pl['descripcion'] ?? '') ?></p>
                 <?php if ($pl['codigo'] !== $u['plan_codigo']): ?>
-                    <p><a href="<?= e($wa('Hola, quiero cambiar mi TuPlanner al plan ' . $pl['nombre'])) ?>" target="_blank" rel="noopener">Quiero este plan</a></p>
+                    <?php $faltanPlan = array_diff($pm['todos'] ? array_keys($catalogo) : $pm['modulos'], $me['pagados']); ?>
+                    <?php if ($faltanPlan): ?>
+                        <form method="post"><?= campo_csrf() ?><input type="hidden" name="accion" value="pedir_plan"><input type="hidden" name="plan" value="<?= e($pl['codigo']) ?>">
+                            <button class="boton boton-claro boton-chico" type="submit">Pedir cotización</button></form>
+                    <?php else: ?>
+                        <p><a href="<?= e($wa('Hola, quiero cotizar el cambio de mi TuPlanner al plan ' . $pl['nombre'])) ?>" target="_blank" rel="noopener">Pedir cotización</a></p>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>

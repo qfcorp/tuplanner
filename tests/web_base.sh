@@ -44,7 +44,7 @@ post_desde() {
        --data-urlencode "csrf=$t" "$@" "$BASE/?$ruta"
 }
 # Crea una cuenta nueva EN DEMO (plan quinta por defecto), como la crea Tukán, y deja la sesión iniciada. Deja NID (negocio) y EMAIL.
-# (Ya no hay registro con prueba gratis: /?r=registro es el pedido de demo.)
+# (Ya no hay registro abierto con periodo de prueba: /?r=registro es el pedido de demo.)
 registrar() { # [plan] [nombre del negocio]
   local plan=${1:-quinta} nombre=${2:-Quinta de Prueba $RANDOM}
   rm -f "$JAR"

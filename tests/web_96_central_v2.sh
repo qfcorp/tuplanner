@@ -71,7 +71,7 @@ sql "INSERT INTO suscripciones (negocio_id, plan_codigo, periodo, meses_pagados,
      VALUES ($N7, 'salon', 'mensual', 1, 1, 39, CURRENT_DATE - 23, CURRENT_DATE + 7, 'deuna')" > /dev/null
 sql "UPDATE negocios SET estado='activo', activo_hasta=CURRENT_DATE + 7 WHERE id=$N7" > /dev/null
 registrar quinta "Quinta V2 Registro $RANDOM"; NR=$NID; ER=$EMAIL
-check "Las cuentas las crea Tukán (no hay registro con prueba gratis): origen super" "super" "$(sql "SELECT origen FROM negocios WHERE id=$NR")"
+check "Las cuentas las crea Tukán (no hay registro abierto con periodo de prueba): origen super" "super" "$(sql "SELECT origen FROM negocios WHERE id=$NR")"
 
 echo "2. Transporte y códigos (§2, §3)"
 r=$(c96_post capacidades '{}')

@@ -77,6 +77,6 @@ Temática, paleta de colores y tablero de fotos (❤️ Va / ✕ No va); el clie
 Paquetes y simulador · Contratos con firma (firma con el dedo, QR de verificación, anexos) · Portal del cliente (sin claves: evento, documentos, pagos, Tu planificación, ideas) · Cobros en línea (Payphone) · Formulario, extras y encuesta · Día del evento · Invitados con QR · Plano del salón · Mobiliario y menaje · Boda en vivo · Proveedores y compras · Portal del proveedor · Incidencias y puntaje · Metas y reportes avanzados · Avisos por Telegram · Exportar a Excel y Google Calendar.
 
 ## Mi plan y demos
-- **Más → Mi plan**: módulos encendidos, los que puedes agregar (**Pedir este módulo**) y lo que viene siempre incluido.
+- **Más → Mi plan**: módulos encendidos, los que puedes agregar («Precio por cotización» y **Pedir cotización**) y lo que viene siempre incluido.
 - No hay registro abierto: **Solicitar demo**. Tukán crea la demo; al contratar, nada de lo cargado se pierde.
 - El valor del programa siempre es por cotización según los módulos: WhatsApp 099 640 8397.

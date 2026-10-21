@@ -34,7 +34,7 @@ if ($pausada) {   // Anexo A: cuenta pausada por Tukán, con el motivo (genéric
     <?php elseif (es_dueno($u)): ?>
         <div class="acciones">
             <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Contáctanos para contratar</a>
-            <a class="boton boton-claro" href="<?= e(url('planes')) ?>">Ver planes, módulos y precios</a>
+            <a class="boton boton-claro" href="<?= e(url('planes')) ?>">Ver mi plan y pedir cotización</a>
         </div>
     <?php else: ?>
         <p>Pídele al dueño del negocio que renueve el plan.</p>

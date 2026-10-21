@@ -1,4 +1,4 @@
-# Acceso: pedir demo (no hay prueba gratis), entrar, salir, páginas públicas básicas
+# Acceso: pedir demo (no hay registro abierto), entrar, salir, páginas públicas básicas
 echo "1. Pedir demo (nada se da gratis) y acceso"
 check "Página de entrar" "200" "$(get "r=login")"
 contiene "Dice TuPlanner" "$TMP/pag.html" "TuPlanner"

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * Pruebas de pantallas: crea una cuenta en demo como lo hace Tukán (ya no hay registro con prueba gratis).
+ * Pruebas de pantallas: crea una cuenta en demo como lo hace Tukán (ya no hay registro abierto con periodo de prueba).
  * Uso: php tests/crear_cuenta.php <plan> <nombre del negocio> <correo>   → imprime el id del negocio. Clave: claveSegura1
  */
 require __DIR__ . '/base.php';

@@ -97,7 +97,7 @@ $anulado = $pagar($P1, 'quinta', 'mensual', $d('today'), 500.0, $d('today'));
 $planes->anularPago($anulado);
 $db->exec("UPDATE negocios SET estado = 'prueba' WHERE id = $P1");
 $cli = (int) $db->query("INSERT INTO clientes (negocio_id, nombre, telefono) VALUES ($A2, 'Cliente Secreto Del Salón', '0987654321') RETURNING id")->fetchColumn();
-// Ya no hay registro con prueba gratis: llegan pedidos de demo (demo_pedida) y pedidos de módulos desde Mi plan (cambio_modulos)
+// Ya no hay registro abierto con periodo de prueba: llegan pedidos de demo (demo_pedida) y pedidos de módulos desde Mi plan (cambio_modulos)
 $pedidosDemo = new \TuPlanner\PedidosDemo($db);
 $PD1 = $pedidosDemo->crear(['nombre' => 'Rosa Pérez', 'negocio' => 'Hacienda La Pedida', 'ciudad' => 'Ibarra', 'whatsapp' => '0981112233',
                             'email' => 'rosa@pedida.ec', 'necesita' => 'Tenemos 3 salones', 'modulos' => ['invitados', 'plano']]);
@@ -190,7 +190,7 @@ check('Acciones', ['capacidades', 'estado', 'sso', 'clientes', 'cliente', 'cotiz
 check('Sin adjunto', false, in_array('adjunto', $cap['acciones'], true));
 check('Operaciones', TukanCentralV2::OPERACIONES, $cap['ejecutar']);
 check('Sin comprobantes ni tickets', [], array_intersect($cap['ejecutar'], ['aprobar_comprobante', 'rechazar_comprobante', 'responder_ticket']));
-check('Tipos de solicitud (sin registro_nuevo: no hay prueba gratis)', ['demo_pedida', 'cambio_modulos', 'seguimiento_prueba', 'renovacion', 'dominio_gratis'], $cap['tipos_solicitud']);
+check('Tipos de solicitud (sin registro_nuevo: no hay registro abierto)', ['demo_pedida', 'cambio_modulos', 'seguimiento_prueba', 'renovacion', 'dominio_gratis'], $cap['tipos_solicitud']);
 check('Datos básicos', [false, 'USD', 'America/Guayaquil', 'TuPlanner', true, false, true],
       [$cap['unico'], $cap['moneda'], $cap['zona_horaria'], $cap['nombre'], $cap['sso_ir'], $cap['meses_libres'], $cap['planes_editar']]);
 check('rutas_sso', ['/?r=admin'], $cap['rutas_sso']);
@@ -308,7 +308,7 @@ check('planes: ajustes', ['dias_prueba' => 7, 'dias_demo' => 7, 'dias_gracia' =>
 titulo('7. solicitudes (§5.8, §5.9): registros nuevos y recordatorios');
 $ab = $sols();
 $tipos = array_count_values(array_column($ab, 'tipo'));
-check('Sin registros nuevos (no hay prueba gratis)', 0, $tipos['registro_nuevo'] ?? 0);
+check('Sin registros nuevos (no hay registro abierto)', 0, $tipos['registro_nuevo'] ?? 0);
 check('Pedidos de demo abiertos (nuevo y contactado)', 2, $tipos['demo_pedida'] ?? 0);
 check('Pedido de módulos desde Mi plan', 1, $tipos['cambio_modulos'] ?? 0);
 check('Seguimiento de prueba: termina hoy, faltan 2 y terminada', ["seguimiento_prueba:$P2:vence_hoy:" . $d('today'), "seguimiento_prueba:$P3:faltan_2:" . $d('+2 days'),

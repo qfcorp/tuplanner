@@ -12,7 +12,7 @@ use RuntimeException;
  *  - Esencial $19 / Planner $39 / Agencia $69 al mes (se cambian en el panel de Tukán)
  *  - Semestral: paga 5, recibe 6
  *  - Anual: paga 10, recibe 12 + dominio propio (a nombre de Tukán)
- *  - Demo: 7 días (solo la crea Tukán; no hay registro con prueba gratis). Cada plan = base + módulos (Modulos)
+ *  - Demo: 7 días (solo la crea Tukán; no hay registro abierto con periodo de prueba). Cada plan = base + módulos (Modulos)
  */
 final class Planes
 {

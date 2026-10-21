@@ -190,7 +190,7 @@ check_error('Pedir uno que no existe', 'no existe', fn() => $mods->pedir($nS, (i
 check('Pedir no enciende nada todavía', false, $mods->activo($nS, 'mobiliario'));
 
 // ---------------------------------------------------------------------------------------------
-titulo('8. Pedidos de demo (no hay registro con prueba gratis)');
+titulo('8. Pedidos de demo (no hay registro abierto con periodo de prueba)');
 $pd = new PedidosDemo($db);
 check_error('Pedido sin WhatsApp', 'WhatsApp', fn() => $pd->crear(['nombre' => 'Ana', 'negocio' => 'Quinta Ana', 'whatsapp' => '12', 'email' => 'ana@x.ec']));
 check_error('Pedido sin correo válido', 'correo', fn() => $pd->crear(['nombre' => 'Ana', 'negocio' => 'Quinta Ana', 'whatsapp' => '0991112222', 'email' => 'malo']));
@@ -315,3 +315,29 @@ $pm = array_column($fz['por_modulo'], null, 'modulo');
 check('finanzas.por_modulo: clientes que lo tienen como extra y cuánto suma al mes', [1, 8.0, true],
       [$pm['invitados']['clientes_extra'], $pm['invitados']['mensual_extra'], $pm['contratos']['clientes_activos'] >= 2]);
 check('MRR de finanzas = suma de mensual_estimado de los que pagan', $fz['mrr'], array_sum(array_column($pedir('clientes', ['por_pagina' => 200])[1]['clientes'], 'mensual_estimado')));
+
+titulo('Regla del dueño: textos visibles sin «gratis» y sin precios del software para lo que el cliente no tiene');
+// Se revisa el texto que ve la gente (sin los comentarios del código): vistas, páginas, clases y JavaScript.
+$conGratis = [];
+$archivos = array_merge(glob(RAIZ . '/app/vistas/*.php') ?: [], glob(RAIZ . '/app/paginas/*.php') ?: [], glob(RAIZ . '/src/*.php') ?: [], [RAIZ . '/app/bootstrap.php']);
+foreach ($archivos as $a) {
+    $txt = '';
+    foreach (token_get_all((string) file_get_contents($a)) as $t) {
+        if (is_array($t) && in_array($t[0], [T_COMMENT, T_DOC_COMMENT], true)) continue;
+        $txt .= is_array($t) ? $t[1] : $t;
+    }
+    // dominio_gratis y meses_gratis son nombres internos del protocolo con el Panel Tukán Central (no se muestran)
+    $txt = str_replace(['dominio_gratis', 'meses_gratis'], '', $txt);
+    if (preg_match('/gratis|prueba gratuita|free trial|\bfree\b/iu', $txt)) $conGratis[] = basename($a);
+}
+foreach (glob(RAIZ . '/public/assets/*.js') ?: [] as $a) {
+    if (preg_match('/gratis|\bfree\b/iu', (string) file_get_contents($a))) $conGratis[] = basename($a);
+}
+check('Ningún texto visible dice «gratis» o «free»', [], $conGratis);
+$vMiPlan = (string) file_get_contents(RAIZ . '/app/vistas/planes.php');
+$vApagado = (string) file_get_contents(RAIZ . '/app/vistas/modulo_apagado.php');
+check('Mi plan: un módulo que no tiene dice «Precio por cotización» y «Pedir cotización»', [true, true],
+      [str_contains($vMiPlan, "!\$on ? 'Precio por cotización'"), str_contains($vMiPlan, 'Pedir cotización')]);
+check('Mi plan: los otros planes no muestran su precio', false, (bool) preg_match('/dinero\(\$pl\[.precio_mensual.\]\)/', $vMiPlan));
+check('Módulo apagado: sin precio, con «Pedir cotización»', [false, false, true],
+      [str_contains($vApagado, 'precio_mensual'), str_contains($vApagado, 'Agrégalo por'), str_contains($vApagado, 'Pedir cotización')]);

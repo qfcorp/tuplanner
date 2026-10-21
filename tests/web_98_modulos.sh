@@ -16,15 +16,16 @@ pagar_plan salon
 get "r=planes" > /dev/null
 contiene "Precio del plan" "$TMP/pag.html" "\$39,00"
 contiene "Mobiliario: no está en tu plan" "$TMP/pag.html" "No está en tu plan"
-contiene "Botón para pedirlo" "$TMP/pag.html" "Pedir este módulo"
-contiene "Precio del módulo" "$TMP/pag.html" "+\$5,00 al mes"
+contiene "Botón para pedir cotización" "$TMP/pag.html" "Pedir cotización"
+no_contiene "Sin el precio del módulo que no tiene (regla del dueño)" "$TMP/pag.html" "+\$5,00 al mes"
 get "r=mas" > /dev/null
 no_contiene "Más: sin Mobiliario" "$TMP/pag.html" "r=mobiliario"
 no_contiene "Más: sin Planos" "$TMP/pag.html" "r=plano\""
 contiene "Más: con Proveedores (está en Salón)" "$TMP/pag.html" "r=proveedores"
 check "Mobiliario apagado: 403" "403" "$(get "r=mobiliario")"
 contiene "Página amable" "$TMP/pag.html" "Este módulo no está en tu plan"
-contiene "… con el precio" "$TMP/pag.html" "\$5,00"
+no_contiene "… sin el precio (se pide cotización)" "$TMP/pag.html" "\$5,00"
+contiene "… con Pedir cotización" "$TMP/pag.html" "Pedir cotización"
 contiene "… y el enlace a Mi plan" "$TMP/pag.html" "r=planes#mod-mobiliario"
 contiene "… dice que los datos se guardan" "$TMP/pag.html" "tus datos siguen guardados"
 r=$(post_desde "r=inicio" "r=mobiliario" --data-urlencode "accion=guardar" --data-urlencode "nombre=Sillas")
@@ -141,3 +142,44 @@ sql "UPDATE negocios SET modulos_extra='planificacion,presupuesto' WHERE id=$NPE
 get "r=evento_plan&id=$EVP" > /dev/null
 contiene "Con presupuesto: sale el presupuesto por proveedor" "$TMP/pag.html" "Presupuesto por proveedor"
 check "Con presupuesto pero sin comisiones: Comisiones 403" "403" "$(get "r=comisiones")"
+
+echo "7. Regla del dueño: en las pantallas del cliente no sale el precio del software que no tiene, ni la palabra gratis"
+registrar salon "Salon Sin Precios $RANDOM"; NP=$NID
+pagar_plan salon
+check "Mi plan abre (Salón pagado)" "200" "$(get "r=planes")"
+contiene "Su propio plan sí se ve (es su contrato)" "$TMP/pag.html" "\$39,00"
+contiene "Módulo que no tiene: precio por cotización" "$TMP/pag.html" "Precio por cotización"
+contiene "… con el botón Pedir cotización" "$TMP/pag.html" "Pedir cotización"
+no_contiene "Ya no dice Pedir este módulo" "$TMP/pag.html" "Pedir este módulo"
+# Cada módulo apagado y cada otro plan: su precio no aparece en Mi plan
+while IFS='|' read -r mid precio; do
+  p=$(printf '%s' "$precio" | sed 's/\./,/')
+  no_contiene "Sin precio del módulo $mid (\$$p)" "$TMP/pag.html" "+\$$p al mes"
+done < <(sql "SELECT id||'|'||to_char(precio_mensual,'FM999990.00') FROM modulos WHERE NOT (id = ANY (string_to_array((SELECT modulos FROM planes WHERE codigo='salon'), ',')))")
+while IFS='|' read -r cod precio; do
+  p=$(printf '%s' "$precio" | sed 's/\./,/')
+  no_contiene "Sin precio del plan $cod (\$$p)" "$TMP/pag.html" "\$$p"
+done < <(sql "SELECT codigo||'|'||to_char(precio_mensual,'FM999990.00') FROM planes WHERE codigo <> 'salon'")
+check "Módulo apagado: página amable" "403" "$(get "r=mobiliario")"
+no_contiene "… sin «Agrégalo por»" "$TMP/pag.html" "Agrégalo por"
+no_contiene "… sin el precio del módulo" "$TMP/pag.html" "\$$(sql "SELECT to_char(precio_mensual,'FM999990.00') FROM modulos WHERE id='mobiliario'" | sed 's/\./,/')"
+contiene "… con Pedir cotización" "$TMP/pag.html" "Pedir cotización"
+r=$(post_desde "r=mobiliario" "r=planes" --data-urlencode "accion=pedir" --data-urlencode "modulo=mobiliario")
+check "Pedir cotización desde la página del módulo → solicitud al Panel Central" "302|pendiente|mobiliario" "${r%% *}|$(sql "SELECT estado||'|'||encender FROM modulos_solicitudes WHERE negocio_id=$NP")"
+get "r=planes" > /dev/null
+contiene "Otro plan: Pedir cotización" "$TMP/pag.html" 'name="accion" value="pedir_plan"'
+r=$(post_desde "r=planes" "r=planes" --data-urlencode "accion=pedir_plan" --data-urlencode "plan=quinta")
+check "Pedir cotización del plan Agencia → pedido con sus módulos" "302|1" \
+      "${r%% *}|$(sql "SELECT count(*) FROM modulos_solicitudes WHERE negocio_id=$NP AND nota LIKE 'Pide cotización del plan Agencia%' AND estado='pendiente'")"
+r=$(post_desde "r=planes" "r=planes" --data-urlencode "accion=pedir_plan" --data-urlencode "plan=salon")
+check "Pedir cotización de su mismo plan: no crea pedido" "2" "$(sql "SELECT count(*) FROM modulos_solicitudes WHERE negocio_id=$NP")"
+for ruta in planes inicio mas mobiliario mi_cuenta; do
+  get "r=$ruta" > /dev/null
+  no_contiene "Sin «gratis» en $ruta" "$TMP/pag.html" "[Gg]ratis"
+  no_contiene "Sin «free» en $ruta" "$TMP/pag.html" "[^a-z-][Ff]ree[^a-z-]"
+done
+rm -f "$JAR"
+for ruta in login registro; do
+  get "r=$ruta" > /dev/null
+  no_contiene "Sin «gratis» en $ruta (público)" "$TMP/pag.html" "[Gg]ratis"
+done

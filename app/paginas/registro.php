@@ -1,6 +1,6 @@
 <?php
 /**
- * "Nada se da gratis, todo se pide demo": /?r=registro ya no crea una cuenta. Es el formulario para PEDIR UNA DEMO
+ * "Todo se pide demo": /?r=registro ya no crea una cuenta. Es el formulario para PEDIR UNA DEMO
  * (nombre, negocio, ciudad, WhatsApp, correo, qué necesita y los módulos que le interesan). Queda como solicitud
  * demo_pedida en el Panel Tukán Central; Tukán crea la demo y le manda los accesos.
  */

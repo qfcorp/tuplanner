@@ -1,4 +1,4 @@
-<?php /** Pedido de demo (no hay prueba gratis). @var array $errores @var array $d @var bool $listo @var array $catalogo */
+<?php /** Pedido de demo (no hay registro abierto). @var array $errores @var array $d @var bool $listo @var array $catalogo */
 use TuPlanner\Modulos;
 $waTukan = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola, quiero una demo de TuPlanner' . ($d['negocio'] !== '' ? ' para ' . $d['negocio'] : '') . '.');
 ?>

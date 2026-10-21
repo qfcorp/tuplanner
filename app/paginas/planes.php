@@ -2,8 +2,9 @@
 use TuPlanner\{Modulos, PanelTukan};
 
 /**
- * Mi plan (dueño): sus módulos encendidos, los que puede agregar con su precio, lo que paga al mes, los planes y sus pagos.
- * "Pedir este módulo" crea un pedido (solicitud cambio_modulos) que Tukán aprueba desde el Panel Tukán Central.
+ * Mi plan (dueño): sus módulos encendidos, lo que paga al mes por SU plan, los módulos y planes que puede pedir y sus pagos.
+ * Regla del dueño de Tukán: el precio de lo que el cliente NO tiene nunca se muestra; siempre se pide cotización.
+ * "Pedir cotización" (de un módulo o de un plan) crea un pedido (solicitud cambio_modulos) que llega al Panel Tukán Central.
  * También se abre con la demo terminada o el plan vencido.
  */
 exigir(es_dueno($u), 'Solo el dueño puede ver y cambiar el plan de TuPlanner.');
@@ -11,11 +12,25 @@ $nid = (int) $u['negocio_id'];
 if (es_post()) {
     verificar_csrf();
     try {
-        if (($_POST['accion'] ?? '') !== 'pedir') throw new RuntimeException('Acción no válida.');
+        $accion = (string) ($_POST['accion'] ?? '');
+        if ($accion === 'pedir_plan') {
+            // Cotizar otro plan: se piden los módulos de ese plan que hoy no tiene (mismo pedido cambio_modulos del Panel Central)
+            $codigo = (string) ($_POST['plan'] ?? '');
+            $pm = modulos()->planes()[$codigo] ?? null;
+            if (!$pm || $codigo === (string) $u['plan_codigo']) throw new RuntimeException('Ese plan no existe.');
+            $faltan = array_values(array_diff($pm['todos'] ? array_keys(modulos()->catalogo()) : $pm['modulos'], modulos()->estado($nid)['pagados']));
+            if (!$faltan) throw new RuntimeException('Ese plan no te suma módulos. Escríbenos por WhatsApp y te ayudamos.');
+            $nombrePlan = $pm['nombre'];
+            modulos()->pedir($nid, (int) $u['id'], $faltan, trim('Pide cotización del plan ' . $nombrePlan . '. ' . campo('nota')));
+            aviso('Listo: pediste la cotización del plan ' . $nombrePlan . '. Tukán te escribe con el valor; tus datos no cambian.');
+            header('Location: ' . url('planes') . '#mp-t-planes');
+            exit;
+        }
+        if ($accion !== 'pedir') throw new RuntimeException('Acción no válida.');
         $mid = (string) ($_POST['modulo'] ?? '');
         if (!Modulos::existe($mid)) throw new RuntimeException('Ese módulo no existe.');
         modulos()->pedir($nid, (int) $u['id'], [$mid], campo('nota'));
-        aviso('Listo: pediste ' . Modulos::nombre($mid) . '. Tukán te escribe para activarlo; tus datos no cambian.');
+        aviso('Listo: pediste la cotización de ' . Modulos::nombre($mid) . '. Tukán te escribe con el valor y para activarlo; tus datos no cambian.');
     } catch (RuntimeException $e) {
         aviso($e->getMessage(), 'error');
     }
