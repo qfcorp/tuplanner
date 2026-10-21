@@ -220,10 +220,20 @@ final class Planes
         return $this->dentroDelLimite($negocioId, 'max_espacios', 'SELECT count(*) FROM espacios WHERE negocio_id = ? AND activo');
     }
 
-    /** ¿El plan permite otro usuario activo? */
+    /** ¿El plan permite otro usuario activo? Cuenta al dueño y a su equipo; los administradores (máx. 4) no cuentan. */
     public function puedeAgregarUsuario(int $negocioId): bool
     {
-        return $this->dentroDelLimite($negocioId, 'max_usuarios', 'SELECT count(*) FROM usuarios WHERE negocio_id = ? AND activo');
+        return $this->dentroDelLimite($negocioId, 'max_usuarios', self::SQL_USUARIOS_DEL_PLAN);
+    }
+
+    /** Usuarios activos que cuentan en planes.max_usuarios (todos menos los administradores). */
+    public const SQL_USUARIOS_DEL_PLAN = "SELECT count(*) FROM usuarios WHERE negocio_id = ? AND activo AND rol <> 'admin'";
+
+    public function usuariosDelPlan(int $negocioId): int
+    {
+        $st = $this->db->prepare(self::SQL_USUARIOS_DEL_PLAN);
+        $st->execute([$negocioId]);
+        return (int) $st->fetchColumn();
     }
 
     private function dentroDelLimite(int $negocioId, string $columna, string $sqlConteo): bool

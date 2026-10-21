@@ -7,9 +7,9 @@ use TuPlanner\{Cuestionarios, Eventos};
  * los formularios ya copiados a un evento no cambian.
  * Acciones (POST accion=...): ajustes, plantilla, pregunta, pregunta_borrar, subir, bajar, restaurar.
  */
-exigir(es_dueno($u) || $u['rol'] === 'consulta', 'Solo el dueño configura los formularios del evento.');
+exigir(es_admin_total($u) || $u['rol'] === 'consulta', 'Solo el dueño o un administrador configura los formularios del evento.');
 $nid = (int) $u['negocio_id'];
-$editar = es_dueno($u);
+$editar = es_admin_total($u);
 $cues = new Cuestionarios(db());
 $plantillas = $cues->plantillas($nid);
 $porTipo = array_column($plantillas, null, 'tipo_evento');
@@ -18,7 +18,7 @@ if (!isset($porTipo[$tipo])) $tipo = array_key_first($porTipo) ?? 'boda';
 
 if (es_post()) {
     verificar_csrf();
-    exigir($editar, 'Solo el dueño puede cambiar los formularios del evento.');
+    exigir($editar, 'Solo el dueño o un administrador puede cambiar los formularios del evento.');
     $accion = (string) ($_POST['accion'] ?? '');
     $plId = (int) ($porTipo[$tipo]['id'] ?? 0);
     $ancla = 'preguntas';

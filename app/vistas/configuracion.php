@@ -20,7 +20,7 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
 ?>
 <div class="cabecera">
     <div><h1>Configuración</h1>
-        <p>Los datos y reglas de <?= e($n['nombre']) ?>. Solo tú, como dueño, ves esta pantalla.</p></div>
+        <p>Los datos y reglas de <?= e($n['nombre']) ?>. Solo el dueño y los administradores ven esta pantalla.</p></div>
 </div>
 
 <nav class="g-tabs" aria-label="Secciones de la configuración">

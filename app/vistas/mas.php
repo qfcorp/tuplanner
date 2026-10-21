@@ -19,9 +19,9 @@
     <?php if ($u['rol'] !== 'coordinador'): ?>
     <a href="<?= e(url('reportes')) ?>">Reportes<small>Ventas, cobranza, ocupación</small></a>
     <?php endif; ?>
-    <?php if (modulo_activo($u, 'metas')): ?><?php if (es_dueno($u)): ?><a href="<?= e(url('metas')) ?>">Metas de ventas<small>Cuánto quieres vender cada mes</small></a><?php endif; ?><?php endif; ?>
+    <?php if (modulo_activo($u, 'metas')): ?><?php if (es_admin_total($u)): ?><a href="<?= e(url('metas')) ?>">Metas de ventas<small>Cuánto quieres vender cada mes</small></a><?php endif; ?><?php endif; ?>
     <?php if (modulo_activo($u, 'plano')): ?><a href="<?= e(url('plano')) ?>">Planos del salón<small>Distribución de mesas de cada lugar</small></a><?php endif; ?>
-    <?php if (es_dueno($u)): ?>
+    <?php if (es_admin_total($u)): ?>
     <a href="<?= e(url('configuracion')) ?>">Configuración<small>Datos, reglas, cobros, página pública</small></a>
     <?php if (modulo_activo($u, 'contratos')): ?><a href="<?= e(url('contrato')) ?>">Plantillas de contrato<small>Cláusulas y variables del contrato</small></a><?php endif; ?>
     <?php if (modulo_activo($u, 'cuestionarios')): ?><a href="<?= e(url('cuestionarios')) ?>">Formularios del evento<small>Preguntas para el cliente por tipo de evento</small></a><?php endif; ?>

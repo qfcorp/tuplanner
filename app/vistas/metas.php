@@ -64,7 +64,7 @@ $nombreDe = array_column($vendedores, 'nombre', 'id');
     <ul class="filas mt-vendedores">
         <?php foreach ($vendedores as $v): $f = $todas['vendedores'][(int) $v['id']][''] ?? null; ?>
         <li>
-            <div><strong><?= e($v['nombre']) ?></strong><br><small><?= $v['rol'] === 'dueno' ? 'Dueño' : 'Vendedor' ?><?= !$v['activo'] ? ' · desactivado' : '' ?></small></div>
+            <div><strong><?= e($v['nombre']) ?></strong><br><small><?= ['dueno' => 'Dueño', 'admin' => 'Administrador'][$v['rol']] ?? 'Vendedor' ?><?= !$v['activo'] ? ' · desactivado' : '' ?></small></div>
             <div class="mt-v-campos">
                 <input type="text" inputmode="decimal" name="v_monto[<?= (int) $v['id'] ?>]" value="<?= e($monto($f)) ?>" placeholder="Meta al mes" aria-label="Meta de <?= e($v['nombre']) ?> cada mes">
                 <input type="number" min="0" max="10000" name="v_eventos[<?= (int) $v['id'] ?>]" value="<?= e($evs($f)) ?>" placeholder="Eventos" class="mt-chico" aria-label="Eventos de <?= e($v['nombre']) ?> cada mes">

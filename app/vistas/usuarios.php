@@ -1,7 +1,10 @@
 <?php
 use TuPlanner\{Usuarios, WhatsApp};
-/** @var array $lista @var ?array $claveNueva @var ?array $form @var bool $puedeAgregar @var array $plan @var int $activos */
-$form ??= ['nombre' => '', 'email' => '', 'telefono' => '', 'rol' => 'vendedor'];
+/** @var array $lista @var ?array $claveNueva @var ?array $form @var bool $puedeAgregar @var array $plan @var int $activos @var int $admins @var bool $puedeAdmin */
+$form ??= ['nombre' => '', 'email' => '', 'telefono' => '', 'rol' => $puedeAgregar ? 'vendedor' : 'admin'];
+$puedeCrear = $puedeAgregar || $puedeAdmin;                       // los administradores no cuentan en el plan
+$rolDisponible = fn(string $r): bool => $r === 'admin' ? $puedeAdmin : $puedeAgregar;
+$nombreRol = fn(string $r): string => $r === 'admin' ? Usuarios::OPCION_ADMIN : Usuarios::ROLES[$r];
 ?>
 <div class="cabecera">
     <div><h1>Usuarios</h1>
@@ -27,7 +30,9 @@ $form ??= ['nombre' => '', 'email' => '', 'telefono' => '', 'rol' => 'vendedor']
 <div class="rejilla rejilla-2">
     <section class="bloque">
         <div class="g-bloque-cab"><h2>Tu equipo</h2>
-            <span class="g-limite suave"><?= $activos ?> <?= $plan['max_usuarios'] ? 'de ' . (int) $plan['max_usuarios'] : '' ?> activos</span></div>
+            <span class="g-limite suave"><?= $activos ?> <?= $plan['max_usuarios'] ? 'de ' . (int) $plan['max_usuarios'] : '' ?> activos del plan
+                · <span class="g-admins">Administradores: <?= (int) $admins ?> de <?= Usuarios::MAX_ADMINS ?></span></span></div>
+        <p class="g-nota">El dueño y hasta <?= Usuarios::MAX_ADMINS ?> administradores manejan todo. Los administradores no cuentan en el límite de usuarios de tu plan.</p>
         <?php foreach ($lista as $x):
             $soyYo = (int) $x['id'] === (int) $u['id']; ?>
             <div class="g-usuario <?= $x['activo'] ? '' : 'inactivo' ?>">
@@ -49,7 +54,7 @@ $form ??= ['nombre' => '', 'email' => '', 'telefono' => '', 'rol' => 'vendedor']
                             <input type="hidden" name="id" value="<?= (int) $x['id'] ?>">
                             <label class="sr-only" for="rol-<?= (int) $x['id'] ?>">Qué hace <?= e($x['nombre']) ?></label>
                             <select id="rol-<?= (int) $x['id'] ?>" name="rol">
-                                <?php foreach (Usuarios::ROLES_ASIGNABLES as $r): ?><option value="<?= $r ?>" <?= $x['rol'] === $r ? 'selected' : '' ?>><?= e(Usuarios::ROLES[$r]) ?></option><?php endforeach; ?>
+                                <?php foreach (Usuarios::ROLES_ASIGNABLES as $r): ?><option value="<?= $r ?>" <?= $x['rol'] === $r ? 'selected' : '' ?>><?= e($nombreRol($r)) ?></option><?php endforeach; ?>
                             </select>
                             <button class="boton boton-claro boton-chico" type="submit">Cambiar</button>
                         </form>
@@ -76,25 +81,29 @@ $form ??= ['nombre' => '', 'email' => '', 'telefono' => '', 'rol' => 'vendedor']
             <h2>Agregar a alguien</h2>
             <?php if (!$puedeAgregar): ?>
                 <p class="aviso aviso-error">Tu plan <?= e($plan['nombre']) ?> permite <?= (int) $plan['max_usuarios'] ?> usuarios activos y ya los tienes.
-                    Desactiva a alguien que ya no lo use o <a href="<?= e(url('planes')) ?>">cambia de plan en Mi plan</a> (el plan Agencia no tiene límite de usuarios).</p>
+                    Desactiva a alguien que ya no lo use o <a href="<?= e(url('planes')) ?>">cambia de plan en Mi plan</a> (el plan Agencia no tiene límite de usuarios).
+                    <?= $puedeAdmin ? 'Todavía puedes agregar administradores: no cuentan en el plan.' : '' ?></p>
+            <?php endif; ?>
+            <?php if (!$puedeAdmin): ?>
+                <p class="aviso"><?= e(Usuarios::MENSAJE_MAX_ADMINS) ?> Ya tienes <?= Usuarios::MAX_ADMINS ?>.</p>
             <?php endif; ?>
             <div class="campo"><label for="u-nombre">Nombre</label>
-                <input type="text" id="u-nombre" name="nombre" value="<?= e($form['nombre']) ?>" required <?= $puedeAgregar ? '' : 'disabled' ?>></div>
+                <input type="text" id="u-nombre" name="nombre" value="<?= e($form['nombre']) ?>" required <?= $puedeCrear ? '' : 'disabled' ?>></div>
             <div class="fila-campos">
                 <div class="campo"><label for="u-email">Correo <small>(con este entra)</small></label>
-                    <input type="email" id="u-email" name="email" value="<?= e($form['email']) ?>" required <?= $puedeAgregar ? '' : 'disabled' ?>></div>
+                    <input type="email" id="u-email" name="email" value="<?= e($form['email']) ?>" required <?= $puedeCrear ? '' : 'disabled' ?>></div>
                 <div class="campo"><label for="u-telefono">Celular <small>(para enviarle el acceso)</small></label>
-                    <input type="tel" id="u-telefono" name="telefono" value="<?= e($form['telefono']) ?>" placeholder="0991234567" <?= $puedeAgregar ? '' : 'disabled' ?>></div>
+                    <input type="tel" id="u-telefono" name="telefono" value="<?= e($form['telefono']) ?>" placeholder="0991234567" <?= $puedeCrear ? '' : 'disabled' ?>></div>
             </div>
             <fieldset class="campo"><legend>¿Qué va a hacer?</legend>
                 <div class="opciones">
                     <?php foreach (Usuarios::ROLES_ASIGNABLES as $r): ?>
-                        <label class="opcion"><input type="radio" name="rol" value="<?= $r ?>" <?= $form['rol'] === $r ? 'checked' : '' ?> <?= $puedeAgregar ? '' : 'disabled' ?>>
-                            <span><strong><?= e(Usuarios::ROLES[$r]) ?></strong><small><?= e(Usuarios::ROLES_AYUDA[$r]) ?></small></span></label>
+                        <label class="opcion"><input type="radio" name="rol" value="<?= $r ?>" <?= $form['rol'] === $r && $rolDisponible($r) ? 'checked' : '' ?> <?= $rolDisponible($r) ? '' : 'disabled' ?>>
+                            <span><strong><?= e($nombreRol($r)) ?></strong><small><?= e(Usuarios::ROLES_AYUDA[$r]) ?><?= $r === 'admin' ? ' Llevas ' . (int) $admins . ' de ' . Usuarios::MAX_ADMINS . '.' : '' ?></small></span></label>
                     <?php endforeach; ?>
                 </div>
             </fieldset>
-            <button class="boton boton-ancho" type="submit" <?= $puedeAgregar ? '' : 'disabled' ?>>Crear usuario</button>
+            <button class="boton boton-ancho" type="submit" <?= $puedeCrear ? '' : 'disabled' ?>>Crear usuario</button>
             <p class="g-nota" style="margin-top:8px">El sistema crea una contraseña temporal y te la muestra para que se la envíes.</p>
         </form>
     </div>

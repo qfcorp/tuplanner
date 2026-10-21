@@ -9,7 +9,7 @@ use TuPlanner\{Catalogo, Eventos};
 $nid = (int) $u['negocio_id'];
 $cat = new Catalogo(db());
 $puede = es_comercial($u);
-$dueno = es_dueno($u);
+$dueno = es_admin_total($u);
 
 if (es_post()) {
     verificar_csrf();

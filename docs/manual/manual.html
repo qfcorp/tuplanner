@@ -192,27 +192,30 @@ table.t tr:nth-child(even) td { background: #FAFBFD; }
   <table class="t">
     <tr><th>Rol</th><th>Qué puede hacer</th></tr>
     <tr><td><b>Dueño</b></td><td>Todo, incluida la configuración, los usuarios y el plan.</td></tr>
+    <tr><td><b>Administrador</b></td><td>Lo mismo que el dueño, sin excepción: menú completo, usuarios, configuración, Mi plan, metas y dinero. Crea, cambia y desactiva a otros administradores y al resto del equipo. Puedes tener hasta <b>4</b> y <b>no cuentan</b> en el límite de usuarios de tu plan. No puede cambiar ni desactivar al dueño, ni cambiarse o desactivarse a sí mismo.</td></tr>
     <tr><td><b>Vendedor</b></td><td>Atiende consultas, cotiza, hace contratos y registra cobros.</td></tr>
     <tr><td><b>Coordinador</b></td><td>Ve los eventos y organiza el día: personal, proveedores, invitados y mobiliario. Ve y marca las tareas y las ideas. <b>No ve dinero</b> (no tiene Cobros, Cotización, Contrato ni Pagos).</td></tr>
     <tr><td><b>Solo consulta</b></td><td>Ve todo (eventos, cobros, reportes) pero no puede cambiar nada. Ideal para el contador o un socio.</td></tr>
   </table>
   <h2>Agregar a alguien</h2>
   <ol class="pasos">
-    <li>Ve a <b>Más → Usuarios</b> (solo el dueño).</li>
-    <li>En <b>Agregar a alguien</b> escribe el nombre, el correo y el celular, y elige qué va a hacer: <b>Vendedor</b>, <b>Coordinador</b> o <b>Solo consulta</b>.</li>
+    <li>Ve a <b>Más → Usuarios</b> (el dueño o un administrador).</li>
+    <li>En <b>Agregar a alguien</b> escribe el nombre, el correo y el celular, y elige qué va a hacer: <b>Administrador (mismos permisos que el dueño)</b>, <b>Vendedor</b>, <b>Coordinador</b> o <b>Solo consulta</b>.</li>
     <li>Toca <b>Crear usuario</b>. El sistema crea una contraseña temporal y la muestra <b>solo esa vez</b>: mándala con <b>Enviar por WhatsApp</b> o <b>Copiar el mensaje</b>. Al entrar, la persona la cambia.</li>
   </ol>
-  <figure class="pc bajo"><img src="capturas/05_usuarios.png" alt=""><figcaption>Usuarios: el dueño, una vendedora, un coordinador y la contadora con «Solo consulta».</figcaption></figure>
+  <figure class="pc bajo"><img src="capturas/05_usuarios.png" alt=""><figcaption>Usuarios: el dueño, una administradora, una vendedora, un coordinador y la contadora con «Solo consulta». Arriba, «Administradores: 1 de 4».</figcaption></figure>
   <ul class="lista">
     <li><b>Cambiar</b>: le cambias el rol. <b>Nueva contraseña</b>: si la olvidó (la anterior deja de funcionar).</li>
     <li><b>Desactivar</b>: ya no puede entrar, pero lo que hizo se guarda. Puedes volver a <b>Activar</b>lo.</li>
   </ul>
-  <div class="ojo"><b>Ojo</b>Cada plan permite un número de usuarios activos. Si llegaste al límite, desactiva a quien ya no lo use o pide más en <b>Mi plan</b> (el plan Agencia no tiene límite de usuarios).</div>
+  <div class="ojo"><b>Ojo</b>Cada plan permite un número de usuarios activos. Si llegaste al límite, desactiva a quien ya no lo use o pide más en <b>Mi plan</b> (el plan Agencia no tiene límite de usuarios). El dueño cuenta; los administradores no.</div>
+  <div class="nota"><b>Administradores</b>Arriba de la lista dice cuántos llevas, por ejemplo «Administradores: 2 de 4». Puedes tener hasta 4 además del dueño; si intentas crear o activar un quinto, el sistema avisa «Puede tener hasta 4 administradores además del dueño». Si un administrador pasa a vendedor, coordinador o consulta, empieza a contar en el plan.</div>
+  <div class="nota"><b>Lo que es solo del dueño</b>La cuenta del dueño es la que está registrada en Tukán: es el contacto del negocio en Tukán (a él le escribimos por el plan y los pagos y solo a él le damos una nueva contraseña desde Tukán). Nadie, ni un administrador, puede cambiarla ni desactivarla desde Usuarios. En este manual, «solo el dueño» vale también para los administradores.</div>
 </section>
 
 <section class="cap" id="c4">
   <h1><span class="num">4</span> Configuración: tu negocio y tus reglas</h1>
-  <span class="plan">Base · solo el dueño</span>
+  <span class="plan">Base · dueño y administradores</span>
   <p>En <b>Más → Configuración</b> tienes las pestañas <b>Negocio</b>, <b>Reglas</b>, <b>Cobros en línea</b>, <b>Página pública</b>, <b>Tareas</b>, <b>Google Calendar</b> (con el módulo Exportar) y <b>Más</b>.</p>
   <h2>Negocio</h2>
   <p>Nombre comercial, razón social, RUC, teléfono, <b>WhatsApp del negocio</b>, correo, ciudad, dirección, enlace de Google Maps, Instagram, Facebook, enlace para dejar reseña en Google, la descripción para tu página pública y el color de tu marca. Toca <b>Guardar datos del negocio</b>. Tu logo se sube con <b>Guardar logo</b>.</p>
@@ -568,7 +571,7 @@ table.t tr:nth-child(even) td { background: #FAFBFD; }
 
 <section class="cap" id="c17">
   <h1><span class="num">17</span> Mi plan y las demos</h1>
-  <span class="plan">Para el dueño</span>
+  <span class="plan">Para el dueño y los administradores</span>
   <p>En <b>Más → Mi plan</b> ves tu plan, tus módulos <b>Encendidos</b>, los que puedes agregar y lo que viene <b>Siempre incluido</b>. Los módulos que no tienes dicen «Precio por cotización»: toca <b>Pedir cotización</b> y el pedido le llega a Tukán, que te escribe con el valor y para activarlo. En cada plan que no es el tuyo también está <b>Pedir cotización</b>. Para cualquier duda de tu plan, <b>Preguntar por WhatsApp</b>.</p>
   <figure class="pc bajo"><img src="capturas/33_mi_plan.png" alt=""><figcaption>Mi plan: los módulos de la organización del evento y de ventas, encendidos.</figcaption></figure>
   <p>Si alguien de tu equipo abre una pantalla de un módulo que no tienes, ve <b>«🔒 Este módulo no está en tu plan»</b> con lo que hace y los botones <b>Pedir cotización</b> y <b>Ver Mi plan</b> (al que no es dueño, le pide hablar con el dueño). Si ya lo usaste antes, tus datos siguen guardados.</p>
@@ -589,7 +592,7 @@ table.t tr:nth-child(even) td { background: #FAFBFD; }
 
 <section class="cap" id="c18">
   <h1><span class="num">18</span> Preguntas frecuentes</h1>
-  <div class="pregunta"><h3>Olvidé mi contraseña. ¿Qué hago?</h3><p>Pídele al dueño que entre a <b>Usuarios</b> y toque <b>Nueva contraseña</b>: te llega una temporal por WhatsApp. Si eres el dueño, escríbele a Tukán por WhatsApp. Para cambiar la tuya: <b>Mi cuenta → Cambiar mi contraseña</b>.</p></div>
+  <div class="pregunta"><h3>Olvidé mi contraseña. ¿Qué hago?</h3><p>Pídele al dueño o a un administrador que entre a <b>Usuarios</b> y toque <b>Nueva contraseña</b>: te llega una temporal por WhatsApp. Si eres el dueño, escríbele a Tukán por WhatsApp. Para cambiar la tuya: <b>Mi cuenta → Cambiar mi contraseña</b>.</p></div>
   <div class="pregunta"><h3>¿Puedo crear un evento sin saber todavía el lugar?</h3><p>Sí. En <b>Nuevo evento</b> deja los lugares sin marcar: queda «Lugar por definir». Lo eliges después con <b>Editar</b> en el Resumen.</p></div>
   <div class="pregunta"><h3>¿Por qué no puedo separar una fecha?</h3><p>Porque ese lugar ya está separado a esa hora por otro evento: TuPlanner no deja reservar dos veces el mismo lugar. Cambia la fecha, la hora o el lugar, o guárdalo como consulta en lista de espera.</p></div>
   <div class="pregunta"><h3>¿Cuándo pasa un evento a «Separado» y a «Confirmado»?</h3><p>A <b>Separado</b>, cuando registras (o confirmas) el pago de la reserva. A <b>Confirmado</b>, cuando el cliente firma el contrato. También puedes cambiar el estado a mano en el Resumen.</p></div>

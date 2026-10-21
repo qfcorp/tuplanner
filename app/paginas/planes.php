@@ -7,7 +7,7 @@ use TuPlanner\{Modulos, PanelTukan};
  * "Pedir cotización" (de un módulo o de un plan) crea un pedido (solicitud cambio_modulos) que llega al Panel Tukán Central.
  * También se abre con la demo terminada o el plan vencido.
  */
-exigir(es_dueno($u), 'Solo el dueño puede ver y cambiar el plan de TuPlanner.');
+exigir(es_admin_total($u), 'Solo el dueño o un administrador puede ver y cambiar el plan de TuPlanner.');
 $nid = (int) $u['negocio_id'];
 if (es_post()) {
     verificar_csrf();
@@ -50,7 +50,7 @@ $pedidos = $mods->solicitudesDe($nid);
 $pedidosPendientes = [];
 foreach ($pedidos as $s) if ($s['estado'] === 'pendiente') foreach (Modulos::parse($s['encender']) as $m) $pedidosPendientes[$m] = true;
 $st = db()->prepare("SELECT (SELECT count(*) FROM espacios WHERE negocio_id = ? AND activo) AS espacios,
-                            (SELECT count(*) FROM usuarios WHERE negocio_id = ? AND activo) AS usuarios");
+                            (SELECT count(*) FROM usuarios WHERE negocio_id = ? AND activo AND rol <> 'admin') AS usuarios");   // los administradores no cuentan en el plan
 $st->execute([$nid, $nid]);
 $uso = $st->fetch();
 $listaPlanes = $p->lista();

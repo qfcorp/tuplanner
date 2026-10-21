@@ -28,12 +28,12 @@ if (es_post()) {
                 aviso('Tarea marcada como hecha.');
                 break;
             case 'precios_revisados':
-                exigir(es_dueno($u));
+                exigir(es_admin_total($u));
                 $config->marcarPreciosRevisados($nid);
                 aviso('¡Bien! Un paso menos.');
                 break;
             case 'ocultar_pasos':
-                exigir(es_dueno($u));
+                exigir(es_admin_total($u));
                 $config->ocultarPasos($nid);
                 aviso('Listo. Puedes volver a ver estos pasos en Configuración.');
                 break;
@@ -72,7 +72,7 @@ $consultas = $u['rol'] !== 'coordinador' ? array_slice($reportes->consultasSinAt
 
 // Primeros pasos para una cuenta nueva (se marcan solos)
 $pasos = [];
-if (es_dueno($u) && !$negocio['pasos_ocultos']) {
+if (es_admin_total($u) && !$negocio['pasos_ocultos']) {
     $pasos = $config->primerosPasos($nid, (int) $u['id']);
     if (!in_array(false, array_column($pasos, 'hecho'), true)) $pasos = [];
 }

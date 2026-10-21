@@ -31,7 +31,7 @@ if ($pausada) {   // Anexo A: cuenta pausada por Tukán, con el motivo (genéric
         <div class="acciones">
             <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Escribir a Tukán por WhatsApp (+<?= e(whatsapp_ventas()) ?>)</a>
         </div>
-    <?php elseif (es_dueno($u)): ?>
+    <?php elseif (es_admin_total($u)): ?>
         <div class="acciones">
             <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Contáctanos para contratar</a>
             <a class="boton boton-claro" href="<?= e(url('planes')) ?>">Ver mi plan y pedir cotización</a>

@@ -9,7 +9,7 @@ use TuPlanner\{Catalogo, Cotizaciones};
 $nid = (int) $u['negocio_id'];
 $cat = new Catalogo(db());
 $puede = es_comercial($u);
-$dueno = es_dueno($u);
+$dueno = es_admin_total($u);
 
 $filtros = [
     'buscar' => trim((string) ($_GET['q'] ?? '')),
@@ -40,7 +40,7 @@ if (es_post()) {
                 aviso($accion === 'activar' ? 'El producto vuelve a estar disponible.' : 'Producto desactivado. Ya no sale para cotizar, pero las cotizaciones anteriores lo siguen mostrando.');
                 break;
             case 'subir_precios':
-                exigir($dueno, 'Solo el dueño puede cambiar todos los precios a la vez.');
+                exigir($dueno, 'Solo el dueño o un administrador puede cambiar todos los precios a la vez.');
                 $pct = numero($_POST['pct'] ?? '') ?? 0.0;
                 $categoria = campo('categoria_bloque') ?: null;
                 $n = $cat->subirPrecios($nid, $pct, $categoria, !empty($_POST['paquetes']));

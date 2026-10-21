@@ -22,11 +22,17 @@ Para regenerar el manual (base de ejemplo, capturas y PDF): `bash docs/manual/ge
 | Rol | Qué puede hacer |
 |---|---|
 | Dueño | Todo, incluida la configuración, los usuarios y el plan |
+| Administrador (hasta 4) | Lo mismo que el dueño: menú, usuarios, configuración, Mi plan, metas y dinero. Crea, cambia y desactiva a otros administradores y usuarios. **No cuentan** en el límite de usuarios del plan. No puede cambiar ni desactivar al dueño, ni a sí mismo |
 | Vendedor | Atiende consultas, cotiza, hace contratos y registra cobros |
 | Coordinador | Organiza el día del evento; ve tareas e ideas; no ve dinero |
 | Solo consulta | Ve todo pero no cambia nada (contador, socio) |
 
-### Configuración (solo el dueño)
+- **Más → Usuarios** (dueño o administrador) → **Agregar a alguien** → ¿Qué va a hacer?: **Administrador (mismos permisos que el dueño)**, Vendedor, Coordinador o Solo consulta. Arriba dice «Administradores: 2 de 4».
+- **Administradores:** hasta 4 además del dueño; un quinto (al crear o activar) muestra «Puede tener hasta 4 administradores además del dueño». No cuentan en el límite de usuarios del plan (el dueño sí cuenta); si un administrador pasa a otro rol, empieza a contar.
+- **Solo del dueño:** ser la cuenta registrada en Tukán (contacto del negocio en el Panel Tukán Central y «Nueva clave del dueño» desde Tukán). Nadie, ni un administrador, cambia ni desactiva al dueño; nadie se cambia el rol ni se desactiva a sí mismo.
+- En este manual, «solo el dueño» vale también para los administradores.
+
+### Configuración (dueño y administradores)
 Pestañas Negocio, Reglas, Cobros en línea, Página pública, Tareas, Google Calendar (módulo Exportar) y Más. En **Reglas**: IVA, validez de la cotización, retención de la fecha, reserva para separar, número de pagos, **máximo de eventos por día**, **cómo cobras tus honorarios** (tarifa fija o porcentaje) y **comisión que pides a los proveedores**.
 
 ![Reglas](manual/capturas/06_config_reglas.png)

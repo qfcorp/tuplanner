@@ -53,18 +53,18 @@ final class Metas
 
     private function vendedor(int $negocioId, int $usuarioId): array
     {
-        $v = $this->q("SELECT id, nombre, rol FROM usuarios WHERE id = ? AND negocio_id = ? AND rol IN ('dueno','vendedor')", [$usuarioId, $negocioId])->fetch();
+        $v = $this->q("SELECT id, nombre, rol FROM usuarios WHERE id = ? AND negocio_id = ? AND rol IN ('dueno','admin','vendedor')", [$usuarioId, $negocioId])->fetch();
         if (!$v) throw new RuntimeException('Ese vendedor no es de tu negocio.');
         return $v;
     }
 
-    /** Quienes venden: el dueño y los vendedores (activos, o con meta puesta). */
+    /** Quienes venden: el dueño, los administradores y los vendedores (activos, o con meta puesta). */
     public function vendedores(int $negocioId): array
     {
         return $this->q("SELECT u.id, u.nombre, u.rol, u.activo FROM usuarios u
-                          WHERE u.negocio_id = ? AND u.rol IN ('dueno','vendedor')
+                          WHERE u.negocio_id = ? AND u.rol IN ('dueno','admin','vendedor')
                             AND (u.activo OR EXISTS (SELECT 1 FROM metas_ventas m WHERE m.vendedor_id = u.id))
-                       ORDER BY (u.rol = 'dueno') DESC, u.nombre", [$negocioId])->fetchAll();
+                       ORDER BY (u.rol = 'dueno') DESC, (u.rol = 'admin') DESC, u.nombre", [$negocioId])->fetchAll();
     }
 
     /**

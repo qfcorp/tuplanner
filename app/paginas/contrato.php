@@ -12,7 +12,7 @@ use TuPlanner\{Anexos, Contratos, Cotizaciones, Eventos, Pagos, WhatsApp};
 $nid = (int) $u['negocio_id'];
 $con = new Contratos(db());
 $puede = es_comercial($u);
-$dueno = es_dueno($u);
+$dueno = es_admin_total($u);
 $id = (int) ($_GET['id'] ?? 0);
 
 /** Datos inventados para ver cómo queda una plantilla. */
@@ -53,7 +53,7 @@ $valoresEjemploAnexo = fn(array $ej): array => [
 // Plantillas (sin evento)
 // =====================================================================
 if (!$id) {
-    exigir($dueno, 'Las plantillas de contrato las cambia el dueño del negocio.');
+    exigir($dueno, 'Las plantillas de contrato las cambia el dueño o un administrador.');
     if (es_post()) {
         verificar_csrf();
         $accion = (string) ($_GET['accion'] ?? '');

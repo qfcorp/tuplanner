@@ -199,15 +199,28 @@ function puede_editar(array $u): bool
     return $u['rol'] !== 'consulta';
 }
 
-/** Dueño o vendedor: ventas, cotizaciones, contratos y cobros. */
+/** Dueño, administrador o vendedor: ventas, cotizaciones, contratos y cobros. */
 function es_comercial(array $u): bool
 {
-    return in_array($u['rol'], ['dueno', 'vendedor'], true);
+    return in_array($u['rol'], ['dueno', 'admin', 'vendedor'], true);
 }
 
+/**
+ * Dueño o administrador: el nivel más alto dentro del negocio (menú, Usuarios, Configuración, Mi plan, dinero…).
+ * Úsalo para TODOS los permisos. Los administradores (máx. 4) tienen el mismo nivel que el dueño.
+ */
+function es_admin_total(array $u): bool
+{
+    return in_array($u['rol'] ?? '', ['dueno', 'admin'], true);
+}
+
+/**
+ * Solo el dueño original (la cuenta registrada ante Tukán). NO es un permiso: los permisos van con es_admin_total().
+ * Exclusivo del dueño: ser el contacto del negocio ante el Panel Tukán Central y no poder ser cambiado ni desactivado.
+ */
 function es_dueno(array $u): bool
 {
-    return $u['rol'] === 'dueno';
+    return ($u['rol'] ?? '') === 'dueno';
 }
 
 /** Corta la página si el usuario no tiene permiso. */

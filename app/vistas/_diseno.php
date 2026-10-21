@@ -93,7 +93,7 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
         <?php if ($u['rol'] !== 'coordinador'): ?>
         <a href="<?= e(url('reportes')) ?>">Reportes</a>
         <?php endif; ?>
-        <?php if (es_dueno($u)): ?>
+        <?php if (es_admin_total($u)): ?>
         <a href="<?= e(url('configuracion')) ?>">Configuración</a>
         <?php if (modulo_activo($u, 'contratos')): ?><a href="<?= e(url('contrato')) ?>">Plantillas de contrato</a><?php endif; ?>
         <?php if (modulo_activo($u, 'cuestionarios')): ?><a href="<?= e(url('cuestionarios')) ?>">Formularios del evento</a><?php endif; ?>
@@ -110,7 +110,7 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
     <?php if ($diasPrueba !== null && $diasPrueba >= 0): ?>
         <p class="franja-prueba no-imprimir">
             Demo: <?= $diasPrueba === 0 ? 'termina hoy' : "te quedan $diasPrueba " . ($diasPrueba === 1 ? 'día' : 'días') ?>.
-            <?php if (es_dueno($u)): ?><a href="<?= e(url('planes')) ?>">Ver Mi plan</a><?php endif; ?>
+            <?php if (es_admin_total($u)): ?><a href="<?= e(url('planes')) ?>">Ver Mi plan</a><?php endif; ?>
         </p>
     <?php endif; ?>
     <?php if ($adminViendo): ?>

@@ -6,7 +6,7 @@ use TuPlanner\{Configuracion, Eventos};
  *   datos (negocio, logo, color) · reglas (comerciales) · cobros (transferencia, DeUna, Payphone) · pagina (enlace y QR)
  *   tareas (plantilla por tipo de evento) · calendario (Google Calendar) · otros (contratos, transmisiones, primeros pasos)
  */
-exigir(es_dueno($u), 'Solo el dueño puede cambiar la configuración del negocio.');
+exigir(es_admin_total($u), 'Solo el dueño o un administrador puede cambiar la configuración del negocio.');
 $nid = (int) $u['negocio_id'];
 $config = new Configuracion(db());
 $tabs = ['datos' => 'Negocio', 'reglas' => 'Reglas', 'cobros' => 'Cobros en línea', 'pagina' => 'Página pública',

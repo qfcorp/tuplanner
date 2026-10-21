@@ -40,7 +40,7 @@ h = []
 h.append(f'''<div class="top"><img src="{u(D)}/logo_oscuro.png"><span class="chip">Guía rápida</span></div>
 <h1>Primeros pasos en TuPlanner</h1>
 <p class="lead">Lo básico para empezar a organizar, presupuestar y cobrar sus eventos hoy. Para todo lo demás está el <b>Manual de TuPlanner</b>.</p>
-<div class="box"><b>Antes de empezar:</b> lo que ve en el menú depende de su usuario (dueño, vendedor, coordinador o solo consulta) y de los módulos que contrató.
+<div class="box"><b>Antes de empezar:</b> lo que ve en el menú depende de su usuario (dueño, administrador, vendedor, coordinador o solo consulta) y de los módulos que contrató.
 En el <b>celular</b>, los botones principales están abajo (Inicio, Calendario, Eventos, Cobros) y todo lo demás en <b>Más</b>.
 La configuración se hace mejor en la <b>computadora</b>.</div>''')
 
@@ -60,8 +60,9 @@ h.append(paso(4, 'Catálogo y precios', 'Menú Más → Catálogo y precios', [
     'Ya viene un catálogo de ejemplo, con sus servicios de <b>Organización (honorarios)</b>: cambie nombres y precios con <b>Editar</b>, o quite lo que no ofrece con <b>Desactivar</b>.',
     'Para algo nuevo toque <b>+ Agregar producto</b>: nombre, categoría, cómo <b>Se cobra</b>, el <b>Precio al cliente</b> sin IVA y lo que le cuesta (eso solo lo ve usted). Toque <b>Agregar al catálogo</b>.']))
 h.append(paso(5, 'Su equipo', 'Menú Más → Usuarios', [
-    'En <b>Agregar a alguien</b>: nombre, correo (con ese entra), celular y <b>¿Qué va a hacer?</b>: vendedor, coordinador o solo consulta.',
+    'En <b>Agregar a alguien</b>: nombre, correo (con ese entra), celular y <b>¿Qué va a hacer?</b>: administrador, vendedor, coordinador o solo consulta.',
     'Toque <b>Crear usuario</b>. El programa muestra una contraseña temporal <b>solo esta vez</b>: mándesela con <b>Enviar por WhatsApp</b>.',
+    'El <b>Administrador (mismos permisos que el dueño)</b> maneja todo como usted, incluidos los usuarios y Mi plan. Puede tener hasta 4 y no cuentan en el límite de usuarios de su plan. Nadie puede cambiar ni desactivar su cuenta de dueño.',
     'El coordinador organiza el día del evento pero no ve el dinero; "solo consulta" mira todo sin cambiar nada (ideal para el contador).']))
 h.append(f'''<div class="fotos"><figure><img src="{img('config')}" style="height:50mm"><figcaption>Configuración → Negocio</figcaption></figure>
 <figure><img src="{img('lugares')}" style="height:50mm"><figcaption>Lugares</figcaption></figure></div>''')

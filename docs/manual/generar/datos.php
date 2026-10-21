@@ -45,7 +45,7 @@ $U = ['id' => (int) $dueno['id'], 'nombre' => 'Ana Pérez'];
 $us = new Usuarios($db);
 $equipo = [];
 foreach ([['Carla Mena', 'carla@tuplanner.tukanec.com', '0987654321', 'vendedor'], ['Diego Salazar', 'diego@tuplanner.tukanec.com', '0981112233', 'coordinador'],
-          ['Rosa Vela', 'contadora@tuplanner.tukanec.com', '0984445566', 'consulta']] as [$n, $e, $t, $r]) {
+          ['Rosa Vela', 'contadora@tuplanner.tukanec.com', '0984445566', 'consulta'], ['Lucía Andrade', 'lucia@tuplanner.tukanec.com', '0993334455', 'admin']] as [$n, $e, $t, $r]) {
     $x = $us->crear($nid, $n, $e, $t, $r);
     $equipo[$r] = (int) ($x['id'] ?? $db->query("SELECT id FROM usuarios WHERE email = '$e'")->fetchColumn());
 }

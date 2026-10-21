@@ -23,13 +23,13 @@ $mtMeses = $mtRep['meses'];
 <section class="bloque" id="metas">
     <div class="g-bloque-cab">
         <h2>Metas y comparación con el año anterior</h2>
-        <?php if (es_dueno($u)): ?><a href="<?= e(url('metas', ['anio' => substr($per['desde'], 0, 4)])) ?>"><?= $mtRep['hay_metas'] ? 'Cambiar metas' : 'Poner metas' ?></a><?php endif; ?>
+        <?php if (es_admin_total($u)): ?><a href="<?= e(url('metas', ['anio' => substr($per['desde'], 0, 4)])) ?>"><?= $mtRep['hay_metas'] ? 'Cambiar metas' : 'Poner metas' ?></a><?php endif; ?>
     </div>
     <p class="g-nota">Vendido igual que en Ventas (por el mes en que se separó o confirmó el evento, con IVA). Se cuentan los meses completos
         <?= count($mtMeses) === 1 ? 'de ' . e(Reportes::nombreMes(array_key_first($mtMeses))) : 'del periodo' ?>.</p>
 
     <?php if (!$mtRep['hay_metas']): ?>
-        <p class="aviso aviso-ok mt-sin-metas">Todavía no hay metas de ventas.<?= es_dueno($u) ? ' Ponlas en <a href="' . e(url('metas')) . '">Metas de ventas</a> para ver cuánto te falta cada mes.' : ' El dueño las pone.' ?>
+        <p class="aviso aviso-ok mt-sin-metas">Todavía no hay metas de ventas.<?= es_admin_total($u) ? ' Ponlas en <a href="' . e(url('metas')) . '">Metas de ventas</a> para ver cuánto te falta cada mes.' : ' El dueño o un administrador las pone.' ?>
             Abajo igual puedes comparar con el año anterior.</p>
     <?php endif; ?>
 

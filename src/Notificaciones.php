@@ -13,9 +13,13 @@ final class Notificaciones
 {
     public function __construct(private PDO $db) {}
 
-    /** Usuarios que reciben avisos del negocio: dueño, vendedores y coordinadores activos. */
+    /**
+     * Usuarios que reciben avisos del negocio: dueño, vendedores y coordinadores activos.
+     * Los administradores tienen el mismo nivel que el dueño: todo aviso para el dueño les llega también.
+     */
     public function destinos(int $negocioId, array $roles = ['dueno', 'vendedor', 'coordinador']): array
     {
+        if (in_array('dueno', $roles, true) && !in_array('admin', $roles, true)) $roles[] = 'admin';
         $marcas = implode(',', array_fill(0, count($roles), '?'));
         $st = $this->db->prepare("SELECT id FROM usuarios WHERE negocio_id = ? AND activo AND rol IN ($marcas)");
         $st->execute([$negocioId, ...$roles]);

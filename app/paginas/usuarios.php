@@ -1,8 +1,8 @@
 <?php
 use TuPlanner\{Planes, Usuarios};
 
-/** Usuarios del negocio (solo el dueño): vendedores, coordinadores y cuentas de solo consulta. */
-exigir(es_dueno($u), 'Solo el dueño puede crear y cambiar usuarios.');
+/** Usuarios del negocio (el dueño y los administradores): administradores (máx. 4), vendedores, coordinadores y cuentas de solo consulta. */
+exigir(es_admin_total($u), 'Solo el dueño o un administrador puede crear y cambiar usuarios.');
 $nid = (int) $u['negocio_id'];
 $usuarios = new Usuarios(db());
 if (es_post()) {
@@ -43,9 +43,11 @@ $lista = $usuarios->lista($nid);
 $claveNueva = $_SESSION['clave_usuario'] ?? null;
 $form = $_SESSION['form_usuario'] ?? null;
 unset($_SESSION['clave_usuario'], $_SESSION['form_usuario']);
-$puedeAgregar = planes()->puedeAgregarUsuario($nid);
+$puedeAgregar = planes()->puedeAgregarUsuario($nid);   // usuarios del plan (los administradores no cuentan)
+$admins = $usuarios->adminsActivos($nid);
+$puedeAdmin = $usuarios->puedeAgregarAdmin($nid);
 $st = db()->prepare('SELECT p.nombre, p.max_usuarios FROM negocios n JOIN planes p ON p.codigo = n.plan_codigo WHERE n.id = ?');
 $st->execute([$nid]);
 $plan = $st->fetch();
-$activos = count(array_filter($lista, fn($x) => $x['activo']));
-vista('usuarios', compact('lista', 'claveNueva', 'form', 'puedeAgregar', 'plan', 'activos'), 'Usuarios · TuPlanner');
+$activos = planes()->usuariosDelPlan($nid);
+vista('usuarios', compact('lista', 'claveNueva', 'form', 'puedeAgregar', 'plan', 'activos', 'admins', 'puedeAdmin'), 'Usuarios · TuPlanner');

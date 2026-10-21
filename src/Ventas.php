@@ -535,10 +535,10 @@ final class Ventas
         };
     }
 
-    /** Dueño y vendedores activos (para elegir quién vende). */
+    /** Dueño, administradores y vendedores activos (para elegir quién vende). */
     public function usuariosVenta(int $negocioId): array
     {
-        $st = $this->db->prepare("SELECT id, nombre, rol FROM usuarios WHERE negocio_id = ? AND activo AND rol IN ('dueno','vendedor') ORDER BY rol, nombre");
+        $st = $this->db->prepare("SELECT id, nombre, rol FROM usuarios WHERE negocio_id = ? AND activo AND rol IN ('dueno','admin','vendedor') ORDER BY rol = 'dueno' DESC, rol = 'admin' DESC, nombre");
         $st->execute([$negocioId]);
         return $st->fetchAll();
     }

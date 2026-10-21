@@ -44,7 +44,7 @@ Dirección: **tuplanner.tukanec.com** (servidor qfcorp). Web de la marca: tukans
 - **Boda en vivo** con QF Producciones (pedido por WhatsApp y enlace en portal e invitaciones).
 - Página pública del local con consulta de fechas libres y formulario que entra al sistema.
 - Inicio con el día, cobranza, mensajes por WhatsApp listos para enviar, reportes (ventas, cobrado, ocupación, conversión, rentabilidad, comisiones), exportar a Excel, calendario para Google Calendar, avisos por Telegram.
-- Usuarios: dueño, vendedor, coordinador (solo el día del evento) y consulta (solo mira). Panel Tukán para administrar todos los negocios y sus planes.
+- Usuarios: dueño, **administradores** (hasta 4, mismo nivel que el dueño y no cuentan en el límite de usuarios del plan), vendedor, coordinador (solo el día del evento) y consulta (solo mira). Los permisos se preguntan con `es_admin_total()` (dueño o administrador); `es_dueno()` queda solo para la identidad de la cuenta ante Tukán. Panel Tukán para administrar todos los negocios y sus planes.
 
 ## Planes y módulos (Anexo B: el programa se arma por módulos)
 Cada cliente tiene la **base** (siempre) y los **módulos** que paga. Se encienden y apagan por cliente desde el Panel Tukán
@@ -88,7 +88,7 @@ plan de pagos y recibos, Mensajes de WhatsApp del día, página pública con con
 - **Precio al mes** de cada cliente = plan + módulos extra − módulos quitados (o un **precio acordado** fijo). Es el que sugiere
   "Registrar pago", el `cotizar` y el `mensual_estimado` del Panel Central. Precios, descripciones y qué trae cada plan se cambian en
   Panel Tukán → **Planes y precios → Catálogo de módulos**.
-- **Mi plan** (dueño): ve sus módulos encendidos y lo que paga por su plan (su contrato). Los módulos y planes que no tiene
+- **Mi plan** (dueño y administradores): ve sus módulos encendidos y lo que paga por su plan (su contrato). Los módulos y planes que no tiene
   **no muestran precio** («Precio por cotización»): **Pedir cotización** (en Mi plan, en cada plan y en la pantalla del módulo
   apagado) crea un pedido (solicitud `cambio_modulos`) que llega al Panel Tukán Central, que cotiza, aprueba o rechaza.
   El superusuario de Tukán y el Panel Central sí ven los precios.
@@ -160,7 +160,7 @@ El instalador deja programado:
 ```
 Tareas: vencer cotizaciones, avisar fechas retenidas que se liberan, cuotas por vencer, revisar precios, evento en 7 días, pasar a realizado, devolver garantías, reporte del mes, seguimientos del día, pagos a proveedores que vencen, documentos de proveedores por vencer, proveedores sin confirmar a 3 días del evento y la **papelera** (borra de verdad los negocios con más de 30 días en ella y las copias de más de 1 año). Los negocios pausados o en la papelera no reciben tareas ni avisos, y cada tarea de un módulo (Telegram, proveedores) solo corre si el negocio lo tiene encendido.
 
-**Al actualizar a esta versión** hay que volver a correr el instalador (la línea de arriba): aplica la migración 098 (módulos y pedidos de demo), crea `respaldos/borrados` y pasa las tareas al usuario `www-data`.
+**Al actualizar a esta versión** hay que volver a correr el instalador (la línea de arriba): aplica las migraciones 098 (módulos y pedidos de demo) y 099 (rol administrador), crea `respaldos/borrados` y pasa las tareas al usuario `www-data`.
 
 Telegram (opcional) en `config/.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` y `TELEGRAM_WEBHOOK_SECRET` (obligatorio si se usa el webhook).
 
@@ -168,11 +168,11 @@ Telegram (opcional) en `config/.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNA
 Solo en bases de prueba (se borran y se vuelven a crear):
 
 ```bash
-# Lógica (2515 pruebas)
+# Lógica (2582 pruebas)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php
-# Pantallas de punta a punta (2060 pruebas; levanta un sitio de prueba solo)
+# Pantallas de punta a punta (2156 pruebas; levanta un sitio de prueba solo)
 PGPASSWORD=prueba bash tests/run_web.sh
-# Solo el conector con el Panel Tukán Central (v1 = logica_95/web_95, v2 = logica_96/web_96, pausar y papelera = logica_97/web_97, módulos y pedidos de demo = logica_98/web_98)
+# Solo el conector con el Panel Tukán Central (v1 = logica_95/web_95, v2 = logica_96/web_96, pausar y papelera = logica_97/web_97, módulos y pedidos de demo = logica_98/web_98, administradores = logica_99/web_99)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_9
 PGPASSWORD=prueba bash tests/run_web.sh web_9
 ```

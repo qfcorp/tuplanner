@@ -23,7 +23,7 @@ if (!empty($_GET['csv'])) {
     return;
 }
 
-exigir(es_dueno($u), 'Solo el dueño pone las metas de ventas. Mira cómo vas en Reportes → Metas.');
+exigir(es_admin_total($u), 'Solo el dueño o un administrador pone las metas de ventas. Mira cómo vas en Reportes → Metas.');
 $anio = (int) ($_GET['anio'] ?? $_POST['anio'] ?? $hoy->format('Y'));
 if ($anio < 2000 || $anio > 2100) $anio = (int) $hoy->format('Y');
 

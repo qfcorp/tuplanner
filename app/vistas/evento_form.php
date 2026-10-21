@@ -135,7 +135,7 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
 
         <fieldset class="campo">
             <legend>Lugares <small>(si todavía no lo eligen, déjalo sin marcar: queda "por definir")</small></legend>
-            <?php if (!$espacios): ?><p class="suave ayuda-chica">Todavía no tienes lugares guardados.<?php if (es_dueno($u)): ?> <a href="<?= e(url('espacios', ['nuevo' => 1])) ?>">Agregar las quintas, haciendas o iglesias donde trabajas</a>.<?php endif; ?></p><?php endif; ?>
+            <?php if (!$espacios): ?><p class="suave ayuda-chica">Todavía no tienes lugares guardados.<?php if (es_admin_total($u)): ?> <a href="<?= e(url('espacios', ['nuevo' => 1])) ?>">Agregar las quintas, haciendas o iglesias donde trabajas</a>.<?php endif; ?></p><?php endif; ?>
             <div class="casillas casillas-espacios">
                 <?php foreach ($espacios as $es): ?>
                     <label>
@@ -179,7 +179,7 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
             <div class="campo">
                 <label for="vendedor_id">Vendedor</label>
                 <select id="vendedor_id" name="vendedor_id">
-                    <?php foreach ($vendedores as $v): ?><option value="<?= (int) $v['id'] ?>" <?= (int) $d['vendedor_id'] === (int) $v['id'] ? 'selected' : '' ?>><?= e($v['nombre']) ?><?= $v['rol'] === 'dueno' ? ' (dueño)' : '' ?></option><?php endforeach; ?>
+                    <?php foreach ($vendedores as $v): ?><option value="<?= (int) $v['id'] ?>" <?= (int) $d['vendedor_id'] === (int) $v['id'] ? 'selected' : '' ?>><?= e($v['nombre']) ?><?= ['dueno' => ' (dueño)', 'admin' => ' (administrador)'][$v['rol']] ?? '' ?></option><?php endforeach; ?>
                 </select>
             </div>
             <div class="campo ancho">

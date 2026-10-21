@@ -14,8 +14,8 @@ $nid = (int) $u['negocio_id'];
 $planos = new Planos(db());
 $eventoId = (int) ($_GET['id'] ?? 0);
 $planoId = (int) ($_GET['p'] ?? 0);
-$editaEventos = in_array($u['rol'], ['dueno', 'vendedor', 'coordinador'], true);
-$editaPlantillas = es_dueno($u);
+$editaEventos = in_array($u['rol'], ['dueno', 'admin', 'vendedor', 'coordinador'], true);
+$editaPlantillas = es_admin_total($u);
 
 $responderJson = function (array $datos, int $codigo = 200): never {
     while (ob_get_level() > 0) ob_end_clean();
@@ -68,7 +68,7 @@ if (es_post()) {
             $responderJson(['ok' => false, 'error' => 'La página caducó. Recarga para seguir (tus últimos cambios no se guardaron).'], 400);
         }
         if (!$puedeEditarPlano($plano)) {
-            $responderJson(['ok' => false, 'error' => $plano && $plano['tipo'] === 'plantilla' ? 'Solo el dueño puede cambiar las distribuciones de los lugares.' : 'Tu usuario solo puede mirar el plano.'], 403);
+            $responderJson(['ok' => false, 'error' => $plano && $plano['tipo'] === 'plantilla' ? 'Solo el dueño o un administrador puede cambiar las distribuciones de los lugares.' : 'Tu usuario solo puede mirar el plano.'], 403);
         }
         $elementos = json_decode((string) ($_POST['elementos'] ?? ''), true);
         $version = isset($_POST['version']) && ctype_digit((string) $_POST['version']) ? (int) $_POST['version'] : null;
@@ -87,7 +87,7 @@ if (es_post()) {
     try {
         switch ($accion) {
             case 'crear_plantilla':
-                exigir($editaPlantillas, 'Solo el dueño puede crear distribuciones de los lugares.');
+                exigir($editaPlantillas, 'Solo el dueño o un administrador puede crear distribuciones de los lugares.');
                 $nuevo = $planos->crearPlantilla($nid, (int) ($_POST['espacio_id'] ?? 0), campo('nombre'), campo('ancho'), campo('largo'), (int) $u['id'], campo('ejemplo'));
                 aviso('Distribución creada. Agrega y mueve los elementos; se guarda solo.');
                 redirigir('plano', ['p' => $nuevo]);
@@ -97,12 +97,12 @@ if (es_post()) {
                 aviso('Medidas guardadas.');
                 break;
             case 'duplicar':
-                exigir($editaPlantillas && $plano && $plano['tipo'] === 'plantilla', 'Solo el dueño puede copiar distribuciones.');
+                exigir($editaPlantillas && $plano && $plano['tipo'] === 'plantilla', 'Solo el dueño o un administrador puede copiar distribuciones.');
                 $nuevo = $planos->duplicarPlantilla($nid, (int) $plano['id'], (int) $u['id']);
                 aviso('Copia creada. Cámbiale el nombre y lo que necesites.');
                 redirigir('plano', ['p' => $nuevo]);
             case 'borrar':
-                exigir($editaPlantillas && $plano && $plano['tipo'] === 'plantilla', 'Solo el dueño puede borrar distribuciones.');
+                exigir($editaPlantillas && $plano && $plano['tipo'] === 'plantilla', 'Solo el dueño o un administrador puede borrar distribuciones.');
                 $planos->borrar($nid, (int) $plano['id'], $u);
                 aviso('Distribución borrada. Los planos de los eventos que la usaron no cambian.');
                 redirigir('plano', ['espacio' => $plano['espacio_id']]);

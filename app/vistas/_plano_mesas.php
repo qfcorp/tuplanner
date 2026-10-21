@@ -30,6 +30,6 @@ if ($plPlano):
         <small class="suave"><?= (int) $plDatos['resumen']['mesas'] ?> mesas · <?= (int) $plDatos['resumen']['puestos'] ?> puestos · en cada mesa: sentados / puestos</small>
     </p>
 </section>
-<?php elseif ($esNegocio && in_array($u['rol'] ?? '', ['dueno', 'vendedor', 'coordinador'], true)): ?>
+<?php elseif ($esNegocio && in_array($u['rol'] ?? '', ['dueno', 'admin', 'vendedor', 'coordinador'], true)): ?>
 <p class="suave pl-sin-plano"><small>¿Quieres verlo dibujado? <a href="<?= e(url('plano', ['id' => $ev['id']])) ?>">Arma el plano del salón</a>: las mesas que crees ahí aparecen aquí.</small></p>
 <?php endif; ?>

@@ -7,7 +7,7 @@ Misma forma de trabajar que TuSalón (qfcorp/tusalon): PHP 8.3+ sin framework, P
 | Carpeta | Qué tiene |
 |---|---|
 | `public/index.php` | Lista de rutas (`/?r=<ruta>`): públicas, privadas, de coordinador y del panel Tukán |
-| `app/bootstrap.php` | Configuración, sesión y funciones de ayuda: `db()`, `e()`, `url()`, `url_completa()`, `redirigir()`, `dinero()`, `fecha_corta()`, `fecha_larga()`, `hora_corta()`, `aviso()`, `campo_csrf()`, `verificar_csrf()`, `es_post()`, `usuario()`, `es_dueno()`, `es_comercial()`, `puede_editar()`, `exigir()`, `es_quinta()`, `requiere_quinta()`, `vista()`, `vista_publica()`, `vista_admin()`, `numero()`, `campo()`, `registrar_cambio()`, `ip_visitante()` |
+| `app/bootstrap.php` | Configuración, sesión y funciones de ayuda: `db()`, `e()`, `url()`, `url_completa()`, `redirigir()`, `dinero()`, `fecha_corta()`, `fecha_larga()`, `hora_corta()`, `aviso()`, `campo_csrf()`, `verificar_csrf()`, `es_post()`, `usuario()`, `es_admin_total()`, `es_dueno()`, `es_comercial()`, `puede_editar()`, `exigir()`, `es_quinta()`, `requiere_quinta()`, `vista()`, `vista_publica()`, `vista_admin()`, `numero()`, `campo()`, `registrar_cambio()`, `ip_visitante()` |
 | `app/paginas/<ruta>.php` | La lógica de cada pantalla (lee el pedido, llama a `src/`, muestra una vista) |
 | `app/vistas/<nombre>.php` | El HTML de cada pantalla. `_diseno.php` (sistema), `_publico.php` (páginas públicas), `_admin.php` (panel Tukán), `_evento_tabs.php` (cabecera + pestañas de un evento) |
 | `app/pdf/<tipo>.php` | Cada PDF (`/?r=pdf&tipo=<tipo>&id=<id>`), con la base `src/Pdf.php` (TCPDF) |
@@ -23,7 +23,7 @@ Misma forma de trabajar que TuSalón (qfcorp/tusalon): PHP 8.3+ sin framework, P
 - Errores de negocio: las clases lanzan `RuntimeException` con un mensaje para el usuario; la página lo atrapa y lo muestra.
 - Mostrar con `e()` todo lo que venga de la base o del usuario.
 - Dinero con `dinero()`, fechas con `fecha_corta()` / `fecha_larga()`.
-- Permisos: `consulta` solo mira (`puede_editar`), `coordinador` solo el día del evento (lista `$deCoordinador`), ventas y cobros solo `es_comercial`, configuración y usuarios solo `es_dueno`.
+- Permisos: `consulta` solo mira (`puede_editar`), `coordinador` solo el día del evento (lista `$deCoordinador`), ventas y cobros solo `es_comercial` (dueño, administrador o vendedor), configuración, usuarios, Mi plan y todo lo «del dueño» con `es_admin_total` (dueño o administrador: hasta 4 administradores con el mismo nivel). `es_dueno` no es un permiso: solo para la identidad de la cuenta ante Tukán.
 - Plan Quinta: portal del cliente, invitados, día del evento, mobiliario, boda en vivo y plano del salón (`requiere_quinta`).
 - Diseño: celular primero. Usar las clases de `app.css`: `cabecera`, `bloque`, `campo`, `fila-campos`, `rejilla-form`, `boton`, `boton-claro`, `boton-chico`, `boton-peligro`, `boton-wa`, `tabla`, `tabla-scroll`, `num`, `cifras`/`cifra-tarjeta`, `ev-estado ev-<estado>`, `pestanas`, `filas`, `aviso aviso-ok|aviso-error`, `vacio`, `barra`.
 - WhatsApp con un toque: `\TuPlanner\WhatsApp::enlace($telefono, $mensaje)`.

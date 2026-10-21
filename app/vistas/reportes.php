@@ -225,7 +225,7 @@ $t = $conversion['total'];
 <section class="bloque" id="comisiones">
     <h2>Comisión de vendedores</h2>
     <?php if ($comisiones['pct'] <= 0): ?>
-        <p class="vacio">No tienes comisión configurada.<?php if (es_dueno($u)): ?> <a href="<?= e(url('configuracion', ['tab' => 'reglas'])) ?>">Ponerla en Configuración → Reglas</a><?php endif; ?></p>
+        <p class="vacio">No tienes comisión configurada.<?php if (es_admin_total($u)): ?> <a href="<?= e(url('configuracion', ['tab' => 'reglas'])) ?>">Ponerla en Configuración → Reglas</a><?php endif; ?></p>
     <?php else: ?>
         <p class="g-nota"><?= e(rtrim(rtrim(number_format($comisiones['pct'], 2, ',', ''), '0'), ',')) ?> % sobre lo vendido sin IVA en el periodo (por fecha de venta). El dueño no lleva comisión.</p>
         <?php if (!$comisiones['lista']): ?><p class="vacio">No hubo ventas en este periodo.</p><?php else: ?>

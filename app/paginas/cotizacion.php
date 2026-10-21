@@ -19,7 +19,7 @@ if (!$ev) {
 $cot = new Cotizaciones(db());
 $cat = new Catalogo(db());
 $puede = es_comercial($u);
-$dueno = es_dueno($u);
+$dueno = es_admin_total($u);
 
 /** Las versiones anteriores que seguían abiertas quedan reemplazadas por la nueva (su enlace avisa al cliente). */
 $reemplazarAnteriores = function (int $nuevaId) use ($id, $nid): void {

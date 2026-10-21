@@ -10,7 +10,7 @@ use TuPlanner\{ProveedoresFicha, PuntajeProveedores};
 $nid = (int) $u['negocio_id'];
 $pp = new PuntajeProveedores(db());
 $ficha = new ProveedoresFicha(db());
-$dueno = es_dueno($u);
+$dueno = es_admin_total($u);
 
 /**
  * Vista previa: los 3 proveedores con más datos, con el puntaje de ahora y el que tendrían con $cfg,
@@ -41,8 +41,8 @@ if (es_post()) {
     verificar_csrf();
     $json = !empty($_GET['json']);
     if (!$dueno) {
-        if ($json) { http_response_code(403); header('Content-Type: application/json'); echo json_encode(['ok' => false, 'error' => 'Solo el dueño cambia cómo se calcula el puntaje.']); return; }
-        exigir(false, 'Solo el dueño cambia cómo se calcula el puntaje.');
+        if ($json) { http_response_code(403); header('Content-Type: application/json'); echo json_encode(['ok' => false, 'error' => 'Solo el dueño o un administrador cambia cómo se calcula el puntaje.']); return; }
+        exigir(false, 'Solo el dueño o un administrador cambia cómo se calcula el puntaje.');
     }
     $accion = (string) ($_POST['accion'] ?? '');
     try {

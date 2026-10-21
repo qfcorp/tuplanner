@@ -268,7 +268,7 @@ final class Automaticas
         if ((int) $ahora->format('G') < self::HORA_AVISOS || !Telegram::configurado()) return 0;
         $hoy = $ahora->format('Y-m-d');
         $st = $this->q("UPDATE usuarios SET seguimientos_dia = ?::date
-                         WHERE negocio_id = ? AND activo AND rol IN ('dueno','vendedor') AND telegram_chat_id IS NOT NULL
+                         WHERE negocio_id = ? AND activo AND rol IN ('dueno','admin','vendedor') AND telegram_chat_id IS NOT NULL
                            AND seguimientos_dia IS DISTINCT FROM ?::date
                      RETURNING id, nombre, rol", [$hoy, $negocioId, $hoy]);
         $usuarios = $st->fetchAll();
@@ -278,7 +278,7 @@ final class Automaticas
         $n = 0;
         foreach ($usuarios as $u) {
             $mios = array_values(array_filter($todos, fn($a) => (int) $a['usuario_id'] === (int) $u['id']
-                || ($u['rol'] === 'dueno' && $a['usuario_id'] === null)));
+                || (in_array($u['rol'], ['dueno', 'admin'], true) && $a['usuario_id'] === null)));
             if (!$mios) continue;
             $t = '☀️ Buenos días, ' . explode(' ', trim($u['nombre']))[0] . '. Tus seguimientos de hoy (' . count($mios) . '):';
             foreach (array_slice($mios, 0, 20) as $a) {

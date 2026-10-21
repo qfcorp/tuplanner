@@ -9,7 +9,7 @@ use TuPlanner\{Metas, Reportes};
 $mtHoy = isset($hoy) && $hoy instanceof DateTimeImmutable ? $hoy : new DateTimeImmutable('today');
 $mtRol = $u['rol'] ?? '';
 $mtProgreso = null;
-if (in_array($mtRol, ['dueno', 'consulta', 'vendedor'], true)) {
+if (in_array($mtRol, ['dueno', 'admin', 'consulta', 'vendedor'], true)) {
     $mtProgreso = (new Metas(db()))->progreso((int) $u['negocio_id'], $mtRol === 'vendedor' ? (int) $u['id'] : null, $mtHoy);
 }
 $mtNombreMes = Reportes::MESES[(int) $mtHoy->format('n')];
@@ -46,6 +46,6 @@ if ($mtProgreso):
         <?php endif; ?>
     </p>
 </section>
-<?php elseif ($mtRol === 'dueno'): ?>
+<?php elseif (es_admin_total($u)): ?>
 <a class="g-franja mt-invitar" href="<?= e(url('metas')) ?>">🎯 Ponle una meta de ventas a <?= e($mtNombreMes) ?> y mira aquí cuánto te falta cada día.</a>
 <?php endif; ?>

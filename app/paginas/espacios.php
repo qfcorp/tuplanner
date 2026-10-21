@@ -9,13 +9,13 @@ use TuPlanner\{Fotos, Ventas};
  */
 $nid = (int) $u['negocio_id'];
 $ventas = new Ventas(db());
-$puedeEditar = es_dueno($u);
+$puedeEditar = es_admin_total($u);
 $error = null;
 $editarId = (int) ($_GET['editar'] ?? 0);
 $form = null;
 
 if (es_post()) {
-    exigir($puedeEditar, 'Solo el dueño puede cambiar los lugares y las fechas cerradas.');
+    exigir($puedeEditar, 'Solo el dueño o un administrador puede cambiar los lugares y las fechas cerradas.');
     verificar_csrf();
     $accion = (string) ($_GET['accion'] ?? '');
     $id = (int) ($_POST['id'] ?? 0) ?: null;

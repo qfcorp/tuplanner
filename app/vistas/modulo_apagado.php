@@ -22,7 +22,7 @@ if ($ev) require RAIZ . '/app/vistas/_evento_tabs.php';
     <?php if ($pedido): ?>
         <p class="aviso aviso-ok" role="status">Ya pediste este módulo. Tukán te escribe para activarlo.</p>
     <?php endif; ?>
-    <?php if (es_dueno($u)): ?>
+    <?php if (es_admin_total($u)): ?>
         <div class="acciones">
             <?php if (!$pedido): ?>
                 <form method="post" action="<?= e(url('planes')) ?>"><?= campo_csrf() ?><input type="hidden" name="accion" value="pedir"><input type="hidden" name="modulo" value="<?= e($modulo) ?>">

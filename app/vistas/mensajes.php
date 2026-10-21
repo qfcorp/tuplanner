@@ -33,7 +33,7 @@ $nombres = ['cuota' => 'Cuota', 'contrato' => 'Contrato', 'cotizacion' => 'Cotiz
 <section class="bloque cb-grupo" id="m-<?= e($tipo) ?>">
     <h2><?= e(Cobranza::MENSAJES[$tipo][0]) ?> <span class="cb-contador"><?= count($lista) ?></span></h2>
     <p class="suave"><?= e($ayudas[$tipo]) ?></p>
-    <?php if ($tipo === 'resena' && $sinResenas && es_dueno($u)): ?>
+    <?php if ($tipo === 'resena' && $sinResenas && es_admin_total($u)): ?>
         <p class="cb-nota">Consejo: pon el enlace de tus reseñas de Google en Configuración para que vaya en el mensaje.</p>
     <?php endif; ?>
     <ul class="cb-mensajes">

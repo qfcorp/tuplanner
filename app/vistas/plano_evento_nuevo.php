@@ -53,7 +53,7 @@ $tarjeta = function (array $p) use ($vistas, $puedeArmar, $ev): string {
                 value="<?= e($previo['largo'] ?? ($sugerido ? Planos::m($sugerido['largo']) : '30')) ?>"></div>
         </div>
         <button class="boton" type="submit">Empezar plano vacío</button>
-        <?php if (!$plantillas && es_dueno($u)): ?>
+        <?php if (!$plantillas && es_admin_total($u)): ?>
             <p class="suave" style="margin-top:10px"><small>Consejo: arma una vez la distribución de cada lugar en <a href="<?= e(url('plano')) ?>">Planos del salón</a> y úsala en cada evento.</small></p>
         <?php endif; ?>
     </form>

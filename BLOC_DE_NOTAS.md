@@ -1,6 +1,6 @@
 # Bloc de notas — TuPlanner (wedding planners y organizadores de eventos · marca Tukán)
 
-Última actualización: 20 de octubre de 2026
+Última actualización: 21 de octubre de 2026
 
 ## Qué es
 Programa para **wedding planners y organizadores de eventos** (bodas, quince años y demás). Pedido de Dimi del 14 oct 2026:
@@ -49,7 +49,17 @@ Regla de Dimi: "todos los programas deben ser modulares para encender o apagar l
 - [x] Sin «gratis» en textos visibles (solo demos; en ventas, «meses de regalo»). README sin tabla de precios: «Precios: por cotización (se definen en el Panel Tukán Central)». Manual actualizado y PDF regenerado.
 - [x] Pruebas: logica_98 (texto visible sin «gratis», Mi plan y módulo apagado sin precio) y web_98 (sección nueva: sin precios de módulos ni planes que no tiene, Pedir cotización desde el módulo y desde un plan, sin «gratis» en pantallas del cliente y públicas).
 
+## Hecho (21 oct 2026) — Administradores (pedido del dueño de Tukán)
+- [x] Rol nuevo **Administrador** (`admin`, migración 099 repetible: cambia el CHECK `usuarios_rol_check`). En Usuarios: «Administrador (mismos permisos que el dueño)» y el contador «Administradores: 2 de 4».
+- [x] **Mismo nivel que el dueño** en todo: menú, Usuarios, Configuración, Mi plan, metas, costos y ganancia, plantillas, formularios, espacios/lugares, puntaje de proveedores, avisos «para el dueño» (campana y Telegram), quién vende y metas. Helper `es_admin_total()` (dueño o administrador) en vez de `es_dueno()` en todas las pantallas; `es_comercial()` también incluye al administrador.
+- [x] **Máximo 4 administradores activos** sin contar al dueño: un quinto (crear, activar o cambiar de rol) muestra «Puede tener hasta 4 administradores además del dueño». Se cuenta con la fila del negocio bloqueada (dos personas a la vez no pasan el límite).
+- [x] **No cuentan en el plan**: `max_usuarios` cuenta a todos los activos menos los administradores (el dueño sigue contando, como antes). Si un administrador pasa a otro rol, empieza a contar (y se revisa el límite). Mi plan también cuenta sin administradores.
+- [x] **Seguridad**: nadie se cambia el rol ni se desactiva a sí mismo; al dueño nadie lo cambia, desactiva ni le da clave nueva desde Usuarios (tampoco un administrador); los administradores sí manejan a otros administradores y usuarios. El rol del POST se valida contra la lista: si no vale, error «Ese tipo de usuario no existe…» y no se guarda nada (nunca un rol por defecto). Todos los formularios de Usuarios llevan token CSRF (probado: sin token, 400 y no se guarda).
+- [x] **Exclusivo del dueño** (identidad de la cuenta ante Tukán): ser el contacto del negocio en el Panel Tukán Central/Panel Tukán (nombre, correo y teléfono que se envían), «Nueva clave del dueño» desde Tukán, «Entrar como» del súper usuario, el contacto que ven el personal y los proveedores en sus portales, y no poder ser cambiado ni desactivado. Dentro del programa no quedó ninguna pantalla solo para el dueño.
+- [x] Pruebas: logica_99 (63) y web_99 (62). Totales: **lógica 2582/2582 y pantallas 2156/2156**, sin avisos de PHP. Manual (capítulo de equipo, con una administradora en los datos de ejemplo y capturas nuevas), MANUAL.md y guía Primeros pasos actualizados y PDF regenerados.
+
 ## Pendiente
+0000. [ ] DIMI: actualizar en el servidor (volver a correr el instalador del README): aplica la migración 099 (rol administrador)
 000. [ ] DIMI: actualizar en el servidor (volver a correr el instalador del README): aplica la migración 098 (módulos y pedidos de demo). Revisar los precios de los módulos en Panel Tukán → Planes y precios
 0. [ ] DIMI: al actualizar en el servidor, volver a correr el instalador del README: crea la carpeta `respaldos/borrados` y pasa las tareas de cada hora al usuario `www-data`
 1. [ ] DIMI: instalar en qfcorp (línea del README) y crear la ruta del túnel `tuplanner.tukanec.com` → HTTP → localhost:80 (Host header)
