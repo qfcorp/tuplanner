@@ -186,7 +186,7 @@ $db->exec('DELETE FROM tukan_central_pedidos');
 // ---------------------------------------------------------------------------------------------
 titulo('4. capacidades (§5.1): solo lo que de verdad funciona');
 $cap = $pedir('capacidades')[1];
-check('Acciones', ['capacidades', 'estado', 'sso', 'clientes', 'cliente', 'cotizar', 'planes', 'modulos', 'solicitudes', 'solicitud', 'finanzas', 'ejecutar'], $cap['acciones']);
+check('Acciones', ['capacidades', 'estado', 'sso', 'clientes', 'cliente', 'cotizar', 'planes', 'modulos', 'solicitudes', 'solicitud', 'finanzas', 'ejecutar', 'ia_uso'], $cap['acciones']);
 check('Sin adjunto', false, in_array('adjunto', $cap['acciones'], true));
 check('Operaciones', TukanCentralV2::OPERACIONES, $cap['ejecutar']);
 check('Sin comprobantes ni tickets', [], array_intersect($cap['ejecutar'], ['aprobar_comprobante', 'rechazar_comprobante', 'responder_ticket']));
@@ -271,7 +271,7 @@ check('Enlace público', 'https://tuplanner.prueba.ec/?r=sitio&s=' . $db->query(
 check('Mensaje para recordar la prueba', true, str_contains((string) $x['mensajes_sugeridos']['recordar_prueba'], 'Tu demo de Quinta Prueba Uno termina el'));
 check('Sin mensaje de vencido', null, $x['mensajes_sugeridos']['vencido']);
 $acc = array_column($x['acciones_posibles'], 'accion');
-check('Botones de una demo', ['whatsapp', 'registrar_pago', 'extender_prueba', 'cambiar_plan', 'cambiar_modulos', 'pausar', 'cancelar', 'nueva_clave_dueno', 'nota_interna', 'borrar_cliente', 'abrir'], $acc);
+check('Botones de una demo', ['whatsapp', 'registrar_pago', 'extender_prueba', 'cambiar_plan', 'cambiar_modulos', 'pausar', 'cancelar', 'nueva_clave_dueno', 'nota_interna', 'ia_tope', 'borrar_cliente', 'abrir'], $acc);
 $pago = $x['acciones_posibles'][1];
 check('Formulario de pago (§4.4)', ['plan', 'periodo', 'monto', 'metodo', 'fecha', 'inicio', 'nota', 'dominio'], array_column($pago['campos'], 'campo'));
 check('… con datos fijos y cotizar', [['cliente_id' => (string) $P1], true, 69.0], [$pago['datos'], $pago['campos'][2]['cotizar'], $pago['campos'][2]['valor']]);

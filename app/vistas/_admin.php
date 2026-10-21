@@ -1,7 +1,7 @@
 <?php
 /** Diseño del panel del super administrador. @var string $contenido @var string $titulo @var ?array $admin */
 $rutaActual = (string) ($_GET['r'] ?? '');
-$menuAdmin = ['admin' => 'Resumen', 'admin_negocios' => 'Negocios', 'admin_nuevo' => 'Nueva demo', 'admin_planes' => 'Planes y precios'];
+$menuAdmin = ['admin' => 'Resumen', 'admin_negocios' => 'Negocios', 'admin_nuevo' => 'Nueva demo', 'admin_planes' => 'Planes y precios', 'admin_faq' => 'Preguntas IA'];
 $avisos = tomar_avisos();
 // Si entró desde el Panel Tukán Central, botón para volver allá
 $volverCentral = (!empty($_SESSION['desde_central']) && \TuPlanner\TukanCentral::config()) ? \TuPlanner\TukanCentral::urlCentral() : null;

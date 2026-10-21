@@ -1,6 +1,6 @@
 <?php
 use TuPlanner\{PanelTukan, Planes, WhatsApp};
-/** @var array $negocio @var array $pagos @var array $registro @var array $listaPlanes @var array $cotizaciones @var string $inicioSugerido @var ?array $claveNueva
+/** @var array $negocio @var array $pagos @var array $registro @var array $listaPlanes @var array $cotizaciones @var string $inicioSugerido @var ?array $claveNueva @var ?array $correoDemo
  *  @var array $modulosEstado @var array $catalogo @var array $pedidosModulos */
 $n = $negocio;
 $telefono = $n['whatsapp'] ?: ($n['telefono'] ?: $n['dueno_telefono']);
@@ -46,6 +46,7 @@ $accion = fn(string $a) => e(url('admin_negocio', ['id' => $n['id'], 'accion' =>
             <?php if ($waClave): ?><a class="boton boton-wa" href="<?= e($waClave) ?>" target="_blank" rel="noopener">Enviársela por WhatsApp</a><?php endif; ?>
             <button class="boton boton-claro" type="button" data-copiar="<?= e($msg) ?>">Copiar mensaje</button>
         </div>
+        <?php if ($correoDemo) require RAIZ . '/app/vistas/_correo_demo.php'; ?>
     </section>
 <?php endif; ?>
 

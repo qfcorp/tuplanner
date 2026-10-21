@@ -25,6 +25,7 @@ Dirección: **tuplanner.tukanec.com** (servidor qfcorp). Web de la marca: tukans
 - **Máximo de eventos por día** del equipo: aviso en el evento y la página pública dice "quedan pocos cupos" o "sin cupo".
 - Tipos de evento nuevos: pedida de mano, baby shower y despedida de soltera/o. Categorías nuevas: honorarios, flores, pastel y postres, vestido y traje, maquillaje y peinado, invitaciones, transporte.
 - Planes (precio por cotización): **Planner** (3 usuarios, todo lo del organizador) y **Agencia** (usuarios sin límite + invitados con QR, día del evento, plano de mesas, decoración y menaje, portal de proveedores y boda en vivo).
+- **Ayuda** «¿Qué necesita hacer?» para todos y **Asistente IA** (incluido en Agencia; extra por cotización en los demás): evento y cotización desde el mensaje de WhatsApp del cliente y lectura de la cotización (foto o PDF) de un proveedor para armar el presupuesto.
 
 **Heredado de TuEvento:**
 - Calendario por espacios **sin doble reserva** (la base de datos lo impide), con horas de montaje y desmontaje, fechas cerradas y "próximos sábados".
@@ -60,7 +61,7 @@ plan de pagos y recibos, Mensajes de WhatsApp del día, página pública con con
 |---|---|---|
 | Esencial | 1 usuario más el dueño | Solo la base |
 | Planner | 3 usuarios | Paquetes, contratos, portal del cliente, cobros en línea, formulario/extras/encuesta, proveedores y compras, incidencias, metas, Telegram, exportar, planificación, presupuesto, comisiones e ideas |
-| Agencia | sin límite | Todos |
+| Agencia | sin límite | Todos, **incluido el Asistente IA** |
 
 | Módulo | Qué trae | Necesita |
 |---|---|---|
@@ -84,6 +85,7 @@ plan de pagos y recibos, Mensajes de WhatsApp del día, página pública con con
 | Presupuesto por proveedor | Partidas por proveedor, pagos directos del cliente, honorarios, dinero del evento | Planificación |
 | Comisiones de proveedores | Comisiones por cobrar y cobradas, recordatorio por WhatsApp | Presupuesto por proveedor |
 | Ideas e inspiración | Tablero de fotos con el cliente, temática y paleta de colores | — |
+| **Asistente IA** (**incluido en Agencia**; en Esencial y Planner, extra por cotización) | Evento y cotización desde el mensaje de WhatsApp del cliente; leer la cotización (foto o PDF) de un proveedor → partidas del presupuesto | — |
 
 - **Precio al mes** de cada cliente = plan + módulos extra − módulos quitados (o un **precio acordado** fijo). Es el que sugiere
   "Registrar pago", el `cotizar` y el `mensual_estimado` del Panel Central. Precios, descripciones y qué trae cada plan se cambian en
@@ -95,6 +97,35 @@ plan de pagos y recibos, Mensajes de WhatsApp del día, página pública con con
 - **Todo se pide demo**: no hay registro abierto ni periodo de prueba. En textos de venta se habla de «meses de regalo». `/?r=registro` es **Solicitar demo** (nombre, negocio,
   ciudad, WhatsApp, correo, qué necesita y módulos que le interesan) y llega como solicitud `demo_pedida` al Panel Central y al Resumen
   del Panel Tukán (**Crear demo**). La demo tiene todos los módulos encendidos (o los que elija Tukán) por los días que Tukán decida.
+
+## Ayuda e inteligencia artificial (migraciones 110 y 111)
+Con la librería compartida del Panel Tukán Central **`src/tukan_ia.php`** (copiada SIN cambios de `compartido/`, guía `compartido/LEEME_IA.md`).
+- **Ayuda** (todos los planes y cargos): **Más → Ayuda**, cuadro «¿Qué necesita hacer?» → `tukan_ia_ayuda()`: pregunta frecuente guardada (costo 0) →
+  IA (modelo rápido) con las secciones del manual del cliente (`docs/manual/manual.html` convertido a texto y guardado en caché; si no está, `docs/MANUAL.md`)
+  y la respuesta queda como FAQ automática → sin poder gastar, el manual tal cual + el WhatsApp. POST con CSRF, 10 preguntas por minuto por usuario.
+  Sin el módulo: máximo **30 respuestas nuevas al mes** por negocio. Nunca dice «límite», «cupo» ni «saldo».
+- **Módulo «Asistente IA»** (`asistente_ia`, grupo Extras): **viene incluido en el plan Agencia** (el más caro: `planes.modulos = '*,asistente_ia'`, migración 111
+  repetible). En Esencial y Planner es un extra **por cotización** (precio 0 en el catálogo: «Pídalo y le cotizamos»; lo acordado va en el precio acordado).
+  «*» solo no lo trae (`Modulos::SOLO_A_PEDIDO`). Trae:
+  - **Cotización a partir de un mensaje** (`/?r=ia_cotizacion`, «✨ Desde un mensaje» en Eventos y Nuevo evento): JSON validado contra los lugares, paquetes y
+    servicios del negocio (`Ia::validarPropuesta`), borrador → evento (consulta, lugar opcional) y cotización (borrador).
+  - **Leer cotización de proveedor** (`/?r=ia_proveedor&id=<evento>`, botón en Planificación → Presupuesto, necesita también Presupuesto): foto JPG/PNG/WEBP o PDF
+    (hasta 5 MB, no se guarda) con el modelo fuerte → JSON validado (`Ia::validarLectura`: categorías del catálogo, proveedor unido con su ficha) → borrador →
+    partidas «Pidiendo precios» / «El cliente le paga directo».
+  - Si no se puede usar la IA: `tukan_ia_mensaje_neutro('texto' | 'foto', …)` con el enlace para hacerlo a mano.
+- **Tope por negocio** (guardián `TukanIaGuardianPdo`, tabla `tukan_ia_gasto`): **4,00 USD al mes con el módulo** (incluido en Agencia o comprado aparte; decisión
+  del dueño) **y 0,50 sin él**; otro tope en `negocios.ia_tope_usd` (operación `ia_tope` del Panel Central). Al llegar al tope no se llama a la API, en silencio.
+- **Panel Tukán → Preguntas IA** (`/?r=admin_faq`): listar (Por revisar primero), aprobar, editar (queda aprobada y «manual»), borrar y agregar. CSRF y registro_admin.
+- **Conector v2** (Anexo C de `PROTOCOLO_V2.md`): acción `ia_uso` y operación `ia_tope` (`{"tope_usd": número | null}`, solo el dueño del Central).
+- **Configuración**: `/etc/tukan-ia.env` (`bash deploy/configurar_ia.sh` del Panel Tukán Central; **no** se copia la clave aquí; `www-data` debe poder leerlo).
+  **Sin ese archivo la IA queda apagada** y la Ayuda funciona solo con las FAQ y el manual. Pruebas: `TUKAN_IA_ENV=/otro/archivo`.
+
+## Enviar la demo por correo
+Con **`src/tukan_correo.php`** (copiada SIN cambios, guía `compartido/LEEME_CORREO.md`). En la ficha de una demo recién creada (Panel Tukán → Nueva demo, o
+«Nueva contraseña del dueño» de una demo) aparece **Enviar por correo** debajo del WhatsApp: llega «Su demo de TuPlanner está lista» desde info@tukansoftware.com.
+La contraseña se ve una sola vez y no se guarda: viaja en un **sello cifrado** (XChaCha20-Poly1305, llave al azar de la sesión del súper usuario, 30 minutos, un solo
+envío). Auditoría «Envió la demo por correo a …» sin la contraseña. Sin `/etc/tukan-correo.env`: botón desactivado **Configure el correo de Tukán** con el comando
+`cd /var/www/tukan-central && git pull && bash deploy/configurar_correo.sh`.
 
 ## Direcciones
 | Quién | Dirección |
@@ -160,7 +191,7 @@ El instalador deja programado:
 ```
 Tareas: vencer cotizaciones, avisar fechas retenidas que se liberan, cuotas por vencer, revisar precios, evento en 7 días, pasar a realizado, devolver garantías, reporte del mes, seguimientos del día, pagos a proveedores que vencen, documentos de proveedores por vencer, proveedores sin confirmar a 3 días del evento y la **papelera** (borra de verdad los negocios con más de 30 días en ella y las copias de más de 1 año). Los negocios pausados o en la papelera no reciben tareas ni avisos, y cada tarea de un módulo (Telegram, proveedores) solo corre si el negocio lo tiene encendido.
 
-**Al actualizar a esta versión** hay que volver a correr el instalador (la línea de arriba): aplica las migraciones 098 (módulos y pedidos de demo) y 099 (rol administrador), crea `respaldos/borrados` y pasa las tareas al usuario `www-data`.
+**Al actualizar a esta versión** hay que volver a correr el instalador (la línea de arriba): aplica las migraciones 098 (módulos y pedidos de demo), 099 (rol administrador), 110 (ayuda e IA) y 111 (Asistente IA incluido en Agencia), crea `respaldos/borrados` y pasa las tareas al usuario `www-data`.
 
 Telegram (opcional) en `config/.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` y `TELEGRAM_WEBHOOK_SECRET` (obligatorio si se usa el webhook).
 
@@ -168,10 +199,13 @@ Telegram (opcional) en `config/.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNA
 Solo en bases de prueba (se borran y se vuelven a crear):
 
 ```bash
-# Lógica (2582 pruebas)
+# Lógica (2679 pruebas)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php
-# Pantallas de punta a punta (2156 pruebas; levanta un sitio de prueba solo)
+# Pantallas de punta a punta (2257 pruebas; levanta un sitio de prueba solo)
 PGPASSWORD=prueba bash tests/run_web.sh
+# Solo ayuda, IA y correo de la demo (API de Anthropic y SMTP de mentira: tests/anthropic_falso.py y tests/smtp_falso.py)
+TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_110
+PGPASSWORD=prueba bash tests/run_web.sh web_110
 # Solo el conector con el Panel Tukán Central (v1 = logica_95/web_95, v2 = logica_96/web_96, pausar y papelera = logica_97/web_97, módulos y pedidos de demo = logica_98/web_98, administradores = logica_99/web_99)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_9
 PGPASSWORD=prueba bash tests/run_web.sh web_9

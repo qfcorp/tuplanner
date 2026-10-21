@@ -23,6 +23,10 @@ if (getenv('TUPLANNER_UPLOADS') === false) {
     putenv("TUPLANNER_UPLOADS=$tmp");
 }
 
+// IA y correo de Tukán: las pruebas NUNCA leen /etc/tukan-ia.env ni /etc/tukan-correo.env (no gastan ni mandan correos de verdad)
+if (getenv('TUKAN_IA_ENV') === false) putenv('TUKAN_IA_ENV=' . sys_get_temp_dir() . '/tuplanner_pruebas_sin_ia.env');
+if (getenv('TUKAN_CORREO_ENV') === false) putenv('TUKAN_CORREO_ENV=' . sys_get_temp_dir() . '/tuplanner_pruebas_sin_correo.env');
+
 $GLOBALS['ok'] = 0;
 $GLOBALS['fallos'] = [];
 

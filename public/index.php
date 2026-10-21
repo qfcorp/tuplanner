@@ -48,6 +48,10 @@ $privadas[] = 'puntaje_proveedores'; $deCoordinador[] = 'puntaje_proveedores';
 array_push($publicas, 'portal_plan', 'portal_ideas');
 array_push($privadas, 'evento_plan', 'evento_ideas', 'comisiones');
 array_push($deCoordinador, 'evento_plan', 'evento_ideas');   // el coordinador ve y marca tareas e ideas (sin dinero)
+// Ayuda e inteligencia artificial (110): la Ayuda es para todos (también el coordinador); la cotización desde un mensaje y leer la
+// cotización de un proveedor son del módulo «Asistente IA»; el súper usuario revisa las preguntas frecuentes y manda la demo por correo
+array_push($privadas, 'ayuda', 'ia_cotizacion', 'ia_proveedor'); $deCoordinador[] = 'ayuda';
+array_push($deAdmin, 'admin_faq', 'admin_demo_correo');
 
 $ruta = (string) ($_GET['r'] ?? 'inicio');
 if (in_array($ruta, $deAdmin, true) && !superadmin()) {

@@ -25,6 +25,7 @@ final class Modulos
         'dia' => 'Día del evento',
         'gestion' => 'Proveedores y gestión',
         'conexiones' => 'Avisos y conexiones',
+        'extras' => 'Extras',
     ];
 
     /** Lo que todo cliente tiene siempre (no se puede apagar). */
@@ -68,7 +69,16 @@ final class Modulos
         'metas' => ['Metas y reportes avanzados', '🎯', 'Metas de ventas del local y por vendedor con su avance en el Inicio, embudo y conversión, rentabilidad por evento y comisiones de vendedores.', 4.0, [], 'gestion'],
         'telegram' => ['Avisos por Telegram', '📲', 'Pagos, firmas, consultas nuevas, cuotas por cobrar y seguimientos del día llegan solos al celular del equipo.', 3.0, [], 'conexiones'],
         'exportar' => ['Exportar a Excel y Google Calendar', '📤', 'Descarga eventos, cobros y reportes para Excel y ve tus eventos en Google Calendar.', 3.0, [], 'conexiones'],
+        // Anexo C (migración 110): precio 0 en el catálogo = POR COTIZACIÓN (lo que se acuerde va en precio_acordado)
+        'asistente_ia' => ['Asistente IA', '✨', 'Lee fotos de documentos y llena los datos por usted, y responde las dudas al instante. Arma la cotización a partir del mensaje de WhatsApp del cliente.', 0.0, [], 'extras'],
     ];
+
+    /**
+     * Módulos que se dan solo a pedido (por cotización): no entran en "*" (todos los módulos) ni en la demo con todos encendidos.
+     * Un plan los trae si se nombran después del asterisco: "*,asistente_ia" (el plan más caro, migración 111). En los demás planes
+     * se encienden uno por uno como extra (súper usuario, Panel Tukán Central o pedido aprobado).
+     */
+    public const SOLO_A_PEDIDO = ['asistente_ia'];
 
     /**
      * Módulo de cada ruta de public/index.php ('' = base: la tienen todos). Toda ruta debe estar aquí (lo revisa una prueba).
@@ -105,6 +115,9 @@ final class Modulos
         // Organizador (migración 100)
         'evento_plan' => 'planificacion', 'portal_plan' => 'planificacion', 'comisiones' => 'comisiones',
         'evento_ideas' => 'ideas', 'portal_ideas' => 'ideas',
+        // Ayuda e IA (migración 110): la Ayuda es de la base (todos los planes); el súper ve las preguntas frecuentes
+        'ayuda' => '', 'admin_faq' => '', 'admin_demo_correo' => '',
+        'ia_cotizacion' => 'asistente_ia', 'ia_proveedor' => 'asistente_ia',
     ];
 
     /** Rutas de un módulo que el router NO corta: Payphone vuelve con pagos ya iniciados (no se pueden perder). */
@@ -155,9 +168,32 @@ final class Modulos
     public static function parse(?string $csv): array
     {
         $csv = trim((string) $csv);
-        if ($csv === '*') return array_keys(self::CATALOGO);
+        if ($csv === '*') return self::todos();
+        if (str_starts_with($csv, '*')) {   // "*,asistente_ia" = todos + los nombrados
+            return array_values(array_intersect(array_keys(self::CATALOGO), array_unique(array_merge(self::todos(), self::parse(ltrim(substr($csv, 1), ' ,'))))));
+        }
         $ids = array_filter(array_map('trim', explode(',', $csv)), fn($x) => $x !== '');
         return array_values(array_intersect(array_keys(self::CATALOGO), $ids));
+    }
+
+    /** Los módulos que trae "*" (todos menos los que son solo a pedido). */
+    public static function todos(): array
+    {
+        return array_values(array_diff(array_keys(self::CATALOGO), self::SOLO_A_PEDIDO));
+    }
+
+    /** Cómo se guarda la lista de un plan: "*" si trae todos, "*,asistente_ia" si además trae uno a pedido, o "a,b,c". */
+    public static function csvPlan(array $ids): string
+    {
+        if (array_diff(self::todos(), $ids)) return self::csv($ids);
+        $extra = array_values(array_intersect(self::SOLO_A_PEDIDO, $ids));
+        return '*' . ($extra ? ',' . self::csv($extra) : '');
+    }
+
+    /** ¿Se vende por cotización (precio 0 en el catálogo)? */
+    public static function porCotizacion(array $m): bool
+    {
+        return (float) ($m['precio_mensual'] ?? 0) <= 0;
     }
 
     public static function csv(array $ids): string
@@ -194,7 +230,7 @@ final class Modulos
         $r = [];
         foreach ($this->db->query('SELECT codigo, nombre, precio_mensual, modulos FROM planes ORDER BY precio_mensual, codigo')->fetchAll() as $p) {
             $r[$p['codigo']] = ['codigo' => (string) $p['codigo'], 'nombre' => (string) $p['nombre'], 'precio_mensual' => round((float) $p['precio_mensual'], 2),
-                                'modulos' => self::parse($p['modulos']), 'todos' => trim((string) $p['modulos']) === '*'];
+                                'modulos' => self::parse($p['modulos']), 'todos' => str_starts_with(trim((string) $p['modulos']), '*')];
         }
         return $this->planesCache = $r;
     }
@@ -268,7 +304,8 @@ final class Modulos
         $pagados = self::respetarDependencias(array_merge(array_diff($delPlan, $quitados), $extra));
         $demo = self::enDemo($n);
         $demoTodos = $demo && $n['modulos_prueba'] === null;
-        $activos = $demo ? ($demoTodos ? array_keys(self::CATALOGO) : self::respetarDependencias(self::parse($n['modulos_prueba']))) : $pagados;
+        $activos = $demo ? ($demoTodos ? array_values(array_unique(array_merge(self::todos(), array_intersect($pagados, self::SOLO_A_PEDIDO))))
+                              : self::respetarDependencias(self::parse($n['modulos_prueba']))) : $pagados;
         $activos = array_values(array_intersect(array_keys($cat), $activos));   // en el orden del catálogo
         $precioExtra = round(array_sum(array_map(fn($m) => $cat[$m]['precio_mensual'], $extra)), 2);
         $descuento = round(min($pl['precio_mensual'], array_sum(array_map(fn($m) => $cat[$m]['precio_mensual'], $quitados))), 2);
@@ -407,9 +444,9 @@ final class Modulos
                 if (!is_array($ids)) throw new RuntimeException('Los módulos del plan ' . $actuales[$codigo]['nombre'] . ' no son válidos.');
                 foreach ($ids as $m) if (!is_string($m) || !self::existe($m)) throw new RuntimeException('Ese módulo no existe: ' . (is_string($m) ? mb_substr($m, 0, 30) : '?') . '.');
                 $ids = self::conDependencias($ids);
-                $valor = count($ids) === count(self::CATALOGO) ? '*' : self::csv($ids);
+                $valor = self::csvPlan($ids);
             }
-            $antes = $actuales[$codigo]['todos'] ? '*' : self::csv($actuales[$codigo]['modulos']);
+            $antes = self::csvPlan($actuales[$codigo]['modulos']);
             if ($valor !== $antes) $cambios++;
             $up->execute([$valor, $codigo]);
         }

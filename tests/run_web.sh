@@ -17,6 +17,9 @@ export TUKAN_CENTRAL_ID=tuplanner-prueba
 export TUKAN_CENTRAL_SECRET=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 export TUKAN_CENTRAL_URL=http://central.prueba.local
 export TUKAN_SOLO_CENTRAL=0
+# IA y correo de Tukán (web_110_ia.sh): archivos de prueba (sin ellos: sin IA y sin correo); nunca /etc/tukan-ia.env ni /etc/tukan-correo.env
+export TUKAN_IA_ENV="$TMP/ia.env"
+export TUKAN_CORREO_ENV="$TMP/correo.env"
 # Base limpia
 psql -h 127.0.0.1 -U tuplanner -d postgres -qc "DROP DATABASE IF EXISTS $DB" > /dev/null 2>&1
 psql -h 127.0.0.1 -U tuplanner -d postgres -qc "CREATE DATABASE $DB" > /dev/null

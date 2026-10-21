@@ -28,6 +28,7 @@
     <a href="<?= e(url('usuarios')) ?>">Usuarios<small>Vendedores y coordinadores</small></a>
     <a href="<?= e(url('planes')) ?>">Mi plan<small>Tus módulos, lo que pagas y lo que puedes agregar</small></a>
     <?php endif; ?>
+    <a href="<?= e(url('ayuda')) ?>">Ayuda<small>Pregunte cómo hacer algo y le respondemos al instante</small></a>
     <a href="<?= e(url('mi_cuenta')) ?>">Mi cuenta<small>Contraseña y Telegram</small></a>
     <a href="<?= e(url('salir')) ?>">Cerrar sesión</a>
 </nav>

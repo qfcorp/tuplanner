@@ -14,6 +14,7 @@ $mesesCortos = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep
         <p><?= $vistaLista === 'tablero' ? 'Tus ventas en camino, de la consulta a la confirmación' : 'Busca, filtra y abre cualquier evento' ?></p>
     </div>
     <div class="acciones">
+        <?php if ($puedeCrear && modulo_activo($u, 'asistente_ia')): ?><a class="boton boton-claro" href="<?= e(url('ia_cotizacion')) ?>">✨ Desde un mensaje</a><?php endif; ?>
         <?php if ($puedeCrear): ?><a class="boton" href="<?= e(url('evento_nuevo')) ?>">Nuevo evento</a><?php endif; ?>
     </div>
 </div>

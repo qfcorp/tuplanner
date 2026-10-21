@@ -1,5 +1,5 @@
 <?php
-use TuPlanner\Planes;
+use TuPlanner\{Modulos, Planes};
 
 $planes = planes();
 if (es_post()) {
@@ -24,7 +24,10 @@ if (es_post()) {
             }
             $porPlan = [];
             foreach (modulos()->planes() as $codigo => $_) {
-                $porPlan[$codigo] = !empty($_POST['plan_todos'][$codigo]) ? '*' : array_keys((array) ($_POST['plan_mod'][$codigo] ?? []));
+                $marcados = array_keys((array) ($_POST['plan_mod'][$codigo] ?? []));
+                // «Todos los módulos» + los que son solo a pedido marcados (ej. Asistente IA en el plan más caro) = "*,asistente_ia"
+                $porPlan[$codigo] = !empty($_POST['plan_todos'][$codigo])
+                    ? array_values(array_unique(array_merge(Modulos::todos(), array_intersect($marcados, Modulos::SOLO_A_PEDIDO)))) : $marcados;
             }
             $n = modulos()->guardarCatalogo($mods, $porPlan);
             registrar_admin('Catálogo de módulos guardado (' . $n . ' cambios)');

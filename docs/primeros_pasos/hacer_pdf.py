@@ -71,7 +71,8 @@ h.append('<h2>Parte 2 · El día a día</h2>')
 h.append(paso(6, 'Anote cada cliente como un evento', 'Botón Nuevo evento (en el Inicio o en el Calendario)', [
     'Elija <b>Cliente nuevo</b> o <b>Ya está registrado</b>. Con nombre, celular y fecha basta para empezar.',
     'Ponga <b>¿Qué celebran?</b>, la fecha, la hora, los invitados y el <b>Presupuesto del cliente</b>. Marque el lugar o déjelo sin marcar: queda "por definir".',
-    'Toque <b>Crear evento</b>. El evento nace como <b>Consulta</b>.']))
+    'Toque <b>Crear evento</b>. El evento nace como <b>Consulta</b>.'],
+    'con el <b>Asistente IA</b> (incluido en el plan Agencia), toque <b>✨ Desde un mensaje de WhatsApp</b>, pegue lo que le escribió el cliente y revise el borrador del evento y la cotización antes de guardarlo. En el presupuesto, <b>✨ Leer cotización de proveedor</b> arma las partidas desde la foto de la proforma.'))
 h.append(paso(7, 'Planifique: presupuesto y tareas', 'En el evento → pestaña Planificación', [
     'En <b>Presupuesto por proveedor</b>, escriba el presupuesto total y toque <b>Repartir con los porcentajes típicos</b>: se arman las partidas (lugar, banquete, fotos, flores…) con un estimado.',
     'En cada partida toque <b>Cambiar, pagos y comisión</b>: proveedor, estado, precio contratado y <b>¿Quién le paga al proveedor?</b> (el cliente directo, o va en su contrato). Con <b>+ Agregar partida</b> suma otras.',
@@ -94,7 +95,7 @@ h.append(paso(10, 'Cobre y dé seguimiento cada mañana', 'Botón Cobros · Men�
     'En el <b>Inicio</b> revise los <b>Seguimientos de hoy</b> y las <b>Tareas por vencer</b>.']))
 
 h.append('''<div class="fin"><b>¿Listo? Ya puede trabajar.</b> Para ideas, comisiones de proveedores, portal del cliente, día del evento, invitados con QR, reportes y todo lo demás,
-vea el <b>Manual de TuPlanner</b>.<br><br>¿Dudas? Escríbanos por <b>WhatsApp 099 640 8397</b> · info@tukansoftware.com · tukansoftware.com</div>''')
+vea el <b>Manual de TuPlanner</b>.<br><br>¿Cómo se hace algo? En <b>Más → Ayuda</b> escriba su pregunta y toque <b>Preguntar</b>: le respondemos al instante con el manual.<br>¿Dudas? Escríbanos por <b>WhatsApp 099 640 8397</b> · info@tukansoftware.com · tukansoftware.com</div>''')
 
 html = f'<!doctype html><html lang="es"><head><meta charset="utf-8"><style>{css}</style></head><body>{"".join(h)}</body></html>'
 open(f'{D}/primeros_pasos.html', 'w').write(html)

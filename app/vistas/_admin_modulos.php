@@ -40,6 +40,7 @@ $pendientes = array_values(array_filter($pedidosModulos, fn($s) => $s['estado'] 
                     $encendido = in_array($id, $me['pagados'], true);
                     $delPlan = in_array($id, $me['del_plan'], true);
                     $nota = $delPlan ? ($encendido ? 'Del plan' : 'Quitado · −' . dinero($m['precio_mensual'])) : ($encendido ? 'Extra · +' . dinero($m['precio_mensual']) : '+' . dinero($m['precio_mensual']));
+                    if (Modulos::porCotizacion($m) && !$delPlan) $nota = $encendido ? 'Extra · por cotización (ponlo en el precio acordado)' : 'Por cotización';
                     $dep = $m['depende_de'] ? 'Necesita: ' . implode(', ', array_map([Modulos::class, 'nombre'], $m['depende_de'])) : ''; ?>
                     <label class="adm-mod-item <?= $encendido ? 'on' : '' ?>">
                         <input type="checkbox" class="interruptor" name="modulo[<?= e($id) ?>]" value="1" <?= $encendido ? 'checked' : '' ?>

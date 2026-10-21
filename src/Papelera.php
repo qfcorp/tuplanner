@@ -68,7 +68,8 @@ final class Papelera
                          ->fetchAll(PDO::FETCH_COLUMN);
         $conNegocio = $this->db->query("SELECT c.table_name FROM information_schema.columns c
                                           JOIN information_schema.tables t ON t.table_schema = c.table_schema AND t.table_name = c.table_name AND t.table_type = 'BASE TABLE'
-                                         WHERE c.table_schema = current_schema() AND c.column_name = 'negocio_id'")->fetchAll(PDO::FETCH_COLUMN);
+                                         WHERE c.table_schema = current_schema() AND c.column_name = 'negocio_id'
+                                           AND c.data_type IN ('integer', 'bigint', 'smallint')")->fetchAll(PDO::FETCH_COLUMN);
         $fks = [];
         $sql = "SELECT cl.relname AS hija, ref.relname AS madre, c.confdeltype AS al_borrar,
                        array_to_json(ARRAY(SELECT a.attname FROM unnest(c.conkey) WITH ORDINALITY k(num, n)

@@ -93,6 +93,16 @@ if (es_post()) {
     }
     redirigir('admin_negocio', ['id' => $id]);
 }
+// «Enviar por correo» la demo recién creada (LEEME_CORREO.md): la contraseña va SELLADA (cifrada) en el formulario, no se guarda
+$correoDemo = null;
+if ($claveNueva && in_array($negocio['estado_cuenta'], ['prueba', 'prueba_vencida'], true)) {
+    $correoDemo = ['listo' => TuPlanner\CorreoDemo::listo(), 'para' => (string) $claveNueva['email'], 'error' => null, 'estado' => null,
+                   'sello' => TuPlanner\CorreoDemo::sellar([
+                       'programa' => 'TuPlanner', 'enlace' => url_completa('login'), 'usuario' => (string) $claveNueva['email'],
+                       'clave' => (string) $claveNueva['clave'], 'hasta' => (string) ($negocio['prueba_hasta'] ?? ''),
+                       'contacto' => (string) $claveNueva['nombre'], 'negocio' => (string) $negocio['nombre'], 'negocio_id' => $id,
+                   ], (int) superadmin()['id'], $_SESSION)];
+}
 $pagos = $panel->pagos($id);
 $registro = $panel->registro($id, 20);
 $listaPlanes = $planes->lista();
@@ -102,6 +112,6 @@ $inicioSugerido = $planes->inicioSugerido($id)->format('Y-m-d');
 $modulosEstado = modulos()->estado($id);
 $catalogo = modulos()->catalogo();
 $pedidosModulos = modulos()->solicitudesDe($id);
-vista_admin('admin_negocio', compact('negocio', 'pagos', 'registro', 'listaPlanes', 'cotizaciones', 'inicioSugerido', 'claveNueva',
+vista_admin('admin_negocio', compact('negocio', 'pagos', 'registro', 'listaPlanes', 'cotizaciones', 'inicioSugerido', 'claveNueva', 'correoDemo',
                                      'modulosEstado', 'catalogo', 'pedidosModulos'),
             $negocio['nombre'] . ' · Panel Tukán');

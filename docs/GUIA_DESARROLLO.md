@@ -121,6 +121,22 @@ bash tests/run_web.sh
 | Pausar y borrar clientes (Anexo A: pausar, papelera, restaurar, purga a los 30 días) | logica_97, web_97 | 097 | Papelera (+ `public/index.php`, `prueba_terminada`, `admin_negocios` con filtro Papelera) |
 | Organizador: lugares, tareas por meses, presupuesto por proveedor, pagos directos, comisiones, honorarios, ideas, capacidad por día, portal (`evento_plan`, `evento_ideas`, `comisiones`, `portal_plan`, `portal_ideas`) | logica_100, web_100 | 100 | Planificacion, Inspiracion |
 
+## Ayuda e IA (110, 111) — reglas para programar
+- Librerías compartidas del Panel Tukán Central, copiadas SIN cambios: `src/tukan_ia.php` y `src/tukan_correo.php`. Si sale otra versión, se vuelven a copiar.
+- Todo pasa por `src/Ia.php` (`ia()` en bootstrap): `tope()`, `guardian()`, `ayuda()`, `manual()`, `proponerCotizacion()`, `validarPropuesta()`, `leerBorrador()`,
+  `guardarBorrador()`, `leerCotizacionProveedor()`, `validarLectura()`, `guardarLectura()`, `uso()`. Función nueva con IA: `tukan_ia_llamar([...], ['guardian' =>
+  ia()->guardian($nid), 'programa' => Ia::PROGRAMA, 'funcion' => '…'])`; si `!$r['ok']`, **siempre** `tukan_ia_mensaje_neutro()` con el enlace a mano.
+  Nunca mostrar «límite», «cupo», «saldo», «crédito» ni el motivo. Texto de otros: `tukan_ia_datos()`; JSON: `'json' => true` + `'validar'`.
+- `asistente_ia` está en `Modulos::SOLO_A_PEDIDO`: `*` solo no lo trae; el plan Agencia lo incluye con `*,asistente_ia` (`Modulos::parse` / `csvPlan`).
+  Tope con el módulo: `Ia::TOPE_MODULO` = 4,00; sin él `Ia::TOPE_AYUDA` = 0,50.
+- `tukan_ia_gasto.negocio_id` es TEXTO: la Papelera solo toma tablas con `negocio_id` entero.
+- Pruebas: `tests/base.php` y `tests/run_web.sh` apuntan `TUKAN_IA_ENV` y `TUKAN_CORREO_ENV` a archivos de prueba. API y SMTP de mentira (`tests/anthropic_falso.py`
+  con `RESPONDER:{json}`; `tests/smtp_falso.py --modo plano`). Puertos: lógica 8271/8272, pantallas 8273/8274.
+
+| Módulo | Pruebas | Migración | Clases |
+|---|---|---|---|
+| Ayuda, Asistente IA (mensaje y cotización de proveedor), FAQ del súper, `ia_uso`/`ia_tope`, demo por correo | logica_110, web_110 | 110, 111 | Ia, CorreoDemo (+ librerías, `mod_ia.css`) |
+
 ## Servidor
 - Cron cada hora en el minuto 7 (crontab de `www-data`): `php /var/www/tuplanner/bin/tareas.php` (también purga la papelera) · respaldo diario 3:35: `deploy/respaldo.sh`
 - Copias de los negocios borrados: `/var/www/tuplanner/respaldos/borrados/<id>_<fecha>.json.gz` (gzip JSON; `TuPlanner\Papelera::leerCopia()` la lee)

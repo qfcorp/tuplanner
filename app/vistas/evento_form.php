@@ -11,7 +11,10 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
         <h1>Nuevo evento</h1>
         <p>Con nombre, celular y fecha basta para empezar. Lo demás se completa después.</p>
     </div>
-    <a class="boton boton-claro" href="<?= e(url('eventos')) ?>">Cancelar</a>
+    <div class="acciones">
+        <?php if (modulo_activo($u, 'asistente_ia')): ?><a class="boton boton-claro" href="<?= e(url('ia_cotizacion')) ?>">✨ Desde un mensaje de WhatsApp</a><?php endif; ?>
+        <a class="boton boton-claro" href="<?= e(url('eventos')) ?>">Cancelar</a>
+    </div>
 </div>
 <?php else: ?>
 <div class="cabecera">

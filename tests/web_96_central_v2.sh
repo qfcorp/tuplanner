@@ -80,7 +80,7 @@ check "JSON" "application/json; charset=utf-8" "$(grep -i '^content-type' "$TMP/
 check "Cache-Control: no-store" "1" "$(grep -ci '^cache-control: no-store' "$TMP/c96.h")"
 check "No abre sesión (sin cookie)" "0" "$(grep -ci '^set-cookie' "$TMP/c96.h")"
 check "protocolo 2 y producto" "2 tuplanner" "$(c96_json protocolo) $(c96_json producto)"
-check "Acciones" '["capacidades","estado","sso","clientes","cliente","cotizar","planes","modulos","solicitudes","solicitud","finanzas","ejecutar"]' "$(c96_json acciones)"
+check "Acciones" '["capacidades","estado","sso","clientes","cliente","cotizar","planes","modulos","solicitudes","solicitud","finanzas","ejecutar","ia_uso"]' "$(c96_json acciones)"
 check "sso_ir y rutas_sso" 'true ["/?r=admin"]' "$(c96_json sso_ir) $(c96_json rutas_sso)"
 printf '{}' > "$TMP/c96_body.json"; TOK=$(c96_token capacidades "$TMP/c96_body.json")
 r=$(curl -s -o "$TMP/c96.out" -D "$TMP/c96.h" -w "%{http_code}" -H "X-Tukan-Token: $TOK" "$BASE/tukan_central.php?accion=capacidades")

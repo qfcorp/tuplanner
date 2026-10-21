@@ -35,6 +35,7 @@ SIN_PRECIOS = ".mp-precio,.mp-desglose,.mp-mod-precio,.mod-apagado-precio{visibi
 
 # (archivo, quién entra, ruta, ancho, acciones, página completa)
 #   acciones: 'ir:<selector>' baja hasta ese elemento · 'abrir:<selector>' abre ese <details> · 'sin_precios' · 'elem:<selector>' foto solo de ese elemento
+#             'llenar:<selector>|<texto>' escribe en un campo · 'enviar:<form>' toca el botón del formulario
 PANTALLAS = [
     ('01_login', 'nadie', '/?r=login', 390, [], False),
     ('02_inicio_compu', 'dueno', '/?r=inicio', 1280, [], False),
@@ -72,6 +73,10 @@ PANTALLAS = [
     ('34_modulo_apagado', 'esencial', '/?r=evento_plan&id={esencial_evento}', 1280, ['sin_precios'], False),
     ('35_sitio_celular', 'publico', '/?r=sitio&s={slug}', 390, [], False),
     ('36_solicitar_demo', 'nadie', '/?r=registro', 1280, [], False),
+    ('37_ayuda', 'dueno', '/?r=ayuda', 1280, ['llenar:textarea[name=pregunta]|¿Cómo registro un pago?', 'enviar:#form-ayuda'], False),
+    ('38_cotizacion_mensaje', 'dueno', '/?r=ia_cotizacion', 1280, ['llenar:textarea[name=mensaje]|Hola, buenas tardes. Queremos que organicen nuestra boda para 150 personas '
+                                                                   'el sábado 14 de febrero, con DJ y fotógrafo. Somos Daniela y Felipe, 0998887766. ¡Gracias!'], False),
+    ('39_cotizacion_proveedor', 'dueno', '/?r=ia_proveedor&id={boda}', 1280, ['llenar:input[name=nota]|Es del florista: arreglos de mesa y arco de la iglesia'], False),
 ]
 
 CUENTAS = {'dueno': 'demo@tuplanner.tukanec.com', 'esencial': 'esencial@tuplanner.tukanec.com', 'coordinador': 'diego@tuplanner.tukanec.com'}
@@ -108,6 +113,11 @@ with sync_playwright() as p:
                 pg.evaluate("(s) => { const e = document.querySelector(s); if (e) window.scrollTo(0, e.getBoundingClientRect().top + window.scrollY - 12); }", acc[3:])
             elif acc.startswith('abrir:'):
                 pg.evaluate("(s) => { const e = document.querySelector(s); if (e) e.open = true; }", acc[6:])
+            elif acc.startswith('llenar:'):   # llenar:<selector>|<texto>
+                sel, txt = acc[7:].split('|', 1)
+                pg.fill(sel, txt)
+            elif acc.startswith('enviar:'):   # enviar:<form> toca su botón y espera
+                pg.click(acc[7:] + ' button[type=submit]'); pg.wait_for_load_state('networkidle')
             elif acc.startswith('elem:'):
                 elem = acc[5:]
         pg.wait_for_timeout(400)

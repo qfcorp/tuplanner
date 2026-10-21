@@ -126,6 +126,7 @@ titulo('2. Tablas del negocio sacadas del esquema (no de una lista escrita a man
 $esperadas = $db->query("WITH RECURSIVE t(n) AS (
         SELECT 'negocios'::text
         UNION SELECT c.table_name::text FROM information_schema.columns c WHERE c.table_schema = 'public' AND c.column_name = 'negocio_id'
+                                                                                AND c.data_type IN ('integer', 'bigint', 'smallint')
         UNION SELECT cl.relname::text FROM pg_constraint k JOIN pg_class cl ON cl.oid = k.conrelid JOIN pg_class r ON r.oid = k.confrelid JOIN t ON t.n = r.relname
                WHERE k.contype = 'f')
     SELECT n FROM t JOIN information_schema.tables x ON x.table_name = t.n AND x.table_schema = 'public' AND x.table_type = 'BASE TABLE' ORDER BY n")->fetchAll(PDO::FETCH_COLUMN);
@@ -134,6 +135,7 @@ $nombres = array_keys($tablas);
 sort($nombres);
 check('Mismas tablas que el esquema (' . count($esperadas) . ')', $esperadas, $nombres);
 check('Más de 40 tablas del negocio', true, count($esperadas) > 40);
+check('tukan_ia_gasto (negocio_id de texto: gasto de IA de Tukán) no es del negocio: no se copia ni se borra', false, isset($pap->tablas()['tukan_ia_gasto']));
 check('Hijas sin negocio_id incluidas (invitados, mesas, paquete_items, cotizacion_items, compra_items)', [true, true, true, true, true],
       array_map(fn($t) => isset($tablas[$t]), ['invitados', 'mesas', 'paquete_items', 'cotizacion_items', 'compra_items']));
 check('registro_admin se copia pero no se borra (ON DELETE SET NULL)', [true, false], [isset($tablas['registro_admin']), $tablas['registro_admin']['propia']]);
@@ -244,7 +246,7 @@ $enCopia = array_keys($exp['tablas']);
 sort($enCopia);
 check('Copia: TODAS las tablas del negocio (según el esquema) están en la copia', $esperadas, $enCopia);
 $faltan = [];
-foreach ($db->query("SELECT table_name FROM information_schema.columns WHERE table_schema = 'public' AND column_name = 'negocio_id'")->fetchAll(PDO::FETCH_COLUMN) as $t) {
+foreach ($db->query("SELECT table_name FROM information_schema.columns WHERE table_schema = 'public' AND column_name = 'negocio_id' AND data_type IN ('integer', 'bigint', 'smallint')")->fetchAll(PDO::FETCH_COLUMN) as $t) {
     $n = $cuenta("SELECT count(*) FROM \"$t\" WHERE negocio_id = {$A['id']}" . ($t === 'registro_admin' ? " AND accion NOT LIKE '%Enviado a la papelera%'" : ''));
     if (count($exp['tablas'][$t] ?? []) !== $n) $faltan[] = "$t ($n en la base, " . count($exp['tablas'][$t] ?? []) . ' en la copia)';
     foreach ($exp['tablas'][$t] ?? [] as $fila) if ((int) $fila['negocio_id'] !== $A['id']) $faltan[] = "$t: fila de otro negocio";

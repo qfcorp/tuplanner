@@ -2,7 +2,8 @@
 # Regenera el manual de TuPlanner: base de ejemplo nueva (docs/manual/generar/datos.php), capturas reales y el PDF.
 #   bash docs/manual/generar/generar.sh
 # Variables opcionales: PUERTO (8240), DB (tuplanner_manual_prueba), DB_USER (tuplanner), DB_PASS (prueba),
-#                       SOLO_PDF=1 (no toma capturas, solo vuelve a armar el PDF con las que ya hay).
+#                       SOLO_PDF=1 (no toma capturas, solo vuelve a armar el PDF con las que ya hay),
+#                       SOLO=37_ayuda,38_cotizacion_mensaje (toma solo esas capturas y deja las demás).
 # Necesita: PostgreSQL, PHP, Python 3 con playwright y pypdf, y Chromium de Playwright (PLAYWRIGHT_BROWSERS_PATH).
 set -euo pipefail
 AQUI=$(cd "$(dirname "$0")" && pwd)
@@ -12,6 +13,8 @@ PUERTO=${PUERTO:-8240}
 export TUPLANNER_DB_NAME=${DB:-tuplanner_manual_prueba} TUPLANNER_DB_USER=${DB_USER:-tuplanner} TUPLANNER_DB_PASS=${DB_PASS:-prueba}
 export TUPLANNER_URL="http://127.0.0.1:$PUERTO" TZ=America/Guayaquil PGTZ=America/Guayaquil
 export PLAYWRIGHT_BROWSERS_PATH=${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}
+# Sin IA ni correo de verdad: nunca /etc/tukan-ia.env ni /etc/tukan-correo.env (la Ayuda responde con las preguntas guardadas)
+export TUKAN_IA_ENV=${TUKAN_IA_ENV:-/nonexistent/tukan-ia.env} TUKAN_CORREO_ENV=${TUKAN_CORREO_ENV:-/nonexistent/tukan-correo.env}
 cd "$RAIZ"
 if [ "${SOLO_PDF:-0}" != "1" ]; then
   case "$TUPLANNER_DB_NAME" in *prueba*|*manual*) ;; *) echo "Por seguridad la base debe llamarse *manual* o *prueba*"; exit 1;; esac
@@ -31,8 +34,8 @@ if [ "${SOLO_PDF:-0}" != "1" ]; then
   trap 'kill $SERVIDOR 2>/dev/null || true; rm -rf "$TMPD"' EXIT
   for _ in $(seq 1 30); do curl -s -o /dev/null "http://127.0.0.1:$PUERTO/?r=login" && break; sleep 0.3; done
   echo "== 3. Capturas"
-  rm -f "$MANUAL"/capturas/*.png
-  python3 "$AQUI/capturas.py" --base "http://127.0.0.1:$PUERTO" --salida "$MANUAL/capturas" --ids "$TMPD/ids.json"
+  [ -z "${SOLO:-}" ] && rm -f "$MANUAL"/capturas/*.png
+  python3 "$AQUI/capturas.py" --base "http://127.0.0.1:$PUERTO" --salida "$MANUAL/capturas" --ids "$TMPD/ids.json" ${SOLO:+--solo "$SOLO"}
   if grep -qi "PHP Fatal\|PHP Warning\|Deprecated\|Notice" "$TMPD/servidor.log"; then echo "Errores de PHP durante las capturas:"; grep -i "PHP Fatal\|PHP Warning\|Deprecated\|Notice" "$TMPD/servidor.log" | cut -c1-300; fi
 fi
 echo "== 4. PDF del manual"

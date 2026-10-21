@@ -285,6 +285,12 @@ $evE = $ev->crear($altaE['negocio_id'], ['cliente' => $cliente('Mónica Vélez',
 
 $db->exec("UPDATE negocios SET pasos_ocultos = true WHERE id = $nid");
 
+// Ayuda e IA (110): preguntas frecuentes de ejemplo (el plan Agencia ya trae el Asistente IA incluido: migración 111)
+require_once RAIZ . '/src/tukan_ia.php';
+$faqs = new \TukanIaFaqPdo($db);
+$faqs->agregar('¿Cómo registro un pago?', "1. Abra el evento y toque la pestaña **Pagos**.\n2. En **Registrar un pago recibido** escriba el valor, la forma de pago y la fecha.\n3. Toque **Guardar pago y generar recibo**.\nCuando lo pagado completa la reserva, la fecha queda **separada**.");
+$faqs->agregar('¿Cómo agrego una partida al presupuesto?', "1. Abra el evento y toque **Planificación**.\n2. En **Presupuesto por proveedor** toque **+ Agregar partida**.\n3. Escriba qué es, el proveedor, quién le paga y el estimado, y toque **Guardar**.");
+
 array_map('unlink', glob("$TMP/*") ?: []);
 @rmdir($TMP);
 echo json_encode(['nid' => $nid, 'slug' => $alta['slug'], 'boda' => $boda, 'quince' => $quince, 'cerca' => $cerca, 'baby' => $baby, 'pedida' => $pedida,

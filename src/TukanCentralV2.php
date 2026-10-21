@@ -32,14 +32,14 @@ final class TukanCentralV2
     public const VIDA_LECTURA = 60;
     public const VIDA_EJECUTAR = 30;
     /** Acciones que existen en el protocolo v2 (el resto de nombres es "Acción no válida", 400). */
-    public const ACCIONES_PROTOCOLO = ['capacidades', 'clientes', 'cliente', 'cotizar', 'planes', 'modulos', 'solicitudes', 'solicitud', 'adjunto', 'finanzas', 'ejecutar'];
+    public const ACCIONES_PROTOCOLO = ['capacidades', 'clientes', 'cliente', 'cotizar', 'planes', 'modulos', 'solicitudes', 'solicitud', 'adjunto', 'finanzas', 'ejecutar', 'ia_uso'];
     /** Las que TuPlanner contesta (sin "adjunto": no tiene comprobantes ni tickets con archivos). */
-    public const ACCIONES = ['capacidades', 'clientes', 'cliente', 'cotizar', 'planes', 'modulos', 'solicitudes', 'solicitud', 'finanzas', 'ejecutar'];
+    public const ACCIONES = ['capacidades', 'clientes', 'cliente', 'cotizar', 'planes', 'modulos', 'solicitudes', 'solicitud', 'finanzas', 'ejecutar', 'ia_uso'];
     public const OPERACIONES = ['crear_demo', 'extender_prueba', 'registrar_pago', 'anular_pago', 'suspender', 'reactivar', 'cancelar',
                                 'cambiar_plan', 'nueva_clave_dueno', 'nota_interna', 'atender_solicitud', 'guardar_plan',
-                                'pausar', 'borrar_cliente', 'restaurar_cliente', 'cambiar_modulos', 'guardar_modulos'];
-    /** Operaciones que solo puede hacer el dueño del Panel Tukán Central. */
-    public const SOLO_DUENO = ['borrar_cliente', 'cambiar_modulos', 'guardar_modulos'];
+                                'pausar', 'borrar_cliente', 'restaurar_cliente', 'cambiar_modulos', 'guardar_modulos', 'ia_tope'];
+    /** Operaciones que solo puede hacer el dueño del Panel Tukán Central (ia_tope: Anexo C.2, el tope de gasto de IA del negocio). */
+    public const SOLO_DUENO = ['borrar_cliente', 'cambiar_modulos', 'guardar_modulos', 'ia_tope'];
     /** Operaciones que se pueden pedir sobre un negocio que está en la papelera. */
     public const OPERACIONES_PAPELERA = ['restaurar_cliente', 'borrar_cliente'];
     public const TIPOS_SOLICITUD = ['demo_pedida', 'cambio_modulos', 'seguimiento_prueba', 'renovacion', 'dominio_gratis'];
@@ -187,6 +187,7 @@ final class TukanCentralV2
             'solicitudes' => $this->solicitudes($d),
             'solicitud' => ['solicitud' => $this->solicitud($d)],
             'finanzas' => $this->finanzas($d),
+            'ia_uso' => $this->iaUso($d),
         };
         return [200, $this->sobre($accion) + $r];
     }
@@ -238,6 +239,7 @@ final class TukanCentralV2
                 ],
                 'guardar_plan' => $this->camposPlan(null),
                 'cambiar_modulos' => self::camposModulos(null),
+                'ia_tope' => self::camposIaTope(null, null),
             ],
             'limites' => ['por_pagina_max' => 200, 'meses_finanzas_max' => 24, 'dias_prueba_max' => 90],
             'modulos' => true,
@@ -586,6 +588,9 @@ final class TukanCentralV2
         $a[] = ['accion' => 'nota_interna', 'etiqueta' => 'Nota interna', 'estilo' => 'normal', 'confirmar' => null, 'datos' => $datos,
                 'campos' => [['campo' => 'texto', 'etiqueta' => 'Notas de Tukán (el cliente no las ve)', 'tipo' => 'texto_largo', 'requerido' => false,
                               'valor' => (string) ($n['notas_admin'] ?? ''), 'max' => 4000]]];
+        $ia = new Ia($this->db, $this->modulos);
+        $a[] = ['accion' => 'ia_tope', 'etiqueta' => 'Tope de IA', 'estilo' => 'normal', 'confirmar' => null, 'datos' => $datos,
+                'campos' => self::camposIaTope($ia->topePropio((int) $n['id']), $ia->gastoMes((int) $n['id'])['costo'])];
         $a[] = ['accion' => 'borrar_cliente', 'etiqueta' => 'Borrar', 'estilo' => 'peligro',
                 'confirmar' => '¿Borrar ' . $c['nombre'] . '? Queda ' . Papelera::DIAS_PAPELERA . ' días en la papelera (se puede restaurar) y después se borra para siempre.',
                 'datos' => $datos, 'campos' => self::camposBorrar($c['nombre'])];
@@ -605,6 +610,14 @@ final class TukanCentralV2
              'valor' => $m['precio_acordado'] ?? null],
             ['campo' => 'motivo', 'etiqueta' => 'Motivo', 'tipo' => 'texto', 'requerido' => false, 'max' => 300],
         ];
+    }
+
+    /** Campos de "ia_tope" (Anexo C.2): tope del mes en USD (vacío = el de siempre). */
+    public static function camposIaTope(?float $tope, ?float $gastado): array
+    {
+        return [['campo' => 'tope_usd', 'etiqueta' => 'Tope de IA al mes ($)', 'tipo' => 'dinero', 'requerido' => false, 'valor' => $tope, 'min' => 0, 'max' => 1000,
+                 'ayuda' => 'Vacío = el de siempre: ' . self::dinero(Ia::TOPE_MODULO) . ' con Asistente IA y ' . self::dinero(Ia::TOPE_AYUDA) . ' solo para la Ayuda.'
+                            . ($gastado !== null ? ' Gastado este mes: $' . number_format($gastado, 4, ',', '.') . '.' : '')]];
     }
 
     /** Campos de "pausar" (Anexo A): tipo y motivo obligatorios. */
@@ -1301,6 +1314,7 @@ final class TukanCentralV2
                 'restaurar_cliente' => $this->opRestaurar($id),
                 'cambiar_modulos' => $this->opCambiarModulos($id, $d, $p),
                 'guardar_modulos' => $this->opGuardarModulos($d),
+                'ia_tope' => $this->opIaTope($id, $d),
             };
         } catch (TukanCentralError | PDOException $e) {
             throw $e;
@@ -1760,6 +1774,48 @@ final class TukanCentralV2
         $this->olvidar();
         return ['mensaje' => $cambios ? "Catálogo de módulos guardado ($cambios cambios)." : 'El catálogo no cambió.', 'sin_cambios' => $cambios === 0,
                 'resultado' => $this->modulosV2(), 'auditoria' => "Catálogo de módulos guardado ($cambios cambios)"];
+    }
+
+    /** Anexo C.2: tope de gasto de IA del negocio en USD al mes (null o vacío = el de siempre según tenga o no «Asistente IA»). */
+    private function opIaTope(int $id, array $d): array
+    {
+        foreach (array_keys($d) as $k) {
+            if (!in_array($k, ['tope_usd', 'cliente_id'], true)) throw TukanCentralError::campo('datos.' . mb_substr((string) $k, 0, 40), 'Campo desconocido.');
+        }
+        if (!array_key_exists('tope_usd', $d)) throw TukanCentralError::campo('datos.tope_usd', 'Falta el tope (número en dólares, o null para el de siempre).');
+        $v = $d['tope_usd'];
+        if ($v === '' || $v === null) {
+            $tope = null;
+        } elseif (is_int($v) || is_float($v)) {
+            if ($v < 0 || $v > 1000) throw TukanCentralError::campo('datos.tope_usd', 'El tope debe estar entre 0 y 1000 dólares al mes.');
+            $tope = round((float) $v, 2);
+        } else {
+            throw TukanCentralError::campo('datos.tope_usd', 'Escribe el tope con números, por ejemplo 3.00 (o vacío para el de siempre).');
+        }
+        $ia = new Ia($this->db, $this->modulos);
+        [$antes, $despues] = $ia->cambiarTope($id, $tope);
+        $efectivo = $ia->tope($id);
+        $txt = fn(?float $t) => $t === null ? 'el de siempre' : self::dinero($t);
+        $resultado = ['tope_usd' => $despues, 'tope_efectivo' => $efectivo, 'modulo' => $ia->tieneModulo($id), 'gastado_mes' => $ia->gastoMes($id)['costo']];
+        if ($antes === $despues) {
+            return ['mensaje' => 'El tope de IA no cambió (' . $txt($despues) . ').', 'sin_cambios' => true, 'resultado' => $resultado, 'auditoria' => 'Tope de IA'];
+        }
+        return ['mensaje' => 'Tope de IA: ' . $txt($despues) . ' (' . self::dinero($efectivo) . ' al mes).', 'resultado' => $resultado,
+                'auditoria' => 'Tope de IA: ' . $txt($antes) . ' → ' . $txt($despues)];
+    }
+
+    // ------------------------------------------------------------------
+    // ia_uso (Anexo C.1): gasto de IA por negocio del mes (solo lectura)
+    // ------------------------------------------------------------------
+
+    public function iaUso(array $d): array
+    {
+        foreach (array_keys($d) as $k) {
+            if ($k !== 'mes') throw TukanCentralError::campo(mb_substr((string) $k, 0, 40), 'Campo desconocido.');
+        }
+        $mes = $d['mes'] ?? date('Y-m');
+        if (!is_string($mes) || !preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $mes)) throw TukanCentralError::campo('mes', 'Mes no válido (AAAA-MM).');
+        return (new Ia($this->db, $this->modulos))->uso($mes);
     }
 
     private function opGuardarPlan(array $d): array

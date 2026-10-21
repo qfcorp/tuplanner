@@ -208,6 +208,10 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
         <summary class="boton boton-claro">+ Agregar partida</summary>
         <?php $pf = null; $pfId = 'pn'; require RAIZ . '/app/vistas/_pn_partida_form.php'; ?>
     </details>
+    <?php if (modulo_activo($u, 'asistente_ia')): ?>
+        <p><a class="boton boton-claro" href="<?= e(url('ia_proveedor', ['id' => $ev['id']])) ?>">✨ Leer cotización de proveedor</a>
+           <small class="suave">Suba la foto o el PDF y le proponemos las partidas.</small></p>
+    <?php endif; ?>
     <?php endif; ?>
 </section>
 <?php endif; ?>

@@ -62,7 +62,9 @@ $encendidos = count($me['pagados']);
                     <?php if ($faltan && !$on): ?><p class="ayuda-chica">Viene junto con: <?= e(implode(', ', array_map([Modulos::class, 'nombre'], $faltan))) ?>.</p><?php endif; ?>
                     <div class="mp-mod-pie">
                         <?php /* Regla del dueño: el precio de un módulo que el cliente no tiene no se muestra; se pide cotización */ ?>
-                        <span class="mp-mod-precio"><?= !$on ? 'Precio por cotización' : (in_array($id, $me['del_plan'], true) ? 'Incluido en tu plan' : 'Agregado a tu plan: +' . dinero($m['precio_mensual']) . ' al mes') ?></span>
+                        <?php $aPedido = in_array($id, Modulos::SOLO_A_PEDIDO, true) || Modulos::porCotizacion($m);   // Asistente IA: nunca con precio ?>
+                        <span class="mp-mod-precio"><?= !$on ? ($aPedido ? 'Pídalo y le cotizamos' : 'Precio por cotización')
+                            : (in_array($id, $me['del_plan'], true) ? 'Incluido en tu plan' : ($aPedido ? 'Agregado a tu plan' : 'Agregado a tu plan: +' . dinero($m['precio_mensual']) . ' al mes')) ?></span>
                         <?php if (!$on && !$pedido): ?>
                             <form method="post"><?= campo_csrf() ?><input type="hidden" name="accion" value="pedir"><input type="hidden" name="modulo" value="<?= e($id) ?>">
                                 <button class="boton boton-chico" type="submit">Pedir cotización</button></form>

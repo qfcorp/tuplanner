@@ -58,7 +58,18 @@ Regla de Dimi: "todos los programas deben ser modulares para encender o apagar l
 - [x] **Exclusivo del dueño** (identidad de la cuenta ante Tukán): ser el contacto del negocio en el Panel Tukán Central/Panel Tukán (nombre, correo y teléfono que se envían), «Nueva clave del dueño» desde Tukán, «Entrar como» del súper usuario, el contacto que ven el personal y los proveedores en sus portales, y no poder ser cambiado ni desactivado. Dentro del programa no quedó ninguna pantalla solo para el dueño.
 - [x] Pruebas: logica_99 (63) y web_99 (62). Totales: **lógica 2582/2582 y pantallas 2156/2156**, sin avisos de PHP. Manual (capítulo de equipo, con una administradora en los datos de ejemplo y capturas nuevas), MANUAL.md y guía Primeros pasos actualizados y PDF regenerados.
 
+## Hecho (21 oct 2026) — Ayuda, Asistente IA y demo por correo (librerías compartidas del Panel Tukán Central)
+- [x] Librerías copiadas sin cambios: `src/tukan_ia.php` (versión 1) y `src/tukan_correo.php` (versión 1), con las guías `compartido/LEEME_IA.md` y `LEEME_CORREO.md`.
+- [x] Migración **110** repetible (tablas `tukan_ia_faq`, `tukan_ia_gasto`, `negocios.ia_tope_usd`) y **111** (Asistente IA incluido en Agencia: `'*,asistente_ia'`). La papelera no toca `tukan_ia_gasto` (negocio_id de texto).
+- [x] **Ayuda** para todos los planes y cargos (Más → Ayuda): FAQ guardada, IA con el manual (manual.html convertido y en caché) o el manual tal cual + WhatsApp. 10 preguntas por minuto por usuario; sin el módulo, 30 respuestas nuevas al mes por negocio. Nunca dice «límite», «cupo» ni «saldo».
+- [x] **Asistente IA** (`asistente_ia`, grupo Extras): **incluido en el plan Agencia** (decisión del dueño); en Esencial y Planner, extra por cotización («Pídalo y le cotizamos», sin precio visible). **Cotización a partir de un mensaje** (JSON validado contra lugares, paquetes y servicios; borrador) y **Leer cotización de proveedor** (foto o PDF → partidas «Pidiendo precios»). Sin IA: mensaje neutro con el enlace para hacerlo a mano.
+- [x] **Guardián por negocio**: **4,00 USD al mes con el módulo** (incluido o comprado aparte; decisión del dueño, 21 oct) y 0,50 sin él (solo la Ayuda; lo que sugiere la guía), o el tope que ponga Tukán (`ia_tope`). Tope silencioso.
+- [x] Panel Tukán → **Preguntas IA** (listar, aprobar, editar, borrar, agregar) y conector v2 **`ia_uso`** / **`ia_tope`** (Anexo C).
+- [x] **Enviar por correo** en la demo lista (sello cifrado de un solo uso, CSRF, auditoría sin la contraseña; sin `/etc/tukan-correo.env`: «Configure el correo de Tukán»).
+- [x] Pruebas con la API de Anthropic y el SMTP de mentira: logica_110 y web_110. Totales: **lógica 2679/2679 y pantallas 2257/2257**, sin avisos de PHP. Manual (capítulo 18 «Ayuda e inteligencia artificial», capturas 37 a 39), MANUAL.md y Primeros pasos actualizados y PDF regenerados.
+
 ## Pendiente
+0000a. [ ] DIMI: actualizar en el servidor (volver a correr el instalador del README): aplica las migraciones 110 (ayuda e IA) y 111 (Asistente IA incluido en Agencia). La IA usa `/etc/tukan-ia.env` y el correo `/etc/tukan-correo.env` del Panel Tukán Central; `www-data` debe poder leerlos. Revisar Panel Tukán → Preguntas IA cada semana
 0000. [ ] DIMI: actualizar en el servidor (volver a correr el instalador del README): aplica la migración 099 (rol administrador)
 000. [ ] DIMI: actualizar en el servidor (volver a correr el instalador del README): aplica la migración 098 (módulos y pedidos de demo). Revisar los precios de los módulos en Panel Tukán → Planes y precios
 0. [ ] DIMI: al actualizar en el servidor, volver a correr el instalador del README: crea la carpeta `respaldos/borrados` y pasa las tareas de cada hora al usuario `www-data`

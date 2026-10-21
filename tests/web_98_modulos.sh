@@ -98,7 +98,7 @@ CARGS+=(--data-urlencode "plan_todos[quinta]=1")
 for m in planificacion presupuesto comisiones ideas paquetes contratos portal_cliente cobros_linea cuestionarios proveedores incidencias metas telegram exportar; do CARGS+=(--data-urlencode "plan_mod[salon][$m]=1"); done
 r=$(post_desde "r=admin_planes" "r=admin_planes" --data-urlencode "accion=catalogo" "${CARGS[@]/precio\[plano\]=6.00/precio[plano]=7.50}")
 check "Guardar catálogo: precio nuevo del plano" "7.50" "$(sql "SELECT precio_mensual FROM modulos WHERE id='plano'")"
-check "… Planner sigue con sus 14 módulos y Agencia con todos" "14|*" "$(sql "SELECT (SELECT array_length(string_to_array(modulos, ','), 1) FROM planes WHERE codigo='salon')||'|'||(SELECT modulos FROM planes WHERE codigo='quinta')")"
+check "… Planner sigue con sus 14 módulos y Agencia con todos + el Asistente IA incluido" "14|*,asistente_ia" "$(sql "SELECT (SELECT array_length(string_to_array(modulos, ','), 1) FROM planes WHERE codigo='salon')||'|'||(SELECT modulos FROM planes WHERE codigo='quinta')")"
 sql "UPDATE modulos SET precio_mensual = 6 WHERE id='plano'" > /dev/null
 
 echo "5. Panel Tukán: pedidos de demo → crear demo"
