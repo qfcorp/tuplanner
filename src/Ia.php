@@ -17,7 +17,7 @@ require_once __DIR__ . '/tukan_ia.php';
  *  - Ayuda «¿Qué necesita hacer?» para TODOS los planes: FAQ guardada → IA con el manual → el manual tal cual.
  *  - Módulo extra «Asistente IA» (asistente_ia, por cotización): cotización a partir del mensaje de WhatsApp del cliente y
  *    «Leer cotización de proveedor» (foto o PDF) que propone las partidas del presupuesto del evento.
- *  - Guardián por negocio: tope del mes en USD (negocios.ia_tope_usd; NULL = 4,00 con el módulo, 0,50 solo para la Ayuda)
+ *  - Guardián por negocio: tope del mes en USD (negocios.ia_tope_usd; NULL = 4,00 con el módulo, 0,50 solo para la Ayuda; una demo, 0,50 en total)
  *    y, sin el módulo, máximo 30 respuestas NUEVAS de la Ayuda al mes.
  *  - Configuración en /etc/tukan-ia.env (TUKAN_IA_ENV para otro archivo). Si no existe, no hay IA: la Ayuda sigue con las
  *    FAQ y el manual, y la cotización dice el mensaje neutro con el enlace para hacerla a mano.
@@ -30,6 +30,7 @@ final class Ia
     public const MODULO = 'asistente_ia';
     public const TOPE_MODULO = 4.00;              // USD al mes con «Asistente IA» (incluido en el plan más caro o comprado aparte): decisión del dueño
     public const TOPE_AYUDA = 0.50;               // USD al mes sin el módulo: solo la Ayuda (LEEME_IA.md 3.1)
+    public const TOPE_DEMO = 0.50;                // USD al mes en TOTAL para una demo, aunque tenga todos los módulos: decisión del dueño (21 oct 2026)
     public const MAX_NUEVAS_SIN_MODULO = 30;      // respuestas NUEVAS de la Ayuda al mes sin el módulo
     public const MAX_PREGUNTAS_MINUTO = 10;       // por usuario
     public const MAX_PREGUNTA = 500;
@@ -61,10 +62,19 @@ final class Ia
         return $v === false || $v === null ? null : round((float) $v, 2);
     }
 
-    /** Tope del mes en USD: el propio, o 4,00 con el módulo y 0,50 sin él. */
+    /** Tope del mes en USD: el propio; si no, 0,50 en demo; si no, 4,00 con el módulo y 0,50 sin él. */
     public function tope(int $negocioId): float
     {
-        return $this->topePropio($negocioId) ?? ($this->tieneModulo($negocioId) ? self::TOPE_MODULO : self::TOPE_AYUDA);
+        return $this->topePropio($negocioId)
+            ?? ($this->esDemo($negocioId) ? self::TOPE_DEMO : ($this->tieneModulo($negocioId) ? self::TOPE_MODULO : self::TOPE_AYUDA));
+    }
+
+    /** ¿El negocio está en demo (estado «prueba», la crea Tukán con crear_demo)? Al registrar el pago pasa a «activo» y vuelve solo al tope normal. */
+    public function esDemo(int $negocioId): bool
+    {
+        $st = $this->db->prepare('SELECT estado FROM negocios WHERE id = ?');
+        $st->execute([$negocioId]);
+        return $st->fetchColumn() === 'prueba';
     }
 
     public function guardian(int $negocioId): \TukanIaGuardianPdo

@@ -114,7 +114,7 @@ Con la librería compartida del Panel Tukán Central **`src/tukan_ia.php`** (cop
     partidas «Pidiendo precios» / «El cliente le paga directo».
   - Si no se puede usar la IA: `tukan_ia_mensaje_neutro('texto' | 'foto', …)` con el enlace para hacerlo a mano.
 - **Tope por negocio** (guardián `TukanIaGuardianPdo`, tabla `tukan_ia_gasto`): **4,00 USD al mes con el módulo** (incluido en Agencia o comprado aparte; decisión
-  del dueño) **y 0,50 sin él**; otro tope en `negocios.ia_tope_usd` (operación `ia_tope` del Panel Central). Al llegar al tope no se llama a la API, en silencio.
+  del dueño) **y 0,50 sin él**; una **demo** (estado `prueba`) **0,50 en total** aunque tenga todos los módulos (al pagar vuelve sola a lo normal); otro tope en `negocios.ia_tope_usd` (operación `ia_tope` del Panel Central). Al llegar al tope no se llama a la API, en silencio.
 - **Panel Tukán → Preguntas IA** (`/?r=admin_faq`): listar (Por revisar primero), aprobar, editar (queda aprobada y «manual»), borrar y agregar. CSRF y registro_admin.
 - **Conector v2** (Anexo C de `PROTOCOLO_V2.md`): acción `ia_uso` y operación `ia_tope` (`{"tope_usd": número | null}`, solo el dueño del Central).
 - **Configuración**: `/etc/tukan-ia.env` (`bash deploy/configurar_ia.sh` del Panel Tukán Central; **no** se copia la clave aquí; `www-data` debe poder leerlo).

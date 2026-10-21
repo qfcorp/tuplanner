@@ -58,6 +58,9 @@ Regla de Dimi: "todos los programas deben ser modulares para encender o apagar l
 - [x] **Exclusivo del dueño** (identidad de la cuenta ante Tukán): ser el contacto del negocio en el Panel Tukán Central/Panel Tukán (nombre, correo y teléfono que se envían), «Nueva clave del dueño» desde Tukán, «Entrar como» del súper usuario, el contacto que ven el personal y los proveedores en sus portales, y no poder ser cambiado ni desactivado. Dentro del programa no quedó ninguna pantalla solo para el dueño.
 - [x] Pruebas: logica_99 (63) y web_99 (62). Totales: **lógica 2582/2582 y pantallas 2156/2156**, sin avisos de PHP. Manual (capítulo de equipo, con una administradora en los datos de ejemplo y capturas nuevas), MANUAL.md y guía Primeros pasos actualizados y PDF regenerados.
 
+## Hecho (21 oct 2026) — Tope de IA de las demos: 0,50 (decisión de Dimitry)
+- [x] Una demo (estado `prueba`) sin tope propio gasta como máximo **0,50 USD al mes en total** (IA y Ayuda), aunque tenga todos los módulos (`Ia::TOPE_DEMO`, `Ia::esDemo()`). El tope propio de Tukán sigue mandando; al registrar el pago (estado `activo`) vuelve sola a 4,00 / 0,50. Pruebas en `logica_110_ia.php`.
+
 ## Hecho (21 oct 2026) — Ayuda, Asistente IA y demo por correo (librerías compartidas del Panel Tukán Central)
 - [x] Librerías copiadas sin cambios: `src/tukan_ia.php` (versión 1) y `src/tukan_correo.php` (versión 1), con las guías `compartido/LEEME_IA.md` y `LEEME_CORREO.md`.
 - [x] Migración **110** repetible (tablas `tukan_ia_faq`, `tukan_ia_gasto`, `negocios.ia_tope_usd`) y **111** (Asistente IA incluido en Agencia: `'*,asistente_ia'`). La papelera no toca `tukan_ia_gasto` (negocio_id de texto).

@@ -63,6 +63,16 @@ check('Tope propio (lo pone Tukán) gana', [1.25, 1.25], [$ia->topePropio($nA), 
 $ia->cambiarTope($nA, null);
 check('null = vuelve al de siempre', [null, 0.5], [$ia->topePropio($nA), $ia->tope($nA)]);
 check_error('Tope fuera de rango', 'entre 0 y 1000', fn() => $ia->cambiarTope($nA, 5000));
+// Demos: 0,50 al mes en total aunque tengan todos los módulos (decisión del dueño, 21 oct 2026)
+[$nD] = negocio_prueba($db, 'quinta', 'Quinta En Demo');
+$db->exec("UPDATE negocios SET estado = 'prueba', prueba_hasta = CURRENT_DATE + 7 WHERE id = $nD");
+check('Demo con el módulo Asistente IA: tope 0,50 (TOPE_DEMO)', [true, true, 0.5, 0.5], [$ia->esDemo($nD), $ia->tieneModulo($nD), $ia->tope($nD), Ia::TOPE_DEMO]);
+$ia->cambiarTope($nD, 2.5);
+check('Demo con tope propio de Tukán: manda el propio', 2.5, $ia->tope($nD));
+$ia->cambiarTope($nD, null);
+(new \TuPlanner\Planes($db))->suscribir($nD, 'quinta', 'mensual', $hoy, 'transferencia');
+check('La demo pasa a cliente pagado con el módulo: vuelve sola a 4,00', [false, 4.0], [$ia->esDemo($nD), $ia->tope($nD)]);
+$db->exec("UPDATE negocios SET estado = 'cancelado' WHERE id = $nD");   // fuera del resto de esta prueba
 
 // ---------------------------------------------------------------------------------------------
 titulo('2. Ayuda: sin /etc/tukan-ia.env solo FAQ y manual');
