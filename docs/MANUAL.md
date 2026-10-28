@@ -13,6 +13,8 @@ Para regenerar el manual (base de ejemplo, capturas y PDF): `bash docs/manual/ge
 
 ### Entrar y el Inicio
 - Correo y contraseña → **Entrar**. En el celular, abajo: Inicio, Calendario, Eventos, Cobros y **Más**.
+- **App de Android** (Google Play, «TuPlanner»): el mismo correo y la misma contraseña, a pantalla completa. En la app no se ven precios ni pagos del plan de TuPlanner (Mi plan muestra solo el plan y los módulos); lo que cobras a tus clientes funciona igual.
+- **Más → Mi cuenta → Borrar mi cuenta**: abre un correo listo para pedir que se borre la cuenta y sus datos (máximo 15 días). Detalle en la política de privacidad.
 - El Inicio muestra comprobantes por revisar, cifras, próximos 7 días, avisos, seguimientos, tareas y cuotas.
 - Cuenta nueva: guía **Primeros pasos** (datos del negocio, logo, lugares y precios, primer evento).
 

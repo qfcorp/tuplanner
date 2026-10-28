@@ -26,7 +26,7 @@
     <?php if (modulo_activo($u, 'contratos')): ?><a href="<?= e(url('contrato')) ?>">Plantillas de contrato<small>Cláusulas y variables del contrato</small></a><?php endif; ?>
     <?php if (modulo_activo($u, 'cuestionarios')): ?><a href="<?= e(url('cuestionarios')) ?>">Formularios del evento<small>Preguntas para el cliente por tipo de evento</small></a><?php endif; ?>
     <a href="<?= e(url('usuarios')) ?>">Usuarios<small>Vendedores y coordinadores</small></a>
-    <a href="<?= e(url('planes')) ?>">Mi plan<small>Tus módulos, lo que pagas y lo que puedes agregar</small></a>
+    <a href="<?= e(url('planes')) ?>">Mi plan<small><?= en_app_android() ? 'Tu plan y tus módulos' : 'Tus módulos, lo que pagas y lo que puedes agregar' ?></small></a>
     <?php endif; ?>
     <a href="<?= e(url('ayuda')) ?>">Ayuda<small>Pregunte cómo hacer algo y le respondemos al instante</small></a>
     <a href="<?= e(url('mi_cuenta')) ?>">Mi cuenta<small>Contraseña y Telegram</small></a>

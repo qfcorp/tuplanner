@@ -1,6 +1,6 @@
 # Bloc de notas — TuPlanner (wedding planners y organizadores de eventos · marca Tukán)
 
-Última actualización: 21 de octubre de 2026
+Última actualización: 28 de octubre de 2026
 
 ## Qué es
 Programa para **wedding planners y organizadores de eventos** (bodas, quince años y demás). Pedido de Dimi del 14 oct 2026:
@@ -82,7 +82,17 @@ Regla de Dimi: "todos los programas deben ser modulares para encender o apagar l
   **Planes y precios** (súper usuario) y ficha del negocio con los módulos a elegir. **Conector v2**: `planes` y `modulos` con `modulos_elegir` y `precio_modulo_extra`, `modulos.fuera_del_cupo`, `cliente.modulos` con elegidos, `guardar_plan` con los campos nuevos, `finanzas.por_modulo` y el monto de cada pedido con el precio real.
 - [x] Pruebas: logica_112 y web_112 (las pruebas viejas emulan los planes de antes con `planes_de_antes`). Puertos de las pruebas de IA por variable (`IA_PUERTO_LOGICA`, `SMTP_PUERTO_LOGICA`). Totales: **lógica 2737/2737 y pantallas 2299/2299**, sin avisos de PHP. Manual, MANUAL.md, guía y Primeros pasos actualizados y PDF regenerados.
 
+## Hecho (28 oct 2026) — App de Android para Google Play (1.0.0, sin cobro dentro de la app)
+- [x] App `com.tukansoftware.tuplanner` en qfcorp/tukan-apps (ícono: tablilla de tareas con vistos y anillos dorados sobre ciruela), ficha en español e inglés con 8 capturas y guía `tienda/tuplanner/PUBLICAR_TUPLANNER_CON_CLAUDE.md`.
+- [x] `/.well-known/assetlinks.json` desde `src/AppAndroid.php` (huella de la llave de subida + la de Google en `config/.env` con `deploy/app_android.sh HUELLA`; el instalador la conserva).
+- [x] **Modo app** (`?app=play`, cookie `tp_app`, `en_app_android()`): Mi plan sin montos, sin «Pedir cotización», sin «Pagar», sin otros planes ni pagos hechos (solo elegir los módulos incluidos); módulo apagado, franja «Renovar», demo terminada / vencido / pausada y límites sin enlaces para pagar afuera. El servidor rechaza cotizaciones desde la app. Lo que el organizador cobra a sus clientes (cuotas, Payphone del portal) se queda: son servicios reales.
+- [x] Privacidad: app de Google Play, Anthropic (IA), sección `#borrar-cuenta`; `/privacidad.php`; **Mi cuenta → Borrar mi cuenta**.
+- [x] Cuenta del revisor de Google: `deploy/demo_google.php crear | borrar` (negocio «Agencia Ejemplo Google Play» aparte, demo 1 año sin pagos, 6 eventos; el revisor no cambia su contraseña).
+- [x] Cobro con Google Play preparado y **apagado**: `TUPLANNER_GOOGLE_PLAY_COBRO=1` (`cobro_google_play()`), sin pantalla de compra todavía (docs/GOOGLE_PLAY.md).
+- [x] Pruebas: logica_120 (40) y web_120 (99). Totales: **lógica 2777/2777 y pantallas 2398/2398** (web_96 «El 121: 429» falla a veces en la corrida completa si cruza el cambio de minuto; sola pasa). Manual (preguntas frecuentes: la app y borrar la cuenta) y MANUAL.md actualizados, PDF regenerado.
+
 ## Pendiente
+0000c. [ ] DIMI: Google Play (ver docs/GOOGLE_PLAY.md): actualizar con el instalador, `sudo bash /var/www/tuplanner/deploy/app_android.sh` (OK), `php /var/www/tuplanner/deploy/demo_google.php crear` (copiar la contraseña) y publicar con tukan-apps/tienda/tuplanner/PUBLICAR_TUPLANNER_CON_CLAUDE.md; después de la primera subida, `app_android.sh HUELLA_DE_GOOGLE`
 0000b. [ ] DIMI: actualizar en el servidor (volver a correr el instalador del README): aplica la migración 112 (planes de $20 y $45). Revisar en Panel Tukán → Planes y precios los dos planes y avisar a los clientes que tenían el plan Planner (pasan a Completo)
 0000a. [ ] DIMI: actualizar en el servidor (volver a correr el instalador del README): aplica las migraciones 110 (ayuda e IA) y 111 (Asistente IA incluido en Agencia). La IA usa `/etc/tukan-ia.env` y el correo `/etc/tukan-correo.env` del Panel Tukán Central; `www-data` debe poder leerlos. Revisar Panel Tukán → Preguntas IA cada semana
 0000. [ ] DIMI: actualizar en el servidor (volver a correr el instalador del README): aplica la migración 099 (rol administrador)

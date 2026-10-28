@@ -27,6 +27,7 @@ $estadoCuenta = $u ? planes()->estadoCuenta($u) : null;
 $diasPlan = ($estadoCuenta === 'activo' && !empty($u['activo_hasta']))
     ? (int) (new DateTimeImmutable('today'))->diff(new DateTimeImmutable($u['activo_hasta']))->days : null;
 $adminViendo = !empty($_SESSION['admin_viendo']) && superadmin();
+$enApp = en_app_android();   // app de Google Play: sin «Renovar» ni enlaces para pagar el software (docs/GOOGLE_PLAY.md)
 $modulosCss = glob(RAIZ . '/public/assets/mod_*.css') ?: [];
 $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
 ?>
@@ -50,7 +51,7 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
 <link rel="stylesheet" href="/assets/<?= e(basename($css)) ?>?v=<?= filemtime($css) ?>">
 <?php endforeach; ?>
 </head>
-<body class="<?= $u ? 'con-sesion' : 'sin-sesion' ?>">
+<body class="<?= ($u ? 'con-sesion' : 'sin-sesion') . ($enApp ? ' en-app' : '') ?>">
 <?php if ($u): ?>
 <aside class="lateral" aria-label="Menú principal">
     <a class="marca" href="<?= e(url('inicio')) ?>">
@@ -120,11 +121,11 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
             <a href="<?= e(url('admin_volver')) ?>">Volver al panel</a></p>
     <?php endif; ?>
     <?php if ($estadoCuenta === 'por_vencer'): ?>
-        <p class="franja-prueba no-imprimir">Tu plan venció el <?= (new DateTimeImmutable($u['activo_hasta']))->format('d/m') ?>. Renueva en los próximos días para no perder el acceso.
-            <a href="<?= e(url('planes')) ?>">Renovar</a></p>
+        <p class="franja-prueba no-imprimir">Tu plan venció el <?= (new DateTimeImmutable($u['activo_hasta']))->format('d/m') ?>. <?php if (!$enApp): ?>Renueva en los próximos días para no perder el acceso.
+            <a href="<?= e(url('planes')) ?>">Renovar</a><?php endif; ?></p>
     <?php elseif ($diasPlan !== null && $diasPlan <= 5): ?>
         <p class="franja-prueba no-imprimir">Tu plan vence <?= $diasPlan === 0 ? 'hoy' : "en $diasPlan " . ($diasPlan === 1 ? 'día' : 'días') ?>.
-            <a href="<?= e(url('planes')) ?>">Renovar</a></p>
+            <?php if (!$enApp): ?><a href="<?= e(url('planes')) ?>">Renovar</a><?php endif; ?></p>
     <?php endif; ?>
     <?php foreach ($avisos as $a): ?>
         <p class="aviso aviso-<?= e($a['tipo']) ?>" role="status"><?= e($a['texto']) ?></p>

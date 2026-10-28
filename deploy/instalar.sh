@@ -90,7 +90,7 @@ done
 echo "== 4. Configuracion"
 EXTRA=""
 if [ -f "$APP/config/.env" ]; then   # se conservan Telegram, Payphone y la conexion con el Panel Tukan Central si ya estaban
-  EXTRA="$(grep -E '^(TELEGRAM_|PAYPHONE_API_BASE=|TUKAN_)' "$APP/config/.env" || true)"
+  EXTRA="$(grep -E '^(TELEGRAM_|PAYPHONE_API_BASE=|TUKAN_|TUPLANNER_ANDROID_HUELLAS=|TUPLANNER_GOOGLE_PLAY_COBRO=)' "$APP/config/.env" || true)"
 fi
 {
   echo "TUPLANNER_DB_HOST=127.0.0.1"
@@ -157,6 +157,7 @@ echo "4) Extensiones de PHP: $(php -m | grep -E -c '^(pdo_pgsql|gd|curl|mbstring
 [ -f "$APP/vendor/autoload.php" ] && echo "5) Librerias (TCPDF): OK" || echo "5) Librerias (TCPDF): FALTA (corre: cd $APP && composer install --no-dev)"
 if command -v nginx > /dev/null; then
   curl -s -o /dev/null -w "6) Prueba de la pagina: %{http_code} (debe ser 200)\n" -H "Host: $DOMINIO" "http://127.0.0.1/?r=login"
+  curl -s -o /dev/null -w "6b) App de Android (assetlinks.json): %{http_code} (debe ser 200)\n" -H "Host: $DOMINIO" "http://127.0.0.1/.well-known/assetlinks.json"
 fi
 echo "7) Tareas: $(sudo -u www-data php "$APP/bin/tareas.php" < /dev/null 2>&1 | tail -1)"
 echo "8) Respaldo: $(sudo APP="$APP" "$APP/deploy/respaldo.sh" < /dev/null 2>&1 | tail -1)"

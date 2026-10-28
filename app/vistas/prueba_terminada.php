@@ -9,6 +9,14 @@ $textos = [
 [$titulo, $texto, $motivo] = $textos[$estadoCuenta] ?? $textos['prueba_vencida'];
 $wa = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode("Hola, $motivo de TuPlanner (" . $u['negocio'] . ', ' . $u['email'] . ') y quiero contratar un plan.');
 $pausada = $estadoCuenta === 'suspendido';
+// App de Google Play: sin enlaces para contratar o pagar el software por fuera (ni WhatsApp de ventas); textos neutros
+$enApp = en_app_android();
+if ($enApp) {
+    $titulo = ['prueba_vencida' => 'Tu demo terminó', 'vencido' => 'Tu plan venció'][$estadoCuenta] ?? $titulo;
+    if ($estadoCuenta === 'prueba_vencida') $texto = 'El acceso de demostración de esta cuenta terminó.';
+    if ($estadoCuenta === 'vencido') $texto = "Tu plan estuvo activo hasta el $hasta.";
+    if ($estadoCuenta === 'cancelado') $texto = 'Esta cuenta ya no está activa.';
+}
 if ($pausada) {   // Anexo A: cuenta pausada por Tukán, con el motivo (genérico en revisión y uso indebido) y el WhatsApp de Tukán
     $texto = \TuPlanner\Papelera::textoPausa($u['pausa_tipo'] ?? null, $u['pausa_motivo'] ?? null);
     $wa = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola, mi cuenta de TuPlanner está pausada (' . $u['negocio'] . ', ' . $u['email'] . '). ¿Me ayudan a reactivarla?');
@@ -27,7 +35,9 @@ if ($pausada) {   // Anexo A: cuenta pausada por Tukán, con el motivo (genéric
         <?= (int) $guardado['eventos'] ?> eventos (<?= (int) $guardado['proximos'] ?> próximos), <?= (int) $guardado['clientes'] ?> clientes, cotizaciones, contratos y pagos.
         Nada se borra.
     </div>
-    <?php if ($pausada): ?>
+    <?php if ($enApp): ?>
+        <p class="suave">Cuando la cuenta vuelva a estar activa, entras aquí mismo con tu correo y tu contraseña.</p>
+    <?php elseif ($pausada): ?>
         <div class="acciones">
             <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Escribir a Tukán por WhatsApp (+<?= e(whatsapp_ventas()) ?>)</a>
         </div>

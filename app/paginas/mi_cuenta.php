@@ -15,6 +15,8 @@ if (es_post()) {
                 aviso('Tus datos quedaron guardados.');
                 break;
             case 'clave':
+                // La cuenta del revisor de Google Play (deploy/demo_google.php) no cambia su contraseña: es la que está en Play Console
+                if (\TuPlanner\DemoGoogle::esRevisor($u)) throw new RuntimeException('Es una cuenta de demostración: aquí no se cambia la contraseña.');
                 $usuarios->cambiarClave($uid, (string) ($_POST['actual'] ?? ''), (string) ($_POST['nueva'] ?? ''), (string) ($_POST['repetir'] ?? ''));
                 session_regenerate_id(true);
                 aviso('Listo: tu contraseña cambió. Úsala la próxima vez que entres.');

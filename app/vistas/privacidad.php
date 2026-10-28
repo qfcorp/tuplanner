@@ -1,8 +1,8 @@
 <article class="bloque legal">
 <h1>Política de privacidad de TuPlanner</h1>
-<p><small>Última actualización: 12 de octubre de 2026</small></p>
+<p><small>Última actualización: 28 de octubre de 2026</small></p>
 
-<p>TuPlanner es un sistema de tareas, presupuestos, cotizaciones, contratos, cobros e invitados para wedding planners y organizadores de eventos, hecho por <b>Tukán Software</b> (QF Producciones, Ecuador). Esta política explica qué datos guarda TuPlanner, para qué y cómo puedes pedir que se borren. Se aplica a la página <b>tuplanner.tukanec.com</b>.</p>
+<p>TuPlanner es un sistema de tareas, presupuestos, cotizaciones, contratos, cobros e invitados para wedding planners y organizadores de eventos, hecho por <b>Tukán Software</b> (QF Producciones, Ecuador). Esta política explica qué datos guarda TuPlanner, para qué y cómo puedes pedir que se borren. Se aplica a la página <b>tuplanner.tukanec.com</b> y a la app <b>TuPlanner</b> para Android (Google Play), que abre esa misma página.</p>
 
 <h2>Quién es el responsable</h2>
 <ul>
@@ -19,7 +19,9 @@
 <li><b>Del personal de eventos:</b> nombre, cédula, teléfono, eventos asignados y pagos.</li>
 <li><b>Pagos:</b> montos y forma de pago. Los pagos con tarjeta los procesa <b>Payphone</b>: TuPlanner <b>no</b> guarda números de tarjeta. Si se sube un comprobante de transferencia, se guarda la imagen.</li>
 <li><b>Avisos:</b> si alguien conecta Telegram, se guarda su número de chat para enviarle avisos.</li>
-<li><b>Datos técnicos:</b> una cookie de sesión y registros básicos del servidor (fecha, dirección IP) para seguridad.</li>
+<li><b>Ayuda e inteligencia artificial:</b> las preguntas que se escriben en Ayuda y, si el negocio usa el Asistente IA, el mensaje que pega para armar un evento y su cotización, y la cotización (foto o PDF) de un proveedor que sube para armar el presupuesto.</li>
+<li><b>Datos técnicos:</b> una cookie de sesión, una cookie que indica si se entra desde la app y registros básicos del servidor (fecha, dirección IP) para seguridad.</li>
+<li>La app <b>no</b> pide la ubicación, los contactos, el micrófono ni otros permisos del celular, y no usa el identificador de publicidad.</li>
 </ul>
 
 <h2>Para qué los usamos</h2>
@@ -31,17 +33,17 @@
 
 <h2>Con quién se comparten</h2>
 <ul>
-<li>Solo con los servicios necesarios para que funcione: el servidor y la red de Cloudflare, Payphone (pagos con tarjeta) y Telegram (avisos, solo si se activa).</li>
+<li>Solo con los servicios necesarios para que funcione: el servidor y la red de Cloudflare, Payphone (pagos con tarjeta), Telegram (avisos, solo si se activa) y Anthropic (el servicio de inteligencia artificial que responde la Ayuda y arma borradores; no usa esos datos para entrenar ni para otra cosa).</li>
 <li>Con autoridades, solo si la ley lo exige.</li>
 </ul>
 
 <h2>Cuánto tiempo se guardan</h2>
 <p>Mientras la cuenta del negocio esté activa. Si el negocio deja TuPlanner, sus datos se borran a los 90 días, salvo lo que la ley obligue a guardar (por ejemplo, contratos y registros de pagos).</p>
 
-<h2>Tus derechos y cómo borrar tus datos</h2>
+<h2 id="borrar-cuenta">Tus derechos y cómo borrar tu cuenta o tus datos</h2>
 <p>Según la Ley Orgánica de Protección de Datos Personales del Ecuador, puedes pedir ver, corregir o borrar tus datos.</p>
 <ul>
-<li><b>Dueño de un negocio:</b> escribe desde el correo de la cuenta a <a href="mailto:info@tukansoftware.com?subject=Borrar%20mi%20cuenta%20de%20TuPlanner">info@tukansoftware.com</a> con el asunto "Borrar mi cuenta de TuPlanner". Lo hacemos en un máximo de 15 días.</li>
+<li><b>Dueño de un negocio:</b> escribe desde el correo de la cuenta a <a href="mailto:info@tukansoftware.com?subject=Borrar%20mi%20cuenta%20de%20TuPlanner">info@tukansoftware.com</a> con el asunto "Borrar mi cuenta de TuPlanner". Lo hacemos en un máximo de 15 días. También puedes pedirlo desde el sistema o la app: <b>Más → Mi cuenta → Borrar mi cuenta</b>. Se borran la cuenta, los usuarios y todos los datos del negocio, salvo lo que la ley obligue a guardar.</li>
 <li><b>Cliente o invitado de un negocio:</b> pide al negocio que borre tus datos, o escríbenos al mismo correo indicando el negocio y tu teléfono.</li>
 <li><b>Personal o miembro del equipo:</b> pide al dueño que te desactive, o escríbenos.</li>
 </ul>

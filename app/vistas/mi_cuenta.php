@@ -63,4 +63,19 @@
         <?php if ($yo['ultimo_ingreso']): ?><p class="suave">Último ingreso: <?= e(fecha_corta(substr((string) $yo['ultimo_ingreso'], 0, 10))) ?> a las <?= e(substr((string) $yo['ultimo_ingreso'], 11, 5)) ?></p><?php endif; ?>
         <a class="boton boton-claro" href="<?= e(url('salir')) ?>">Cerrar sesión</a>
     </section>
+
+    <?php /* Google Play pide que desde la app se pueda pedir el borrado de la cuenta y los datos (docs/GOOGLE_PLAY.md) */ ?>
+    <section class="bloque" id="borrar-cuenta">
+        <h2>Borrar mi cuenta</h2>
+        <?php if (es_admin_total($u)): ?>
+            <p class="suave">Si quieres dejar TuPlanner, pide que se borre la cuenta de <?= e($u['negocio']) ?> y todos sus datos. Lo hacemos en un máximo de 15 días
+                (solo se guarda lo que la ley obliga, como contratos y registros de pagos).</p>
+        <?php else: ?>
+            <p class="suave">Para quitar tu usuario, pídele al dueño del negocio que te desactive en Usuarios, o escríbenos para borrar tus datos.</p>
+        <?php endif; ?>
+        <div class="acciones">
+            <a class="boton boton-claro" href="mailto:info@tukansoftware.com?subject=<?= e(rawurlencode('Borrar mi cuenta de TuPlanner')) ?>&amp;body=<?= e(rawurlencode('Negocio: ' . $u['negocio'] . "\nCorreo de la cuenta: " . $u['email'] . "\n\nQuiero que borren " . (es_admin_total($u) ? 'la cuenta del negocio y todos sus datos.' : 'mi usuario y mis datos.'))) ?>">Pedir que borren mi cuenta</a>
+            <a href="<?= e(url('privacidad')) ?>#borrar-cuenta">Cómo se borran los datos</a>
+        </div>
+    </section>
 </div>

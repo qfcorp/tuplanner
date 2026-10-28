@@ -8,12 +8,15 @@ use TuPlanner\{Modulos, PanelTukan};
  * "Pedir cotización" (de un módulo o de un plan) crea un pedido (solicitud cambio_modulos) que llega al Panel Tukán Central.
  * También se abre con la demo terminada o el plan vencido.
  */
+const NO_EN_APP = 'Desde la app solo se eligen los módulos incluidos en tu plan.';
 exigir(es_admin_total($u), 'Solo el dueño o un administrador puede ver y cambiar el plan de TuPlanner.');
 $nid = (int) $u['negocio_id'];
 if (es_post()) {
     verificar_csrf();
     try {
         $accion = (string) ($_POST['accion'] ?? '');
+        // App de Google Play: no se piden cotizaciones ni planes (sería comprar el software por fuera de Google Play)
+        if (en_app_android() && $accion === 'pedir_plan') throw new RuntimeException(NO_EN_APP);
         if ($accion === 'pedir_plan') {
             // Cotizar otro plan: se piden los módulos de ese plan que hoy no tiene (mismo pedido cambio_modulos del Panel Central)
             $codigo = (string) ($_POST['plan'] ?? '');
@@ -32,6 +35,7 @@ if (es_post()) {
         if (!Modulos::existe($mid)) throw new RuntimeException('Ese módulo no existe.');
         // Planes de $20 y $45 (migración 112): si su plan aún tiene módulos por elegir, es uno de esos (incluido en su plan)
         $eligeIncluido = modulos()->estado($nid)['por_elegir'] > 0 && !in_array($mid, Modulos::FUERA_DEL_CUPO, true);
+        if (en_app_android() && !$eligeIncluido) throw new RuntimeException(NO_EN_APP);   // en la app solo se eligen los incluidos
         modulos()->pedir($nid, (int) $u['id'], [$mid], trim(($eligeIncluido ? 'Lo elige entre los módulos incluidos en su plan. ' : '') . campo('nota')));
         aviso($eligeIncluido
             ? 'Listo: elegiste ' . Modulos::nombre($mid) . ' entre los módulos de tu plan. Tukán lo enciende y te avisa; tus datos no cambian.'

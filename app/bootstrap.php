@@ -8,6 +8,7 @@ declare(strict_types=1);
  */
 
 define('RAIZ', dirname(__DIR__));
+define('COOKIE_APP', 'tp_app');   // cookie que deja la app de Android (?app=play)
 date_default_timezone_set('America/Guayaquil');
 
 // 1) Configuración: config/.env -> variables de entorno
@@ -49,6 +50,36 @@ if (PHP_SAPI !== 'cli') {
     header('X-Frame-Options: SAMEORIGIN');
     header('X-Content-Type-Options: nosniff');
     header('Referrer-Policy: same-origin');
+    // App de Android (Google Play): abre /?r=inicio&app=play. Se recuerda con una cookie (1 año) para saber que estamos dentro de la app.
+    // ?app=web la quita (para probar en un celular que tiene la app y la web a la vez).
+    $appParam = (string) ($_GET['app'] ?? '');
+    if ($appParam === 'play' || $appParam === 'web') {
+        $play = $appParam === 'play';
+        setcookie(COOKIE_APP, $play ? 'play' : '', ['expires' => $play ? time() + 60 * 60 * 24 * 365 : time() - 3600, 'path' => '/',
+            'httponly' => true, 'samesite' => 'Lax', 'secure' => es_https()]);
+        if ($play) $_COOKIE[COOKIE_APP] = 'play'; else unset($_COOKIE[COOKIE_APP]);
+    }
+}
+
+/**
+ * ¿Se está usando dentro de la app de Android (Google Play)? Ahí no se muestran precios del software, planes para comprar,
+ * «Pedir cotización», «Renovar» ni enlaces para pagar el software por fuera (WhatsApp, transferencia, Payphone).
+ * Lo que el ORGANIZADOR le cobra a SUS clientes (cuotas del evento, Payphone del portal) sí se ve: son servicios reales, no contenido
+ * digital (ver docs/GOOGLE_PLAY.md).
+ */
+function en_app_android(): bool
+{
+    return ($_COOKIE[COOKIE_APP] ?? '') === 'play';
+}
+
+/**
+ * Cobro del software con Google Play dentro de la app: APAGADO en la versión 1.0.0 (la app es solo para entrar con la cuenta que da Tukán).
+ * Se prende con TUPLANNER_GOOGLE_PLAY_COBRO=1 en config/.env, junto con "cobroGooglePlay": true en la app (qfcorp/tukan-apps).
+ * Antes hay que programar la compra y su verificación: docs/GOOGLE_PLAY.md, sección «Cobro con Google Play».
+ */
+function cobro_google_play(): bool
+{
+    return getenv('TUPLANNER_GOOGLE_PLAY_COBRO') === '1';
 }
 
 // ---------------------------------------------------------------------

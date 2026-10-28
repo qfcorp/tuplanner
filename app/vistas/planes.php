@@ -14,15 +14,19 @@ $ahorro = function (array $c, array $mensual): int {
     return $normal > 0 ? (int) round(($normal - $c['monto']) * 100 / $normal) : 0;
 };
 $encendidos = count($me['pagados']);
+// App de Google Play (docs/GOOGLE_PLAY.md): sin precios del software, sin «Pedir cotización», sin «Pagar» ni WhatsApp de ventas.
+// Se ve el plan, su estado, los módulos encendidos y se pueden elegir los módulos incluidos en el plan (no cuesta nada más).
+$enApp = en_app_android();
 ?>
 <div class="cabecera">
-    <div><h1>Mi plan</h1><p>Tus módulos de TuPlanner para <?= e($u['negocio']) ?>: lo que tienes, lo que pagas y lo que puedes agregar.</p></div>
+    <div><h1>Mi plan</h1><p>Tus módulos de TuPlanner para <?= e($u['negocio']) ?><?= $enApp ? '.' : ': lo que tienes, lo que pagas y lo que puedes agregar.' ?></p></div>
 </div>
 
 <section class="bloque mp-resumen" aria-labelledby="mp-t-plan">
     <div>
         <p style="margin:0" id="mp-t-plan">Plan <strong><?= e($u['plan_nombre'] ?? $u['plan_codigo']) ?></strong>
             <span class="etq est-<?= e($estadoCuenta) ?>"><?= e($estadoTxt) ?></span></p>
+        <?php if (!$enApp): ?>
         <p class="mp-precio"><?= dinero($me['mensual']) ?> <small>al mes</small></p>
         <ul class="mp-desglose">
             <li>Plan <?= dinero($me['precio_plan']) ?></li>
@@ -30,6 +34,7 @@ $encendidos = count($me['pagados']);
             <?php if ($me['descuento'] > 0): ?><li>módulos quitados −<?= dinero($me['descuento']) ?></li><?php endif; ?>
             <?php if ($me['precio_acordado'] !== null): ?><li>precio acordado con Tukán</li><?php endif; ?>
         </ul>
+        <?php endif; ?>
         <p class="suave" style="margin:6px 0 0">
             <?php if ($hasta): ?><?= $u['estado'] === 'prueba' ? 'Demo hasta el ' : 'Pagado hasta el ' ?><strong><?= e((new DateTimeImmutable($hasta))->format('d/m/Y')) ?></strong> · <?php endif; ?>
             <?= $encendidos ?> de <?= count($catalogo) ?> módulos · <?= (int) $uso['espacios'] ?> espacios y <?= (int) $uso['usuarios'] ?> usuarios activos <small>(los administradores no cuentan)</small></p>
@@ -38,16 +43,16 @@ $encendidos = count($me['pagados']);
                 ? ': te ' . ($me['por_elegir'] === 1 ? 'queda 1 por elegir' : 'quedan ' . (int) $me['por_elegir'] . ' por elegir') . '. Elígelo abajo con «Elegir este módulo».' : '.' ?></p>
         <?php endif; ?>
     </div>
-    <a class="boton boton-wa" href="<?= e($wa('Hola, tengo una pregunta sobre mi plan de TuPlanner')) ?>" target="_blank" rel="noopener">Preguntar por WhatsApp</a>
+    <?php if (!$enApp): ?><a class="boton boton-wa" href="<?= e($wa('Hola, tengo una pregunta sobre mi plan de TuPlanner')) ?>" target="_blank" rel="noopener">Preguntar por WhatsApp</a><?php endif; ?>
 </section>
 <?php if ($me['demo']): ?>
     <p class="aviso aviso-alerta">Estás en tu demo: <?= $me['demo_todos'] ? 'tienes todos los módulos encendidos para que veas todo' : 'tienes encendidos los módulos que elegimos contigo' ?>.
-        Al contratar te quedas con los módulos de tu plan y los que agregues; nada de lo que cargaste se pierde.</p>
+        <?= $enApp ? 'Nada de lo que cargues se pierde.' : 'Al contratar te quedas con los módulos de tu plan y los que agregues; nada de lo que cargaste se pierde.' ?></p>
 <?php endif; ?>
 
 <section class="bloque" aria-labelledby="mp-t-mods">
     <h2 id="mp-t-mods">Tus módulos</h2>
-    <p class="g-nota">Enciende solo lo que necesitas y paga solo eso. Si apagamos un módulo, tus datos se guardan y vuelven al encenderlo.</p>
+    <p class="g-nota"><?= $enApp ? 'Los módulos de tu cuenta los administra Tukán Software.' : 'Enciende solo lo que necesitas y paga solo eso.' ?> Si apagamos un módulo, tus datos se guardan y vuelven al encenderlo.</p>
     <?php foreach ($porGrupo as $grupo => $lista): ?>
         <div class="mp-grupo">
             <h3><?= e($grupo) ?></h3>
@@ -69,6 +74,13 @@ $encendidos = count($me['pagados']);
                         <?php $aPedido = Modulos::porCotizacion($m);   // precio 0 en el catálogo: por cotización
                               // Planes de $20 y $45 (migración 112): en Básico puede elegir módulos incluidos; el Asistente IA no cuenta entre ellos
                               $elegible = !$on && ($me['por_elegir'] ?? 0) > 0 && !in_array($id, Modulos::FUERA_DEL_CUPO, true); ?>
+                        <?php if ($enApp): /* app de Google Play: sin precios ni cotizaciones */ ?>
+                        <span class="mp-mod-precio"><?= !$on ? ($elegible ? 'Puedes elegirlo en tu plan' : 'No está encendido') : (in_array($id, $me['elegidos'] ?? [], true) ? 'Incluido · lo elegiste' : 'Encendido en tu cuenta') ?></span>
+                        <?php if ($elegible && !$pedido): ?>
+                            <form method="post"><?= campo_csrf() ?><input type="hidden" name="accion" value="pedir"><input type="hidden" name="modulo" value="<?= e($id) ?>">
+                                <button class="boton boton-chico" type="submit">Elegir este módulo</button></form>
+                        <?php endif; ?>
+                        <?php else: ?>
                         <span class="mp-mod-precio"><?= !$on ? ($elegible ? 'Puedes elegirlo en tu plan' : (in_array($id, Modulos::SOLO_A_PEDIDO, true) || $aPedido ? 'Pídalo y le cotizamos' : 'Precio por cotización'))
                             : (in_array($id, $me['del_plan'], true) ? 'Incluido en tu plan'
                                : (in_array($id, $me['elegidos'] ?? [], true) ? 'Incluido · lo elegiste'
@@ -76,6 +88,7 @@ $encendidos = count($me['pagados']);
                         <?php if (!$on && !$pedido): ?>
                             <form method="post"><?= campo_csrf() ?><input type="hidden" name="accion" value="pedir"><input type="hidden" name="modulo" value="<?= e($id) ?>">
                                 <button class="boton boton-chico" type="submit"><?= $elegible ? 'Elegir este módulo' : 'Pedir cotización' ?></button></form>
+                        <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </article>
@@ -91,6 +104,7 @@ $encendidos = count($me['pagados']);
     <ul class="mp-base"><?php foreach (Modulos::BASE as $b): ?><li><?= e($b) ?></li><?php endforeach; ?></ul>
 </section>
 
+<?php if (!$enApp): /* App de Google Play: sin lo que se paga, ni cómo pagar, ni otros planes, ni pagos hechos */ ?>
 <section class="bloque" aria-labelledby="mp-t-pagar">
     <h2 id="mp-t-pagar">Cuánto pagas</h2>
     <?php foreach (['mensual', 'semestral', 'anual'] as $per): $c = $precios[$per]; $ah = $ahorro($c, $precios['mensual']); ?>
@@ -135,19 +149,22 @@ $encendidos = count($me['pagados']);
     </div>
 </section>
 
+<?php endif; ?>
+
 <?php if ($pedidos): ?>
 <section class="bloque" aria-labelledby="mp-t-pedidos">
     <h2 id="mp-t-pedidos">Tus pedidos de módulos</h2>
     <ul class="filas">
         <?php foreach ($pedidos as $s): ?>
             <li><span><?= e(implode(', ', array_map([Modulos::class, 'nombre'], Modulos::parse($s['encender'])))) ?>
-                <small class="suave" style="display:block"><?= e((new DateTimeImmutable($s['creado']))->format('d/m/Y')) ?><?= $s['respuesta'] ? ' · ' . e($s['respuesta']) : '' ?></small></span>
+                <small class="suave" style="display:block"><?= e((new DateTimeImmutable($s['creado']))->format('d/m/Y')) ?><?= $s['respuesta'] && !$enApp ? ' · ' . e($s['respuesta']) : '' ?></small></span>
                 <span class="mp-estado <?= $s['estado'] === 'aprobada' ? 'on' : ($s['estado'] === 'pendiente' ? 'pedido' : 'off') ?>"><?= ['pendiente' => 'Pendiente', 'aprobada' => 'Aprobado', 'rechazada' => 'No aprobado'][$s['estado']] ?></span></li>
         <?php endforeach; ?>
     </ul>
 </section>
 <?php endif; ?>
 
+<?php if (!$enApp): ?>
 <section class="bloque">
     <h2>Pagos hechos</h2>
     <?php if (!$pagos): ?><p class="vacio">Todavía no hay pagos registrados.</p><?php else: ?>
@@ -163,3 +180,4 @@ $encendidos = count($me['pagados']);
         </table></div>
     <?php endif; ?>
 </section>
+<?php endif; ?>

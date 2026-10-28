@@ -16,6 +16,10 @@ if ($ev) require RAIZ . '/app/vistas/_evento_tabs.php';
 <section class="bloque mod-apagado" style="max-width:640px">
     <p class="mod-apagado-etq">🔒 Este módulo no está en tu plan</p>
     <p><?= e($m['descripcion']) ?></p>
+    <?php if (en_app_android()): /* app de Google Play: sin cotizaciones ni precios del software */ ?>
+    <p class="suave ayuda-chica">Si ya lo usaste antes, tus datos siguen guardados: al encenderlo, todo vuelve como estaba.</p>
+    <?php if (es_admin_total($u)): ?><div class="acciones"><a class="boton boton-claro" href="<?= e(url('planes')) ?>#mod-<?= e($modulo) ?>">Ver Mi plan</a></div><?php endif; ?>
+    <?php else: ?>
     <?php /* Regla del dueño: el precio de un módulo que el cliente no tiene no se muestra; se pide cotización */ ?>
     <p class="mod-apagado-precio">Pide la cotización y Tukán te escribe con el valor para agregarlo a tu plan.</p>
     <p class="suave ayuda-chica">Si ya lo usaste antes, tus datos siguen guardados: al encenderlo, todo vuelve como estaba.</p>
@@ -32,5 +36,6 @@ if ($ev) require RAIZ . '/app/vistas/_evento_tabs.php';
         </div>
     <?php else: ?>
         <p>Pídele al dueño del negocio que lo agregue en <strong>Mi plan</strong>.</p>
+    <?php endif; ?>
     <?php endif; ?>
 </section>

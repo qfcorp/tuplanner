@@ -81,7 +81,7 @@ $nombreRol = fn(string $r): string => $r === 'admin' ? Usuarios::OPCION_ADMIN : 
             <h2>Agregar a alguien</h2>
             <?php if (!$puedeAgregar): ?>
                 <p class="aviso aviso-error">Tu plan <?= e($plan['nombre']) ?> permite <?= (int) $plan['max_usuarios'] ?> usuarios activos y ya los tienes.
-                    Desactiva a alguien que ya no lo use o <a href="<?= e(url('planes')) ?>">cambia de plan en Mi plan</a> (el plan Completo no tiene límite de usuarios).
+                    <?php if (en_app_android()): ?>Desactiva a alguien que ya no lo use.<?php else: ?>Desactiva a alguien que ya no lo use o <a href="<?= e(url('planes')) ?>">cambia de plan en Mi plan</a> (el plan Completo no tiene límite de usuarios).<?php endif; ?>
                     <?= $puedeAdmin ? 'Todavía puedes agregar administradores: no cuentan en el plan.' : '' ?></p>
             <?php endif; ?>
             <?php if (!$puedeAdmin): ?>

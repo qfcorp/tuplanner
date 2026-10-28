@@ -1,6 +1,12 @@
 <?php
 declare(strict_types=1);
 
+// App de Android (Google Play): /.well-known/assetlinks.json sale de src/AppAndroid.php (nginx lo manda aquí; sin sesión)
+if (parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) === '/.well-known/assetlinks.json') {
+    define('TUKAN_SIN_SESION', true);
+    require dirname(__DIR__) . '/app/bootstrap.php';
+    \TuPlanner\AppAndroid::responder();
+}
 require dirname(__DIR__) . '/app/bootstrap.php';
 
 /*

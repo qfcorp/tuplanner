@@ -108,6 +108,14 @@ en Mi plan solo ve el precio de lo que ya paga). Se cambian en Panel Tukán → 
   ciudad, WhatsApp, correo, qué necesita y módulos que le interesan) y llega como solicitud `demo_pedida` al Panel Central y al Resumen
   del Panel Tukán (**Crear demo**). La demo tiene todos los módulos encendidos (o los que elija Tukán) por los días que Tukán decida.
 
+## App de Android (Google Play)
+App **TuPlanner** (`com.tukansoftware.tuplanner`, repositorio `qfcorp/tukan-apps`): abre `https://tuplanner.tukanec.com/?r=inicio&app=play` a pantalla completa.
+**Versión 1.0.0 sin cobro dentro de la app**: con la cookie de la app (`en_app_android()`) no se ven precios del software, «Pedir cotización»,
+«Pagar», «Renovar» ni el WhatsApp de ventas (lo que el organizador cobra a sus clientes sí). Todo en [docs/GOOGLE_PLAY.md](docs/GOOGLE_PLAY.md).
+- `/.well-known/assetlinks.json` (src/AppAndroid.php) · privacidad https://tuplanner.tukanec.com/privacidad.php (sección `#borrar-cuenta`) · **Mi cuenta → Borrar mi cuenta**.
+- En el servidor, después del instalador: `sudo bash /var/www/tuplanner/deploy/app_android.sh` (termina en `OK`); con la huella de Google: `... app_android.sh HUELLA`.
+- Cuenta del revisor de Google: `php /var/www/tuplanner/deploy/demo_google.php crear` (negocio de ejemplo aparte, la contraseña sale una vez) · `... borrar`.
+
 ## Ayuda e inteligencia artificial (migraciones 110 y 111)
 Con la librería compartida del Panel Tukán Central **`src/tukan_ia.php`** (copiada SIN cambios de `compartido/`, guía `compartido/LEEME_IA.md`).
 - **Ayuda** (todos los planes y cargos): **Más → Ayuda**, cuadro «¿Qué necesita hacer?» → `tukan_ia_ayuda()`: pregunta frecuente guardada (costo 0) →
@@ -209,9 +217,9 @@ Telegram (opcional) en `config/.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNA
 Solo en bases de prueba (se borran y se vuelven a crear):
 
 ```bash
-# Lógica (2737 pruebas)
+# Lógica (2777 pruebas)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php
-# Pantallas de punta a punta (2299 pruebas; levanta un sitio de prueba solo)
+# Pantallas de punta a punta (2398 pruebas; levanta un sitio de prueba solo)
 PGPASSWORD=prueba bash tests/run_web.sh
 # Solo ayuda, IA y correo de la demo (API de Anthropic y SMTP de mentira: tests/anthropic_falso.py y tests/smtp_falso.py)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_110
@@ -219,6 +227,9 @@ PGPASSWORD=prueba bash tests/run_web.sh web_110
 # Solo el conector con el Panel Tukán Central (v1 = logica_95/web_95, v2 = logica_96/web_96, pausar y papelera = logica_97/web_97, módulos y pedidos de demo = logica_98/web_98, administradores = logica_99/web_99)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_9
 PGPASSWORD=prueba bash tests/run_web.sh web_9
+# Solo la app de Android (assetlinks, modo app sin precios del software, privacidad, cuenta del revisor de Google)
+TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_120
+PGPASSWORD=prueba bash tests/run_web.sh web_120
 # Solo los planes de $20 y $45 (migración 112): Básico con 3 módulos a elegir y Completo
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_112
 PGPASSWORD=prueba bash tests/run_web.sh web_112
