@@ -12,6 +12,7 @@
 use TuPlanner\{Configuracion, Cotizaciones, Eventos, Inspiracion, Pagos, Planificacion, Reportes};
 
 $db = base_limpia();
+planes_de_antes($db);   // estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: logica_112
 $hoy = new DateTimeImmutable('today');
 [$nid, $dueno] = negocio_prueba($db);
 [$nidB, $duenoB] = negocio_prueba($db, 'salon', 'Otra Planner');

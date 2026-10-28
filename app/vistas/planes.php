@@ -33,6 +33,10 @@ $encendidos = count($me['pagados']);
         <p class="suave" style="margin:6px 0 0">
             <?php if ($hasta): ?><?= $u['estado'] === 'prueba' ? 'Demo hasta el ' : 'Pagado hasta el ' ?><strong><?= e((new DateTimeImmutable($hasta))->format('d/m/Y')) ?></strong> · <?php endif; ?>
             <?= $encendidos ?> de <?= count($catalogo) ?> módulos · <?= (int) $uso['espacios'] ?> espacios y <?= (int) $uso['usuarios'] ?> usuarios activos <small>(los administradores no cuentan)</small></p>
+        <?php if (!$me['demo'] && ($me['modulos_elegir'] ?? 0) > 0): /* planes de $20 y $45 (migración 112) */ ?>
+            <p class="mp-elegir" style="margin:6px 0 0" data-por-elegir="<?= (int) $me['por_elegir'] ?>">Tu plan trae <strong><?= (int) $me['modulos_elegir'] ?> módulos a tu elección</strong><?= $me['por_elegir'] > 0
+                ? ': te ' . ($me['por_elegir'] === 1 ? 'queda 1 por elegir' : 'quedan ' . (int) $me['por_elegir'] . ' por elegir') . '. Elígelo abajo con «Elegir este módulo».' : '.' ?></p>
+        <?php endif; ?>
     </div>
     <a class="boton boton-wa" href="<?= e($wa('Hola, tengo una pregunta sobre mi plan de TuPlanner')) ?>" target="_blank" rel="noopener">Preguntar por WhatsApp</a>
 </section>
@@ -62,12 +66,16 @@ $encendidos = count($me['pagados']);
                     <?php if ($faltan && !$on): ?><p class="ayuda-chica">Viene junto con: <?= e(implode(', ', array_map([Modulos::class, 'nombre'], $faltan))) ?>.</p><?php endif; ?>
                     <div class="mp-mod-pie">
                         <?php /* Regla del dueño: el precio de un módulo que el cliente no tiene no se muestra; se pide cotización */ ?>
-                        <?php $aPedido = in_array($id, Modulos::SOLO_A_PEDIDO, true) || Modulos::porCotizacion($m);   // Asistente IA: nunca con precio ?>
-                        <span class="mp-mod-precio"><?= !$on ? ($aPedido ? 'Pídalo y le cotizamos' : 'Precio por cotización')
-                            : (in_array($id, $me['del_plan'], true) ? 'Incluido en tu plan' : ($aPedido ? 'Agregado a tu plan' : 'Agregado a tu plan: +' . dinero($m['precio_mensual']) . ' al mes')) ?></span>
+                        <?php $aPedido = Modulos::porCotizacion($m);   // precio 0 en el catálogo: por cotización
+                              // Planes de $20 y $45 (migración 112): en Básico puede elegir módulos incluidos; el Asistente IA no cuenta entre ellos
+                              $elegible = !$on && ($me['por_elegir'] ?? 0) > 0 && !in_array($id, Modulos::FUERA_DEL_CUPO, true); ?>
+                        <span class="mp-mod-precio"><?= !$on ? ($elegible ? 'Puedes elegirlo en tu plan' : (in_array($id, Modulos::SOLO_A_PEDIDO, true) || $aPedido ? 'Pídalo y le cotizamos' : 'Precio por cotización'))
+                            : (in_array($id, $me['del_plan'], true) ? 'Incluido en tu plan'
+                               : (in_array($id, $me['elegidos'] ?? [], true) ? 'Incluido · lo elegiste'
+                                  : ($aPedido ? 'Agregado a tu plan' : 'Extra · ' . dinero($me['precio_por_extra'][$id] ?? $m['precio_mensual']) . ' al mes'))) ?></span>
                         <?php if (!$on && !$pedido): ?>
                             <form method="post"><?= campo_csrf() ?><input type="hidden" name="accion" value="pedir"><input type="hidden" name="modulo" value="<?= e($id) ?>">
-                                <button class="boton boton-chico" type="submit">Pedir cotización</button></form>
+                                <button class="boton boton-chico" type="submit"><?= $elegible ? 'Elegir este módulo' : 'Pedir cotización' ?></button></form>
                         <?php endif; ?>
                     </div>
                 </article>
@@ -109,7 +117,8 @@ $encendidos = count($me['pagados']);
         <?php foreach ($listaPlanes as $pl): $pm = $planesMod[$pl['codigo']] ?? null; if (!$pm) continue; ?>
             <div class="mp-plan <?= $pl['codigo'] === $u['plan_codigo'] ? 'actual' : '' ?>">
                 <h3>Plan <?= e($pl['nombre']) ?><?= $pl['codigo'] === $u['plan_codigo'] ? ' <small class="suave">(el tuyo)</small>' : '' ?></h3>
-                <p><?= $pm['todos'] ? 'Todos los módulos' : count($pm['modulos']) . ' módulos' ?><?= $pl['codigo'] === $u['plan_codigo'] ? '' : ' · precio por cotización' ?></p>
+                <p><?= $pm['todos'] ? 'Todos los módulos' . (in_array('asistente_ia', $pm['modulos'], true) ? ', con el Asistente IA' : '')
+                       : ($pm['modulos_elegir'] > 0 ? 'La base + ' . ($pm['modulos'] ? count($pm['modulos']) . ' módulos + ' : '') . $pm['modulos_elegir'] . ' módulos que tú eliges' : count($pm['modulos']) . ' módulos') ?><?= $pl['codigo'] === $u['plan_codigo'] ? '' : ' · precio por cotización' ?></p>
                 <p><?= $pl['max_espacios'] ? 'Hasta ' . (int) $pl['max_espacios'] . ' espacios' : 'Espacios sin límite' ?> · <?= $pl['max_usuarios'] ? 'hasta ' . (int) $pl['max_usuarios'] . ' usuarios' : 'usuarios sin límite' ?></p>
                 <p><?= e($pl['descripcion'] ?? '') ?></p>
                 <?php if ($pl['codigo'] !== $u['plan_codigo']): ?>

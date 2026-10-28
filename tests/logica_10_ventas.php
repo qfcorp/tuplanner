@@ -6,6 +6,7 @@
 use TuPlanner\{Eventos, Ventas, Cotizaciones};
 
 $db = base_limpia();
+planes_de_antes($db);   // estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: logica_112
 $hoy = new DateTimeImmutable('today');
 [$nid, $dueno] = negocio_prueba($db);
 $ev = new Eventos($db);
@@ -212,14 +213,14 @@ titulo('13. Lugares y límite del plan');
 $db->exec("UPDATE planes SET max_espacios = 2 WHERE codigo = 'salon'");   // el plan Planner no tiene límite; se prueba el mecanismo
 [$nidS, $duenoS] = negocio_prueba($db, 'salon', 'Salón Las Rosas');
 check('Plan Salón: 2 lugares máximo', 2, $ve->maxEspacios($nidS));
-check_error('No deja crear el tercero', 'plan Agencia', fn() => $ve->guardarEspacio($nidS, ['nombre' => 'Terraza']));
+check_error('No deja crear el tercero', 'plan Completo', fn() => $ve->guardarEspacio($nidS, ['nombre' => 'Terraza']));
 $jardinS = espacio_id($db, $nidS, 'Capilla del Valle');
 $ve->activarEspacio($nidS, $jardinS, false);
 $terraza = $ve->guardarEspacio($nidS, ['nombre' => 'Terraza', 'capacidad_banquete' => '80', 'capacidad_coctel' => '120', 'precio_base' => '600,50', 'color' => '#22457A', 'orden' => '3']);
 $T = $ve->espacio($nidS, $terraza);
 check('Con uno desactivado, sí crea', 'Terraza', $T['nombre']);
 check('Precio con coma', 600.5, (float) $T['precio_base']);
-check_error('No reactiva por encima del límite', 'plan Agencia', fn() => $ve->activarEspacio($nidS, $jardinS, true));
+check_error('No reactiva por encima del límite', 'plan Completo', fn() => $ve->activarEspacio($nidS, $jardinS, true));
 check_error('Nombre repetido', 'Ya tienes', fn() => $ve->guardarEspacio($nidS, ['nombre' => 'terraza']));
 check_error('Capacidad con letras', 'capacidad', fn() => $ve->guardarEspacio($nidS, ['nombre' => 'Patio', 'capacidad_banquete' => 'cien'], $terraza));
 $ve->guardarEspacio($nidS, ['nombre' => 'Terraza Norte', 'capacidad_banquete' => '90', 'color' => 'rojo'], $terraza);

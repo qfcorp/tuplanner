@@ -9,7 +9,9 @@ use RuntimeException;
 
 /**
  * Planes, demo y suscripciones de TuPlanner (mismas reglas que la familia Tukán).
- *  - Esencial $19 / Planner $39 / Agencia $69 al mes (se cambian en el panel de Tukán)
+ *  - Solo dos planes (migración 112, decisión de Dimitry del 28 oct 2026; se cambian en el panel de Tukán):
+ *    Básico $20 (código esencial: la base + 3 módulos que elige el cliente; cada uno más $5) y
+ *    Completo $45 (código quinta: todos los módulos, con el Asistente IA). El Asistente IA en Básico: $5 aparte.
  *  - Semestral: paga 5, recibe 6
  *  - Anual: paga 10, recibe 12 + dominio propio (a nombre de Tukán)
  *  - Demo: 7 días (solo la crea Tukán; no hay registro abierto con periodo de prueba). Cada plan = base + módulos (Modulos)
@@ -89,8 +91,17 @@ final class Planes
         return $this->db->query('SELECT * FROM planes ORDER BY precio_mensual')->fetchAll();
     }
 
-    public function guardarPlan(string $codigo, string $nombre, float $precio, ?int $maxEspacios, ?int $maxUsuarios, string $descripcion = ''): void
+    /**
+     * Guarda un plan. $modulosElegir: módulos extra incluidos en el precio (null = no cambiar);
+     * $precioModuloExtra: lo que cuesta cada módulo extra después de esos (false = no cambiar, null = el precio del catálogo).
+     */
+    public function guardarPlan(string $codigo, string $nombre, float $precio, ?int $maxEspacios, ?int $maxUsuarios, string $descripcion = '',
+                                ?int $modulosElegir = null, float|null|false $precioModuloExtra = false): void
     {
+        if ($modulosElegir !== null && ($modulosElegir < 0 || $modulosElegir > 50)) throw new RuntimeException('Los módulos a elegir deben ser de 0 a 50.');
+        if ($precioModuloExtra !== false && $precioModuloExtra !== null && ($precioModuloExtra < 0 || $precioModuloExtra > 10000)) {
+            throw new RuntimeException('El precio de cada módulo extra no es válido.');
+        }
         if (mb_strlen(trim($nombre)) < 2) throw new RuntimeException('Escribe el nombre del plan.');
         if ($precio < 0 || $precio > 10000) throw new RuntimeException('Precio no válido.');
         if ($maxEspacios !== null && $maxEspacios < 1) throw new RuntimeException('El máximo de lugares debe ser 1 o más (vacío = sin límite).');
@@ -98,6 +109,11 @@ final class Planes
         $st = $this->db->prepare('UPDATE planes SET nombre = ?, precio_mensual = ?, max_espacios = ?, max_usuarios = ?, descripcion = ? WHERE codigo = ?');
         $st->execute([trim($nombre), round($precio, 2), $maxEspacios, $maxUsuarios, trim($descripcion) ?: null, $codigo]);
         if ($st->rowCount() !== 1) throw new RuntimeException('Plan no encontrado.');
+        if ($modulosElegir !== null) $this->db->prepare('UPDATE planes SET modulos_elegir = ? WHERE codigo = ?')->execute([$modulosElegir, $codigo]);
+        if ($precioModuloExtra !== false) {
+            $this->db->prepare('UPDATE planes SET precio_modulo_extra = ? WHERE codigo = ?')
+                     ->execute([$precioModuloExtra === null ? null : round($precioModuloExtra, 2), $codigo]);
+        }
     }
 
     /** prueba, prueba_vencida, activo, por_vencer (en días de gracia), vencido, suspendido, cancelado. */

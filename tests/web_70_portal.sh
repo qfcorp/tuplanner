@@ -1,6 +1,7 @@
 # Portal del cliente, segunda parte (migración 070): formulario del evento (plantillas, portal con guardado automático,
 # cierre, "listo"), extras pedidos desde el portal (configurar, pedir, aprobar, rechazar, cancelar), encuesta de satisfacción
 # (enlace secreto, reseña en Google, aviso por nota baja), reporte de satisfacción, PDF y permisos por rol y por negocio.
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 FOTO70="$TMP/extra_70.jpg"
 php -r '$i=imagecreatetruecolor(480,270);imagefill($i,0,0,imagecolorallocate($i,230,200,120));imagestring($i,5,150,120,"Hora loca",0);imagejpeg($i,$argv[1]);' "$FOTO70"
 cat > "$TMP/aceptar_70.php" <<'PHP'

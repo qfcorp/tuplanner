@@ -6,6 +6,7 @@
 use TuPlanner\{Automaticas, Configuracion, Cotizaciones, Eventos, Pagos, PanelTukan, Planes, Reportes, Usuarios};
 
 $db = base_limpia();
+planes_de_antes($db);   // estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: logica_112
 $hoy = new DateTimeImmutable('2026-10-12');   // lunes
 [$nid, $dueno] = negocio_prueba($db);
 $db->prepare("UPDATE negocios SET prueba_hasta = '2027-12-31', comision_vendedor_pct = 5 WHERE id = ?")->execute([$nid]);
@@ -322,6 +323,8 @@ check('Un evento confirmado también pasa a realizado', 'realizado', $db->query(
 check('Un evento futuro no se toca', 'separado', $db->query("SELECT estado FROM eventos WHERE id = $b")->fetchColumn());
 
 titulo('15. Reporte del mes y cotizaciones vencidas');
+// Las fechas de esta sección son fijas (oct-nov 2026): la demo del otro negocio vence antes del 1 de noviembre, corra el día que corra
+$db->prepare("UPDATE negocios SET prueba_hasta = '2026-10-25' WHERE id = ?")->execute([$nidSalon]);
 $db->exec("DELETE FROM notificaciones");
 $db->exec("UPDATE negocios SET reporte_enviado_mes = NULL");
 $r = $auto->correr(new DateTimeImmutable('2026-11-01 06:30'));

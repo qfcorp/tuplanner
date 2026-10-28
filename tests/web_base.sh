@@ -56,6 +56,25 @@ registrar() { # [plan] [nombre del negocio]
 pagar_plan() {
   sql "UPDATE negocios SET estado='activo', plan_codigo='${1:-quinta}', activo_hasta=CURRENT_DATE + 30 WHERE id=$NID" > /dev/null
 }
+# Planes de ANTES de la migración 112 (para las pruebas escritas con ese modelo): Esencial $19 sin módulos a elegir,
+# Planner (salon) $39 (lugares sin límite, 3 usuarios, con sus módulos) y Agencia (quinta) $69. Los de $20 y $45: web_112_planes.sh.
+planes_de_antes() {
+  sql "UPDATE planes SET nombre='Esencial', precio_mensual=19, modulos='', modulos_elegir=0, precio_modulo_extra=NULL, max_espacios=NULL, max_usuarios=2 WHERE codigo='esencial';
+       INSERT INTO planes (codigo, nombre, precio_mensual, max_espacios, max_usuarios, descripcion, modulos)
+       VALUES ('salon', 'Planner', 39.00, NULL, 3, 'Para el organizador independiente (plan de antes de la migración 112).',
+               'planificacion,presupuesto,comisiones,ideas,paquetes,contratos,portal_cliente,cobros_linea,cuestionarios,proveedores,incidencias,metas,telegram,exportar')
+       ON CONFLICT (codigo) DO NOTHING;
+       UPDATE planes SET nombre='Agencia', precio_mensual=69 WHERE codigo='quinta';" > /dev/null
+}
+# Los planes de $20 y $45 como los deja la migración 112 (Básico y Completo; sin el plan del medio)
+planes_20_45() {
+  sql "UPDATE negocios SET plan_codigo='quinta' WHERE plan_codigo='salon'; UPDATE suscripciones SET plan_codigo='quinta' WHERE plan_codigo='salon';
+       DELETE FROM planes WHERE codigo='salon';
+       UPDATE planes SET nombre='Básico', precio_mensual=20, modulos='', modulos_elegir=3, precio_modulo_extra=5, max_espacios=NULL, max_usuarios=2,
+                         descripcion='La base de TuPlanner + 3 módulos que tú eliges.' WHERE codigo='esencial';
+       UPDATE planes SET nombre='Completo', precio_mensual=45, modulos='*,asistente_ia', modulos_elegir=0, precio_modulo_extra=NULL, max_espacios=NULL, max_usuarios=NULL
+        WHERE codigo='quinta';" > /dev/null
+}
 entrar() { # email clave
   rm -f "$JAR"
   post "r=login" --data-urlencode "email=$1" --data-urlencode "clave=$2" > /dev/null

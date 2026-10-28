@@ -80,16 +80,17 @@ Temática, paleta de colores y tablero de fotos (❤️ Va / ✕ No va); el clie
 ---
 
 ## Otros módulos
-Paquetes y simulador · Contratos con firma (firma con el dedo, QR de verificación, anexos) · Portal del cliente (sin claves: evento, documentos, pagos, Tu planificación, ideas) · Cobros en línea (Payphone) · Formulario, extras y encuesta · Día del evento · Invitados con QR · Plano del salón · Mobiliario y menaje · Boda en vivo · Proveedores y compras · Portal del proveedor · Incidencias y puntaje · Metas y reportes avanzados · Avisos por Telegram · Exportar a Excel y Google Calendar · **Asistente IA** (incluido en Agencia; en los demás planes, extra por cotización).
+Paquetes y simulador · Contratos con firma (firma con el dedo, QR de verificación, anexos) · Portal del cliente (sin claves: evento, documentos, pagos, Tu planificación, ideas) · Cobros en línea (Payphone) · Formulario, extras y encuesta · Día del evento · Invitados con QR · Plano del salón · Mobiliario y menaje · Boda en vivo · Proveedores y compras · Portal del proveedor · Incidencias y puntaje · Metas y reportes avanzados · Avisos por Telegram · Exportar a Excel y Google Calendar · **Asistente IA** (incluido en Completo; en Básico se pide aparte y no cuenta entre los 3 que eliges).
 
 ## Mi plan y demos
-- **Más → Mi plan**: módulos encendidos, los que puedes agregar («Precio por cotización» y **Pedir cotización**) y lo que viene siempre incluido. El **Asistente IA** viene incluido en el plan Agencia; en los demás dice «Pídalo y le cotizamos».
+- **Planes:** **Básico** (la base + **3 módulos que tú eliges**; si necesitas más, se suman a tu plan) y **Completo** (todos los módulos, con el **Asistente IA** incluido, usuarios sin límite). Tukán cotiza por WhatsApp.
+- **Más → Mi plan**: módulos encendidos, los que puedes agregar («Precio por cotización» y **Pedir cotización**) y lo que viene siempre incluido. En el Básico dice «Tu plan trae 3 módulos a tu elección» y cuántos te quedan: los que elegiste dicen «Incluido · lo elegiste», los demás que pagas dicen «Extra», y mientras te queden por elegir, los que no tienes dicen «Puedes elegirlo en tu plan» con **Elegir este módulo**. El **Asistente IA** viene incluido en el plan Completo; en el Básico dice «Pídalo y le cotizamos».
 - No hay registro abierto: **Solicitar demo**. Tukán crea la demo; al contratar, nada de lo cargado se pierde.
 - El valor del programa siempre es por cotización según los módulos: WhatsApp 099 640 8397.
 
 ## Ayuda e inteligencia artificial
 - **Ayuda (base, todos los planes y cargos):** **Más → Ayuda** → cuadro **¿Qué necesita hacer?** (hasta 500 letras) → **Preguntar**. Responde al instante y paso a paso con el manual. Las preguntas ya hechas quedan guardadas (Tukán las revisa) y salen de inmediato. Hasta 10 preguntas por minuto. Si no sirvió: **WhatsApp 099 640 8397**.
-- **Asistente IA (incluido en el plan Agencia; en los demás, «Pídalo y le cotizamos»):**
+- **Asistente IA (incluido en el plan Completo; en el Básico, «Pídalo y le cotizamos»):**
   - **Eventos** o **Nuevo evento** → **✨ Desde un mensaje de WhatsApp** → pega el mensaje del cliente → **Proponer la cotización** → borrador con cliente, tipo, fecha, invitados, lugar (o por definir), paquete y servicios de **tu catálogo** → **Guardar evento y cotización** (evento en Consulta, cotización en borrador; no se envía nada).
   - **Planificación → Presupuesto** → **✨ Leer cotización de proveedor** → sube la foto o el PDF de la proforma (y una nota) → **Leer la cotización** → marca las partidas → **Agregar al presupuesto** (quedan «Pidiendo precios», el cliente le paga directo).
   - Si no se puede leer automáticamente: «En este momento no pudimos procesar … automáticamente; puede hacerlo a mano aquí» con el enlace.

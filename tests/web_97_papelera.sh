@@ -5,6 +5,7 @@
 # portales "temporalmente no disponible" (503). Borrado: no entra, sus páginas dan 404, sale del Panel Tukán (filtro Papelera),
 # se restaura desde el panel y la tarea de cada hora lo borra de verdad a los 30 días.
 # Variables: BASE, DB, PGPASSWORD, TMP, TUKAN_CENTRAL_*, TUPLANNER_BORRADOS (de run_web.sh)
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 
 C97_ID=${TUKAN_CENTRAL_ID:-tuplanner-prueba}
 export C97_ID

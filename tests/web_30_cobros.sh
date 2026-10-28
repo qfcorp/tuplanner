@@ -1,6 +1,7 @@
 # Cobros y portal del cliente: pagos del evento hasta separar la fecha, plan automático y a mano, anular,
 # comprobante desde el portal (confirmar / rechazar), Payphone simulado, recibo y estado de cuenta en PDF,
 # tablero de cobros, mensajes de hoy y permisos.
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 FOTO="$TMP/comprobante_30.jpg"
 php -r '$i=imagecreatetruecolor(320,240);imagefill($i,0,0,imagecolorallocate($i,210,230,250));imagestring($i,5,40,100,"Transferencia 500",0);imagejpeg($i,$argv[1]);' "$FOTO"
 pdf_get() { curl -s -b "$JAR" -c "$JAR" -o "$TMP/doc.pdf" -w "%{http_code} %{content_type}" "$BASE/?$1"; }

@@ -2,7 +2,7 @@
 use TuPlanner\{Eventos, Planos, Ventas};
 
 /**
- * Plano visual del salón (plan Agencia).
+ * Plano visual del salón (plan Completo).
  *   /?r=plano                    distribuciones (plantillas) de los lugares · &espacio=<id> para elegir el espacio
  *   /?r=plano&p=<plano>          editor de una distribución (el dueño la cambia; los demás miran)
  *   /?r=plano&id=<evento>        plano del evento, pestaña "Plano" (dueño, vendedor y coordinador lo cambian; consulta mira)

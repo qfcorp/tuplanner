@@ -3,6 +3,7 @@
 # PDF de la orden con QR y verificación pública, pagos (sin pagar de más, anular), factura a mano y XML del SRI
 # (con y sin orden), comparar precios, por pagar + Excel, ganancia del evento, inicio, día del evento (llegada,
 # evaluación, cronograma, incidencias), portal del proveedor, tareas automáticas, roles y aislamiento entre negocios.
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 HOY=$(date +%Y-%m-%d)
 FECHA=$(date -d '+20 days' +%Y-%m-%d)
 FOTO="$TMP/pv_foto.jpg"

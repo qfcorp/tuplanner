@@ -2,6 +2,7 @@
 # Pantallas: Ayuda e inteligencia artificial (110) y «Enviar por correo» de la demo lista.
 # Lo corre tests/run_web.sh (TUKAN_IA_ENV y TUKAN_CORREO_ENV apuntan a archivos de prueba en $TMP).
 # La API de Anthropic y el SMTP son DE MENTIRA: tests/anthropic_falso.py (8263) y tests/smtp_falso.py (8264, sin TLS, solo 127.0.0.1).
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 
 IA_PUERTO=${IA_PUERTO:-8273}
 SMTP_PUERTO=${SMTP_PUERTO:-8274}
@@ -93,7 +94,7 @@ contiene "Eventos: botón «Desde un mensaje»" "$TMP/pag.html" "r=ia_cotizacion
 check "La pantalla abre" "200" "$(get "r=ia_cotizacion")"
 contiene "…con el cuadro del mensaje" "$TMP/pag.html" "Mensaje del cliente"
 get "r=planes" > /dev/null
-contiene "Mi plan: «Agregado a tu plan» sin precio" "$TMP/pag.html" "Agregado a tu plan<"
+contiene "Mi plan: el Asistente IA que ya paga dice «Extra · \$5» (migración 112)" "$TMP/pag.html" "Extra · \$5,00 al mes"
 ESP=$(sql "SELECT id FROM espacios WHERE negocio_id=$NID AND activo ORDER BY orden LIMIT 1")
 P1=$(sql "SELECT id FROM productos WHERE negocio_id=$NID AND activo AND unidad <> 'persona' ORDER BY id LIMIT 1")
 ANIO=$(( $(date +%Y) + 1 ))

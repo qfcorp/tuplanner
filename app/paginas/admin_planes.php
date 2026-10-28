@@ -12,9 +12,16 @@ if (es_post()) {
             if ($precioTxt === '' || !is_numeric(str_replace(',', '.', $precioTxt))) throw new RuntimeException('Escribe el precio al mes con números.');
             foreach ([$maxE, $maxU] as $m) if ($m !== '' && !ctype_digit($m)) throw new RuntimeException('Los máximos deben ser números enteros (vacío = sin límite).');
             $precio = (float) str_replace(',', '.', $precioTxt);
+            // Planes de $20 y $45 (migración 112): módulos que elige el cliente (incluidos) y precio de cada módulo más
+            $elegir = trim((string) ($_POST['modulos_elegir'] ?? ''));
+            $extraTxt = trim(str_replace(',', '.', (string) ($_POST['precio_modulo_extra'] ?? '')));
+            if ($elegir !== '' && !ctype_digit($elegir)) throw new RuntimeException('Los módulos a elegir deben ser un número entero (0 = ninguno).');
+            if ($extraTxt !== '' && !is_numeric($extraTxt)) throw new RuntimeException('Escribe el precio de cada módulo más con números (vacío = precio del catálogo).');
             $planes->guardarPlan((string) ($_POST['codigo'] ?? ''), (string) ($_POST['nombre'] ?? ''), $precio,
-                $maxE === '' ? null : (int) $maxE, $maxU === '' ? null : (int) $maxU, (string) ($_POST['descripcion'] ?? ''));
-            registrar_admin('Plan ' . $_POST['codigo'] . ' actualizado: ' . dinero($precio) . ' al mes · lugares ' . ($maxE ?: 'sin límite') . ' · usuarios ' . ($maxU ?: 'sin límite'));
+                $maxE === '' ? null : (int) $maxE, $maxU === '' ? null : (int) $maxU, (string) ($_POST['descripcion'] ?? ''),
+                $elegir === '' ? 0 : (int) $elegir, $extraTxt === '' ? null : (float) $extraTxt);
+            registrar_admin('Plan ' . $_POST['codigo'] . ' actualizado: ' . dinero($precio) . ' al mes · lugares ' . ($maxE ?: 'sin límite') . ' · usuarios ' . ($maxU ?: 'sin límite')
+                . ' · módulos a elegir ' . ($elegir === '' ? '0' : (int) $elegir) . ($extraTxt !== '' ? ' · cada módulo más ' . dinero((float) $extraTxt) : ''));
             aviso('Plan guardado. Los precios nuevos se aplican a los próximos pagos.');
         } elseif (($_POST['accion'] ?? '') === 'catalogo') {   // Anexo B: precio, descripción y orden de cada módulo y qué trae cada plan
             $mods = [];

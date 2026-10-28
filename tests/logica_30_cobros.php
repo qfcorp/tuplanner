@@ -6,6 +6,7 @@
 use TuPlanner\{Eventos, Cotizaciones, Pagos, Contratos, Cobranza, PdfCobros, Pdf, Letras};
 
 $db = base_limpia();
+planes_de_antes($db);   // estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: logica_112
 $hoy = new DateTimeImmutable('today');
 $fecha = $hoy->modify('+60 days')->format('Y-m-d');
 [$nid, $dueno] = negocio_prueba($db);

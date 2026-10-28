@@ -326,6 +326,9 @@ final class TukanCentralV2
             'del_plan' => $e['del_plan'], 'extra' => $e['extra'], 'quitados' => $e['quitados'], 'activos' => $e['activos'], 'pagados' => $e['pagados'],
             'precio_plan' => $e['precio_plan'], 'precio_extra' => $e['precio_extra'], 'descuento' => $e['descuento'],
             'precio_acordado' => $e['precio_acordado'], 'mensual' => $e['mensual'], 'demo' => $e['demo'], 'demo_todos' => $e['demo_todos'],
+            // Planes de $20 y $45 (migración 112): módulos a elegir incluidos en el plan y lo que cuesta cada extra
+            'modulos_elegir' => $e['modulos_elegir'], 'elegidos' => $e['elegidos'], 'por_elegir' => $e['por_elegir'],
+            'precio_por_extra' => $e['precio_por_extra'],
         ];
     }
 
@@ -759,8 +762,12 @@ final class TukanCentralV2
         return ['codigo' => (string) $p['codigo'], 'nombre' => (string) $p['nombre'], 'activo' => true, 'para' => null,
                 'modulos' => $this->modulos->planes()[$p['codigo']]['modulos'] ?? [],
                 'descripcion' => $p['descripcion'] ?? null, 'precios' => $precios,
+                // Planes de $20 y $45 (migración 112): módulos a elección incluidos y precio de cada módulo más (null = el del catálogo)
+                'modulos_elegir' => (int) ($p['modulos_elegir'] ?? 0),
+                'precio_modulo_extra' => isset($p['precio_modulo_extra']) ? round((float) $p['precio_modulo_extra'], 2) : null,
                 'limites' => ['Espacios' => $p['max_espacios'] === null ? 'Ilimitados' : (string) $p['max_espacios'],
-                              'Usuarios' => $p['max_usuarios'] === null ? 'Ilimitados' : (string) $p['max_usuarios']],
+                              'Usuarios' => $p['max_usuarios'] === null ? 'Ilimitados' : (string) $p['max_usuarios']]
+                    + ((int) ($p['modulos_elegir'] ?? 0) > 0 ? ['Módulos a elegir' => (string) (int) $p['modulos_elegir']] : []),
                 'clientes' => $clientes];
     }
 
@@ -773,6 +780,8 @@ final class TukanCentralV2
             ['campo' => 'descripcion', 'etiqueta' => 'Descripción', 'tipo' => 'texto', 'requerido' => false, 'max' => 300],
             ['campo' => 'max_espacios', 'etiqueta' => 'Máximo de lugares (vacío = ilimitados)', 'tipo' => 'numero', 'requerido' => false, 'min' => 1],
             ['campo' => 'max_usuarios', 'etiqueta' => 'Máximo de usuarios (vacío = ilimitados)', 'tipo' => 'numero', 'requerido' => false, 'min' => 1],
+            ['campo' => 'modulos_elegir', 'etiqueta' => 'Módulos que elige el cliente (incluidos en el precio)', 'tipo' => 'numero', 'requerido' => false, 'min' => 0],
+            ['campo' => 'precio_modulo_extra', 'etiqueta' => 'Cada módulo más ($, vacío = precio del catálogo)', 'tipo' => 'dinero', 'requerido' => false, 'min' => 0],
         ];
     }
 
@@ -919,7 +928,11 @@ final class TukanCentralV2
     {
         $enc = Modulos::parse($ms['encender']);
         $cat = $this->modulos->catalogo();
-        $suma = round(array_sum(array_map(fn($m) => in_array($m, $this->modulosDe((int) $n['id'])['del_plan'], true) ? 0 : $cat[$m]['precio_mensual'], $enc)), 2);
+        // Cuánto suma al mes (planes de $20 y $45, migración 112: un módulo elegido del Básico suma 0). Si ya los tiene, lo que paga por ellos.
+        $hoyMod = $this->modulos->estado((int) $n['id']);
+        $suma = array_diff($enc, $hoyMod['pagados'])
+            ? round($this->modulos->estado((int) $n['id'], null, $enc)['calculado'] - $hoyMod['calculado'], 2)
+            : round(array_sum(array_map(fn($m) => $hoyMod['precio_por_extra'][$m] ?? 0.0, $enc)), 2);
         $tel = $n['whatsapp'] ?: ($n['telefono'] ?: $n['dueno_telefono']);
         $wa = WhatsApp::normalizarTelefono($tel);
         $sid = 'cambio_modulos:' . (int) $ms['id'];
@@ -1063,9 +1076,13 @@ final class TukanCentralV2
         }
         $planes = [];
         foreach ($this->modulos->planes() as $p) {
-            $planes[] = ['codigo' => $p['codigo'], 'nombre' => $p['nombre'], 'precio_mensual' => $p['precio_mensual'], 'modulos' => $p['modulos'], 'todos' => $p['todos']];
+            $planes[] = ['codigo' => $p['codigo'], 'nombre' => $p['nombre'], 'precio_mensual' => $p['precio_mensual'], 'modulos' => $p['modulos'], 'todos' => $p['todos'],
+                         'modulos_elegir' => $p['modulos_elegir'], 'precio_modulo_extra' => $p['precio_modulo_extra']];
         }
-        return ['base' => Modulos::BASE, 'grupos' => Modulos::GRUPOS, 'modulos' => $lista, 'planes' => $planes];
+        // fuera_del_cupo: módulos que no cuentan entre los que elige el cliente del Básico y se cobran a su precio del catálogo
+        // (el Panel Tukán Central calcula con esto el total en vivo; planes de $20 y $45, migración 112)
+        return ['base' => Modulos::BASE, 'grupos' => Modulos::GRUPOS, 'modulos' => $lista, 'planes' => $planes,
+                'fuera_del_cupo' => Modulos::FUERA_DEL_CUPO];
     }
 
     // ------------------------------------------------------------------
@@ -1839,7 +1856,11 @@ final class TukanCentralV2
             if (!array_key_exists($k, $d)) return $p[$k] === null ? null : (int) $p[$k];
             return $d[$k] === null || $d[$k] === '' ? null : $this->entero($d, $k, null, 1, 100000, 'datos.');
         };
-        $this->planes->guardarPlan($codigo, $nombre, $precio, $max('max_espacios'), $max('max_usuarios'), $descripcion);
+        // Planes de $20 y $45 (migración 112): módulos a elegir (vacío = 0) y precio de cada módulo más (vacío = el del catálogo)
+        $elegir = array_key_exists('modulos_elegir', $d)
+            ? ($d['modulos_elegir'] === null || $d['modulos_elegir'] === '' ? 0 : $this->entero($d, 'modulos_elegir', null, 0, 50, 'datos.')) : null;
+        $precioExtra = array_key_exists('precio_modulo_extra', $d) ? $this->dineroOpc($d, 'precio_modulo_extra', 'datos.') : false;
+        $this->planes->guardarPlan($codigo, $nombre, $precio, $max('max_espacios'), $max('max_usuarios'), $descripcion, $elegir, $precioExtra);
         if (isset($d['ajustes'])) {
             if (!is_array($d['ajustes']) || array_is_list($d['ajustes'])) throw TukanCentralError::campo('datos.ajustes', 'Los ajustes no son válidos.');
             $this->planes->guardarAjustes(array_map('strval', array_merge($this->planes->ajustes(), $d['ajustes'])));

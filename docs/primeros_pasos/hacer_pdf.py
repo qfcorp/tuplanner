@@ -72,7 +72,7 @@ h.append(paso(6, 'Anote cada cliente como un evento', 'Botón Nuevo evento (en e
     'Elija <b>Cliente nuevo</b> o <b>Ya está registrado</b>. Con nombre, celular y fecha basta para empezar.',
     'Ponga <b>¿Qué celebran?</b>, la fecha, la hora, los invitados y el <b>Presupuesto del cliente</b>. Marque el lugar o déjelo sin marcar: queda "por definir".',
     'Toque <b>Crear evento</b>. El evento nace como <b>Consulta</b>.'],
-    'con el <b>Asistente IA</b> (incluido en el plan Agencia), toque <b>✨ Desde un mensaje de WhatsApp</b>, pegue lo que le escribió el cliente y revise el borrador del evento y la cotización antes de guardarlo. En el presupuesto, <b>✨ Leer cotización de proveedor</b> arma las partidas desde la foto de la proforma.'))
+    'con el <b>Asistente IA</b> (incluido en el plan Completo), toque <b>✨ Desde un mensaje de WhatsApp</b>, pegue lo que le escribió el cliente y revise el borrador del evento y la cotización antes de guardarlo. En el presupuesto, <b>✨ Leer cotización de proveedor</b> arma las partidas desde la foto de la proforma.'))
 h.append(paso(7, 'Planifique: presupuesto y tareas', 'En el evento → pestaña Planificación', [
     'En <b>Presupuesto por proveedor</b>, escriba el presupuesto total y toque <b>Repartir con los porcentajes típicos</b>: se arman las partidas (lugar, banquete, fotos, flores…) con un estimado.',
     'En cada partida toque <b>Cambiar, pagos y comisión</b>: proveedor, estado, precio contratado y <b>¿Quién le paga al proveedor?</b> (el cliente directo, o va en su contrato). Con <b>+ Agregar partida</b> suma otras.',

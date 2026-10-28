@@ -1,4 +1,5 @@
 # Gestión: inicio, reportes y exportar, configuración, usuarios, mi cuenta, avisos, planes, iCal, Telegram, panel Tukán
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 HOY=$(date +%Y-%m-%d)
 EN3=$(date -d "+3 days" +%Y-%m-%d)
 EN40=$(date -d "+40 days" +%Y-%m-%d)

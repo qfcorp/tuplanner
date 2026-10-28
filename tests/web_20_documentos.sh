@@ -1,5 +1,6 @@
 # Documentos: catálogo, paquetes, cotización (editor, envío, página pública, aceptar), contrato (generar, enviar, firmar),
 # verificación, plantillas y permisos — de punta a punta.
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 FUT=$(date -d "+100 days" +%Y-%m-%d)
 FIRMA=$(php -r '$i=imagecreatetruecolor(400,150);imagefill($i,0,0,imagecolorallocate($i,255,255,255));$n=imagecolorallocate($i,10,10,40);imagesetthickness($i,4);for($k=0;$k<6;$k++)imageline($i,20+$k*50,120-($k%2)*80,70+$k*50,40+($k%2)*80,$n);ob_start();imagepng($i);echo "data:image/png;base64,".base64_encode(ob_get_clean());')
 

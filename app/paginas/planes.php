@@ -4,6 +4,7 @@ use TuPlanner\{Modulos, PanelTukan};
 /**
  * Mi plan (dueño): sus módulos encendidos, lo que paga al mes por SU plan, los módulos y planes que puede pedir y sus pagos.
  * Regla del dueño de Tukán: el precio de lo que el cliente NO tiene nunca se muestra; siempre se pide cotización.
+ * Planes de $20 y $45 (migración 112): en Básico el cliente elige 3 módulos incluidos; «Tu plan trae 3 módulos a tu elección».
  * "Pedir cotización" (de un módulo o de un plan) crea un pedido (solicitud cambio_modulos) que llega al Panel Tukán Central.
  * También se abre con la demo terminada o el plan vencido.
  */
@@ -29,8 +30,12 @@ if (es_post()) {
         if ($accion !== 'pedir') throw new RuntimeException('Acción no válida.');
         $mid = (string) ($_POST['modulo'] ?? '');
         if (!Modulos::existe($mid)) throw new RuntimeException('Ese módulo no existe.');
-        modulos()->pedir($nid, (int) $u['id'], [$mid], campo('nota'));
-        aviso('Listo: pediste la cotización de ' . Modulos::nombre($mid) . '. Tukán te escribe con el valor y para activarlo; tus datos no cambian.');
+        // Planes de $20 y $45 (migración 112): si su plan aún tiene módulos por elegir, es uno de esos (incluido en su plan)
+        $eligeIncluido = modulos()->estado($nid)['por_elegir'] > 0 && !in_array($mid, Modulos::FUERA_DEL_CUPO, true);
+        modulos()->pedir($nid, (int) $u['id'], [$mid], trim(($eligeIncluido ? 'Lo elige entre los módulos incluidos en su plan. ' : '') . campo('nota')));
+        aviso($eligeIncluido
+            ? 'Listo: elegiste ' . Modulos::nombre($mid) . ' entre los módulos de tu plan. Tukán lo enciende y te avisa; tus datos no cambian.'
+            : 'Listo: pediste la cotización de ' . Modulos::nombre($mid) . '. Tukán te escribe con el valor y para activarlo; tus datos no cambian.');
     } catch (RuntimeException $e) {
         aviso($e->getMessage(), 'error');
     }

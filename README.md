@@ -24,8 +24,8 @@ Dirección: **tuplanner.tukanec.com** (servidor qfcorp). Web de la marca: tukans
 - **Lugares** (antes "espacios"): las quintas, haciendas e iglesias donde trabaja, con dirección, mapa, contacto y tipo (ceremonia o recepción). Un evento puede quedar con **lugar por definir**.
 - **Máximo de eventos por día** del equipo: aviso en el evento y la página pública dice "quedan pocos cupos" o "sin cupo".
 - Tipos de evento nuevos: pedida de mano, baby shower y despedida de soltera/o. Categorías nuevas: honorarios, flores, pastel y postres, vestido y traje, maquillaje y peinado, invitaciones, transporte.
-- Planes (precio por cotización): **Planner** (3 usuarios, todo lo del organizador) y **Agencia** (usuarios sin límite + invitados con QR, día del evento, plano de mesas, decoración y menaje, portal de proveedores y boda en vivo).
-- **Ayuda** «¿Qué necesita hacer?» para todos y **Asistente IA** (incluido en Agencia; extra por cotización en los demás): evento y cotización desde el mensaje de WhatsApp del cliente y lectura de la cotización (foto o PDF) de un proveedor para armar el presupuesto.
+- Planes (precio por cotización; desde el 28 oct 2026 solo dos): **Básico** (la base + 3 módulos que el cliente elige) y **Completo** (todos los módulos con el Asistente IA, usuarios sin límite).
+- **Ayuda** «¿Qué necesita hacer?» para todos y **Asistente IA** (incluido en Completo; extra aparte en el Básico): evento y cotización desde el mensaje de WhatsApp del cliente y lectura de la cotización (foto o PDF) de un proveedor para armar el presupuesto.
 
 **Heredado de TuEvento:**
 - Calendario por espacios **sin doble reserva** (la base de datos lo impide), con horas de montaje y desmontaje, fechas cerradas y "próximos sábados".
@@ -55,13 +55,23 @@ botones, portales públicos ("No disponible"), PDF, tareas automáticas, avisos 
 **Base** (todos): calendario sin doble reserva, eventos, seguimiento y tareas, clientes, espacios y catálogo, cotizaciones con PDF,
 plan de pagos y recibos, Mensajes de WhatsApp del día, página pública con consulta, reportes básicos, usuarios y roles, app instalable.
 
-**Precios: por cotización (se definen en el Panel Tukán Central).** Nunca se publican; el cliente pide cotización.
+**Solo dos planes** (migración 112, decisión de Dimitry del 28 oct 2026, igual en todos los programas Tukán). Los precios son internos:
+**nunca se publican al cliente** (al cliente se le dice «Básico con 3 módulos que tú eliges» y «Completo con todo y el Asistente IA»;
+en Mi plan solo ve el precio de lo que ya paga). Se cambian en Panel Tukán → Planes y precios o desde el Panel Tukán Central.
 
-| Plan | Límites | Módulos incluidos |
-|---|---|---|
-| Esencial | 1 usuario más el dueño | Solo la base |
-| Planner | 3 usuarios | Paquetes, contratos, portal del cliente, cobros en línea, formulario/extras/encuesta, proveedores y compras, incidencias, metas, Telegram, exportar, planificación, presupuesto, comisiones e ideas |
-| Agencia | sin límite | Todos, **incluido el Asistente IA** |
+| Plan (código) | Precio interno | Límites | Módulos incluidos |
+|---|---|---|---|
+| **Básico** (`esencial`) | $20 al mes | lugares sin límite, 1 usuario más el dueño | La base + **3 módulos que el cliente elige**; cada módulo más **$5** al mes |
+| **Completo** (`quinta`) | $45 al mes | sin límite | Todos, **incluido el Asistente IA** (con su tope de uso) |
+
+- El **Asistente IA** en Básico es un extra de **$5** al mes que **no cuenta** entre los 3 elegidos (`Modulos::FUERA_DEL_CUPO`).
+- Columnas `planes.modulos_elegir` (cuántos extra van incluidos) y `planes.precio_modulo_extra` (cada uno más; vacío = precio del catálogo).
+  Los primeros N extra **en el orden del catálogo** van incluidos (`Modulos::estado()` devuelve `elegidos`, `por_elegir` y `precio_por_extra`).
+  Ej.: Comisiones trae Presupuesto y Planificación (dependencias) y los tres cuentan como los 3 elegidos.
+- Los planes del medio y de arriba se llamaban Planner (`salon`) y Agencia (`quinta`): la migración 112 pasó los negocios y pagos de Planner a Completo;
+  quien pagaba Esencial conserva lo que traía su plan como módulos elegidos. Los códigos se conservan (`esencial`, `quinta`) por las llaves foráneas;
+  `PLAN_DEFECTO` sigue en `quinta` (las demos tienen todo).
+- Precios, nombres y módulos se ponen **una sola vez** (marca `planes_20_45` en `ajustes`): si Dimitry los cambia después, el instalador no los pisa.
 
 | Módulo | Qué trae | Necesita |
 |---|---|---|
@@ -85,9 +95,9 @@ plan de pagos y recibos, Mensajes de WhatsApp del día, página pública con con
 | Presupuesto por proveedor | Partidas por proveedor, pagos directos del cliente, honorarios, dinero del evento | Planificación |
 | Comisiones de proveedores | Comisiones por cobrar y cobradas, recordatorio por WhatsApp | Presupuesto por proveedor |
 | Ideas e inspiración | Tablero de fotos con el cliente, temática y paleta de colores | — |
-| **Asistente IA** (**incluido en Agencia**; en Esencial y Planner, extra por cotización) | Evento y cotización desde el mensaje de WhatsApp del cliente; leer la cotización (foto o PDF) de un proveedor → partidas del presupuesto | — |
+| **Asistente IA** (**incluido en Completo**; en Básico, extra de $5 que no cuenta entre los 3) | Evento y cotización desde el mensaje de WhatsApp del cliente; leer la cotización (foto o PDF) de un proveedor → partidas del presupuesto | — |
 
-- **Precio al mes** de cada cliente = plan + módulos extra − módulos quitados (o un **precio acordado** fijo). Es el que sugiere
+- **Precio al mes** de cada cliente = plan + módulos extra (los primeros 3 del Básico, incluidos; los demás $5; el Asistente IA $5) − módulos quitados (o un **precio acordado** fijo). Es el que sugiere
   "Registrar pago", el `cotizar` y el `mensual_estimado` del Panel Central. Precios, descripciones y qué trae cada plan se cambian en
   Panel Tukán → **Planes y precios → Catálogo de módulos**.
 - **Mi plan** (dueño y administradores): ve sus módulos encendidos y lo que paga por su plan (su contrato). Los módulos y planes que no tiene
@@ -104,8 +114,8 @@ Con la librería compartida del Panel Tukán Central **`src/tukan_ia.php`** (cop
   IA (modelo rápido) con las secciones del manual del cliente (`docs/manual/manual.html` convertido a texto y guardado en caché; si no está, `docs/MANUAL.md`)
   y la respuesta queda como FAQ automática → sin poder gastar, el manual tal cual + el WhatsApp. POST con CSRF, 10 preguntas por minuto por usuario.
   Sin el módulo: máximo **30 respuestas nuevas al mes** por negocio. Nunca dice «límite», «cupo» ni «saldo».
-- **Módulo «Asistente IA»** (`asistente_ia`, grupo Extras): **viene incluido en el plan Agencia** (el más caro: `planes.modulos = '*,asistente_ia'`, migración 111
-  repetible). En Esencial y Planner es un extra **por cotización** (precio 0 en el catálogo: «Pídalo y le cotizamos»; lo acordado va en el precio acordado).
+- **Módulo «Asistente IA»** (`asistente_ia`, grupo Extras): **viene incluido en el plan Completo** (`planes.modulos = '*,asistente_ia'`, migraciones 111 y 112).
+  En Básico es un extra de **$5 al mes** (migración 112) que no cuenta entre los 3 módulos que elige el cliente; en Mi plan, si no lo tiene, dice «Pídalo y le cotizamos» (sin precio).
   «*» solo no lo trae (`Modulos::SOLO_A_PEDIDO`). Trae:
   - **Cotización a partir de un mensaje** (`/?r=ia_cotizacion`, «✨ Desde un mensaje» en Eventos y Nuevo evento): JSON validado contra los lugares, paquetes y
     servicios del negocio (`Ia::validarPropuesta`), borrador → evento (consulta, lugar opcional) y cotización (borrador).
@@ -113,7 +123,7 @@ Con la librería compartida del Panel Tukán Central **`src/tukan_ia.php`** (cop
     (hasta 5 MB, no se guarda) con el modelo fuerte → JSON validado (`Ia::validarLectura`: categorías del catálogo, proveedor unido con su ficha) → borrador →
     partidas «Pidiendo precios» / «El cliente le paga directo».
   - Si no se puede usar la IA: `tukan_ia_mensaje_neutro('texto' | 'foto', …)` con el enlace para hacerlo a mano.
-- **Tope por negocio** (guardián `TukanIaGuardianPdo`, tabla `tukan_ia_gasto`): **4,00 USD al mes con el módulo** (incluido en Agencia o comprado aparte; decisión
+- **Tope por negocio** (guardián `TukanIaGuardianPdo`, tabla `tukan_ia_gasto`): **4,00 USD al mes con el módulo** (incluido en Completo o comprado aparte; decisión
   del dueño) **y 0,50 sin él**; una **demo** (estado `prueba`) **0,50 en total** aunque tenga todos los módulos (al pagar vuelve sola a lo normal); otro tope en `negocios.ia_tope_usd` (operación `ia_tope` del Panel Central). Al llegar al tope no se llama a la API, en silencio.
 - **Panel Tukán → Preguntas IA** (`/?r=admin_faq`): listar (Por revisar primero), aprobar, editar (queda aprobada y «manual»), borrar y agregar. CSRF y registro_admin.
 - **Conector v2** (Anexo C de `PROTOCOLO_V2.md`): acción `ia_uso` y operación `ia_tope` (`{"tope_usd": número | null}`, solo el dueño del Central).
@@ -191,7 +201,7 @@ El instalador deja programado:
 ```
 Tareas: vencer cotizaciones, avisar fechas retenidas que se liberan, cuotas por vencer, revisar precios, evento en 7 días, pasar a realizado, devolver garantías, reporte del mes, seguimientos del día, pagos a proveedores que vencen, documentos de proveedores por vencer, proveedores sin confirmar a 3 días del evento y la **papelera** (borra de verdad los negocios con más de 30 días en ella y las copias de más de 1 año). Los negocios pausados o en la papelera no reciben tareas ni avisos, y cada tarea de un módulo (Telegram, proveedores) solo corre si el negocio lo tiene encendido.
 
-**Al actualizar a esta versión** hay que volver a correr el instalador (la línea de arriba): aplica las migraciones 098 (módulos y pedidos de demo), 099 (rol administrador), 110 (ayuda e IA) y 111 (Asistente IA incluido en Agencia), crea `respaldos/borrados` y pasa las tareas al usuario `www-data`.
+**Al actualizar a esta versión** hay que volver a correr el instalador (la línea de arriba): aplica las migraciones 098 (módulos y pedidos de demo), 099 (rol administrador), 110 (ayuda e IA), 111 (Asistente IA incluido en el plan más caro) y 112 (planes de $20 y $45: Básico y Completo), crea `respaldos/borrados` y pasa las tareas al usuario `www-data`.
 
 Telegram (opcional) en `config/.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` y `TELEGRAM_WEBHOOK_SECRET` (obligatorio si se usa el webhook).
 
@@ -199,9 +209,9 @@ Telegram (opcional) en `config/.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNA
 Solo en bases de prueba (se borran y se vuelven a crear):
 
 ```bash
-# Lógica (2679 pruebas)
+# Lógica (2737 pruebas)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php
-# Pantallas de punta a punta (2257 pruebas; levanta un sitio de prueba solo)
+# Pantallas de punta a punta (2299 pruebas; levanta un sitio de prueba solo)
 PGPASSWORD=prueba bash tests/run_web.sh
 # Solo ayuda, IA y correo de la demo (API de Anthropic y SMTP de mentira: tests/anthropic_falso.py y tests/smtp_falso.py)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_110
@@ -209,4 +219,10 @@ PGPASSWORD=prueba bash tests/run_web.sh web_110
 # Solo el conector con el Panel Tukán Central (v1 = logica_95/web_95, v2 = logica_96/web_96, pausar y papelera = logica_97/web_97, módulos y pedidos de demo = logica_98/web_98, administradores = logica_99/web_99)
 TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_9
 PGPASSWORD=prueba bash tests/run_web.sh web_9
+# Solo los planes de $20 y $45 (migración 112): Básico con 3 módulos a elegir y Completo
+TUPLANNER_DB_NAME=tuplanner_prueba TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=prueba php tests/run_tests.php logica_112
+PGPASSWORD=prueba bash tests/run_web.sh web_112
+# Si otras pruebas usan los mismos puertos: PUERTO (sitio; usa también PUERTO+5 y PUERTO+6), IA_PUERTO y SMTP_PUERTO (pantallas),
+# IA_PUERTO_LOGICA y SMTP_PUERTO_LOGICA (lógica). Ej.: PUERTO=8349 IA_PUERTO=8350 SMTP_PUERTO=8351 bash tests/run_web.sh
 ```
+Las pruebas escritas con los planes de antes (Esencial, el plan del medio y el más caro) los emulan con `planes_de_antes` (`tests/base.php` y `tests/web_base.sh`).

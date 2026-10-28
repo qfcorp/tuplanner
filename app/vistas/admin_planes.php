@@ -21,7 +21,13 @@
                 <div class="campo"><label for="u-<?= $c ?>">Máximo de usuarios <small>(vacío = sin límite)</small></label>
                     <input type="number" id="u-<?= $c ?>" name="max_usuarios" value="<?= e($p['max_usuarios'] ?? '') ?>" min="1"></div>
             </div>
-            <div class="campo"><label for="d-<?= $c ?>">Descripción corta</label>
+            <div class="fila-campos">
+                <div class="campo"><label for="me-<?= $c ?>">Módulos que elige el cliente <small>(incluidos en el precio)</small></label>
+                    <input type="number" id="me-<?= $c ?>" name="modulos_elegir" value="<?= (int) ($p['modulos_elegir'] ?? 0) ?>" min="0" max="50"></div>
+                <div class="campo"><label for="mx-<?= $c ?>">Cada módulo más ($) <small>(vacío = precio del catálogo)</small></label>
+                    <input type="number" id="mx-<?= $c ?>" name="precio_modulo_extra" value="<?= e($p['precio_modulo_extra'] ?? '') ?>" step="0.01" min="0"></div>
+            </div>
+            <div class="campo"><label for="d-<?= $c ?>">Descripción corta <small>(la ve el cliente en Mi plan: sin precios)</small></label>
                 <input type="text" id="d-<?= $c ?>" name="descripcion" value="<?= e($p['descripcion'] ?? '') ?>" maxlength="300"></div>
             <table class="tabla">
                 <thead><tr><th>Periodo</th><th class="der">Cobras</th><th class="der">Sale al mes</th></tr></thead>
@@ -37,7 +43,8 @@
 <form method="post" class="bloque" id="catalogo">
     <?= campo_csrf() ?><input type="hidden" name="accion" value="catalogo">
     <h2>Catálogo de módulos</h2>
-    <p class="g-nota">Precio al mes de cada módulo (lo que paga un cliente que lo agrega a su plan, o lo que se le descuenta si se lo quitas), la descripción que ve en Mi plan y el orden.</p>
+    <p class="g-nota">En el plan Básico el cliente elige sus módulos: los primeros van incluidos y cada uno más cuesta lo que diga el plan (arriba). El Asistente IA no cuenta entre los que elige: siempre se cobra con el precio de aquí.
+        Precio al mes de cada módulo (lo que paga un cliente que lo agrega a su plan, o lo que se le descuenta si se lo quitas), la descripción que ve en Mi plan y el orden.</p>
     <div class="desliza"><table class="tabla adm-cat-tabla" style="min-width:640px">
         <thead><tr><th>Módulo</th><th style="width:110px">Precio al mes ($)</th><th>Descripción</th><th style="width:80px">Orden</th></tr></thead>
         <tbody><?php foreach ($catalogo as $m): $mid = e($m['id']); ?>

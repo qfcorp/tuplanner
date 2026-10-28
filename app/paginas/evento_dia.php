@@ -2,7 +2,7 @@
 use TuPlanner\{DiaEvento, Eventos, Invitados, WhatsApp};
 
 /**
- * Día del evento (plan Agencia): cronograma con modo en vivo, personal, proveedores, mobiliario,
+ * Día del evento (plan Completo): cronograma con modo en vivo, personal, proveedores, mobiliario,
  * montaje y menú, boda en vivo y hoja del evento.  /?r=evento_dia&id=<evento>&ver=<seccion>
  */
 $nid = (int) $u['negocio_id'];

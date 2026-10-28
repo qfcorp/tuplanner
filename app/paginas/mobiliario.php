@@ -1,7 +1,7 @@
 <?php
 use TuPlanner\DiaEvento;
 
-/** Mobiliario y menaje (plan Agencia): sillas, mesas, mantelería, vajilla... con su uso en los próximos eventos. */
+/** Mobiliario y menaje (plan Completo): sillas, mesas, mantelería, vajilla... con su uso en los próximos eventos. */
 $nid = (int) $u['negocio_id'];
 $dia = new DiaEvento(db());
 $verId = (int) ($_GET['id'] ?? 0);

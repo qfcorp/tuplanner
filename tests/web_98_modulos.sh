@@ -1,5 +1,6 @@
 # Programa modular (Anexo B) en pantalla: Mi plan, pedir un módulo, página de módulo apagado, menús y pestañas,
 # portales públicos "no disponible", PDF, y en el Panel Tukán: interruptores por negocio, aprobar el pedido, catálogo y pedidos de demo.
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 DBENV="TUPLANNER_DB_NAME=$DB TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=$PGPASSWORD"
 
 echo "1. Demo: todo encendido; Mi plan lo explica"
@@ -94,7 +95,7 @@ contiene "Qué trae cada plan" "$TMP/pag.html" "Qué módulos trae cada plan"
 CARGS=()
 while IFS='|' read -r mid precio orden; do CARGS+=(--data-urlencode "precio[$mid]=$precio" --data-urlencode "orden[$mid]=$orden" --data-urlencode "descripcion[$mid]="); done \
   < <(sql "SELECT id||'|'||precio_mensual||'|'||orden FROM modulos")
-CARGS+=(--data-urlencode "plan_todos[quinta]=1")
+CARGS+=(--data-urlencode "plan_todos[quinta]=1" --data-urlencode "plan_mod[quinta][asistente_ia]=1")   # como el navegador: la casilla del Asistente IA del plan más caro viene marcada
 for m in planificacion presupuesto comisiones ideas paquetes contratos portal_cliente cobros_linea cuestionarios proveedores incidencias metas telegram exportar; do CARGS+=(--data-urlencode "plan_mod[salon][$m]=1"); done
 r=$(post_desde "r=admin_planes" "r=admin_planes" --data-urlencode "accion=catalogo" "${CARGS[@]/precio\[plano\]=6.00/precio[plano]=7.50}")
 check "Guardar catálogo: precio nuevo del plano" "7.50" "$(sql "SELECT precio_mensual FROM modulos WHERE id='plano'")"

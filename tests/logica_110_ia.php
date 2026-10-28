@@ -6,25 +6,29 @@
  * sin /etc/tukan-ia.env), cotización a partir de un mensaje (JSON validado contra el catálogo, módulo apagado, tope),
  * conector v2 (ia_uso e ia_tope), FAQ del súper usuario y el correo de la demo (sello cifrado + SMTP de mentira).
  * La API de Anthropic y el SMTP son DE MENTIRA: tests/anthropic_falso.py (8271) y tests/smtp_falso.py (8272).
+ * Otros puertos (si chocan con otras pruebas): IA_PUERTO_LOGICA=8354 SMTP_PUERTO_LOGICA=8355 php tests/run_tests.php
  */
 use TuPlanner\{CorreoDemo, Eventos, Ia, Modulos, Papelera, TukanCentralV2};
 
 $db = base_limpia();
+planes_de_antes($db);   // estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: logica_112
 $hoy = new DateTimeImmutable('today');
 $cuenta = fn(string $sql) => (int) $db->query($sql)->fetchColumn();
 $itmp = sys_get_temp_dir() . '/tuplanner_ia_' . getmypid();
 @mkdir($itmp, 0755, true);
 $CLAVE = 'sk-ant-prueba-buena-0123456789';
+$IA_P = (string) (int) (getenv('IA_PUERTO_LOGICA') ?: 8271);
+$SMTP_P = (string) (int) (getenv('SMTP_PUERTO_LOGICA') ?: 8272);
 $logApi = "$itmp/api.jsonl";
 @unlink($logApi);
 $procs = [];
 register_shutdown_function(function () use (&$procs): void { foreach ($procs as $p) { @proc_terminate($p); @proc_close($p); } });
-$procs[] = proc_open(['python3', __DIR__ . '/anthropic_falso.py', '8271', $logApi], [1 => ['file', '/dev/null', 'w'], 2 => ['file', "$itmp/py.err", 'w']], $tub);
-for ($i = 0; $i < 50 && !@fsockopen('127.0.0.1', 8271); $i++) usleep(100000);
+$procs[] = proc_open(['python3', __DIR__ . '/anthropic_falso.py', $IA_P, $logApi], [1 => ['file', '/dev/null', 'w'], 2 => ['file', "$itmp/py.err", 'w']], $tub);
+for ($i = 0; $i < 50 && !@fsockopen('127.0.0.1', (int) $IA_P); $i++) usleep(100000);
 $pedidos = fn() => is_file($logApi) ? array_map(fn($l) => json_decode($l, true), file($logApi, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)) : [];
 $nPedidos = fn() => count($pedidos());
-$envIa = function (array $extra = []) use ($itmp, $CLAVE): void {
-    $v = ['TUKAN_IA_CLAVE' => $CLAVE, 'TUKAN_IA_URL' => 'http://127.0.0.1:8271', 'TUKAN_IA_ESPERA_MS' => '0', 'TUKAN_IA_MODELO_RAPIDO' => 'claude-haiku-5-5'] + $extra;
+$envIa = function (array $extra = []) use ($itmp, $CLAVE, $IA_P): void {
+    $v = ['TUKAN_IA_CLAVE' => $CLAVE, 'TUKAN_IA_URL' => 'http://127.0.0.1:' . $IA_P, 'TUKAN_IA_ESPERA_MS' => '0', 'TUKAN_IA_MODELO_RAPIDO' => 'claude-haiku-5-5'] + $extra;
     $f = "$itmp/ia.env";
     file_put_contents($f, implode("\n", array_map(fn($k) => "$k=" . $v[$k], array_keys($v))) . "\n");
     putenv("TUKAN_IA_ENV=$f");
@@ -51,12 +55,12 @@ check('tukan_ia_gasto no es «del negocio» para la papelera (negocio_id de text
 $db->exec("UPDATE negocios SET estado = 'activo', activo_hasta = CURRENT_DATE + 30 WHERE id IN ($nA, $nB, $nQ)");
 $mods = new Modulos($db);
 $ia = new Ia($db, $mods);
-check('Los otros planes NO traen el Asistente IA (extra por cotización)', false, $ia->tieneModulo($nA));
+check('Los otros planes NO traen el Asistente IA (extra de $5)', false, $ia->tieneModulo($nA));
 check('El plan más caro lo trae INCLUIDO (del plan, no extra) con tope de 4,00', [true, true, [], 4.0],
       [$ia->tieneModulo($nQ), in_array('asistente_ia', $mods->estado($nQ)['del_plan'], true), $mods->estado($nQ)['extra'], $ia->tope($nQ)]);
 check('Demo con todos los módulos de un plan que no lo trae: sin el Asistente IA', false, in_array('asistente_ia', $mods->estado((int) negocio_prueba($db, 'salon', 'Demo IA')[0])['activos'], true));
 $mods->cambiar($nB, ['asistente_ia'], []);
-check('Encendido como extra: lo tiene (y no suma precio: va en el precio acordado)', [true, 0.0], [$ia->tieneModulo($nB), $mods->estado($nB)['precio_extra']]);
+check('Encendido como extra: lo tiene y suma $5 al mes (migración 112: ya no es por cotización)', [true, 5.0], [$ia->tieneModulo($nB), $mods->estado($nB)['precio_extra']]);
 check('Tope sin el módulo = 0,50 · con el módulo comprado aparte = 4,00', [0.5, 4.0], [$ia->tope($nA), $ia->tope($nB)]);
 $ia->cambiarTope($nA, 1.25);
 check('Tope propio (lo pone Tukán) gana', [1.25, 1.25], [$ia->topePropio($nA), $ia->tope($nA)]);
@@ -321,14 +325,14 @@ check('Correo «Su demo de TuPlanner está lista» con sus datos, sin «gratis»
 // SMTP de mentira (sin TLS: solo se permite con 127.0.0.1)
 $dirSmtp = "$itmp/smtp";
 @mkdir($dirSmtp, 0755, true);
-$procs[] = proc_open(['python3', __DIR__ . '/smtp_falso.py', '--puerto', '8272', '--modo', 'plano', '--usuario', 'info@tukansoftware.com', '--clave', 'Cl@ve-buzon', '--dir', $dirSmtp],
+$procs[] = proc_open(['python3', __DIR__ . '/smtp_falso.py', '--puerto', $SMTP_P, '--modo', 'plano', '--usuario', 'info@tukansoftware.com', '--clave', 'Cl@ve-buzon', '--dir', $dirSmtp],
                      [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['file', "$itmp/smtp.err", 'a']], $tubSmtp);
 stream_set_timeout($tubSmtp[1], 5);
 fgets($tubSmtp[1]);   // LISTO
 putenv("TUKAN_CORREO_ENV=$itmp/no_hay_correo.env");
 tukan_correo_config(true);
 check('Sin /etc/tukan-correo.env: no está listo', false, CorreoDemo::listo());
-file_put_contents("$itmp/correo.env", "TUKAN_SMTP_HOST=127.0.0.1\nTUKAN_SMTP_PUERTO=8272\nTUKAN_SMTP_SEGURIDAD=ninguna\nTUKAN_SMTP_USUARIO=info@tukansoftware.com\n"
+file_put_contents("$itmp/correo.env", "TUKAN_SMTP_HOST=127.0.0.1\nTUKAN_SMTP_PUERTO=$SMTP_P\nTUKAN_SMTP_SEGURIDAD=ninguna\nTUKAN_SMTP_USUARIO=info@tukansoftware.com\n"
                                     . "TUKAN_SMTP_CLAVE=Cl@ve-buzon\nTUKAN_CORREO_DE=info@tukansoftware.com\nTUKAN_CORREO_NOMBRE=Tukán Software\nTUKAN_SMTP_TIMEOUT=3\n");
 putenv("TUKAN_CORREO_ENV=$itmp/correo.env");
 tukan_correo_config(true);

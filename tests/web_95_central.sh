@@ -3,6 +3,7 @@
 # Lo corre tests/run_web.sh, que levanta el sitio con TUKAN_CENTRAL_ID / _SECRET / _URL de prueba.
 # Además levanta aquí 3 sitios más en puertos libres: sin configurar (404), "solo central" y una copia para conectar_central.sh.
 # Variables: BASE, DB, PGPASSWORD, TMP, TUKAN_CENTRAL_* (de run_web.sh)
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 
 C95_ID=${TUKAN_CENTRAL_ID:-tuplanner-prueba}
 C95_URL=${TUKAN_CENTRAL_URL:-http://central.prueba.local}

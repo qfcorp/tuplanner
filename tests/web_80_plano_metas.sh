@@ -2,6 +2,7 @@
 # Plano del salón (distribuciones por lugar, plano del evento unido a las mesas de invitados, guardar JSON con CSRF,
 # PDF, portal de los novios, permisos por rol, plan Salón con candado, aislamiento) y metas de ventas (pantalla,
 # avance en el Inicio, Reportes → Metas, CSV).
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 P80_FECHA=$(date -d '+50 days' +%Y-%m-%d)
 P80_HASH=$(php -r 'echo password_hash("claveSegura1", PASSWORD_DEFAULT);')
 P80_MESES=(x enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre)

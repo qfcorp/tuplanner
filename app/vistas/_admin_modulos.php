@@ -39,7 +39,11 @@ $pendientes = array_values(array_filter($pedidosModulos, fn($s) => $s['estado'] 
                     $id = $m['id'];
                     $encendido = in_array($id, $me['pagados'], true);
                     $delPlan = in_array($id, $me['del_plan'], true);
-                    $nota = $delPlan ? ($encendido ? 'Del plan' : 'Quitado · −' . dinero($m['precio_mensual'])) : ($encendido ? 'Extra · +' . dinero($m['precio_mensual']) : '+' . dinero($m['precio_mensual']));
+                    // Planes de $20 y $45 (migración 112): los elegidos del Básico van incluidos; los demás extra a lo que diga el plan
+                    $elegido = in_array($id, $me['elegidos'] ?? [], true);
+                    $precioExtra = $me['precio_por_extra'][$id] ?? $m['precio_mensual'];
+                    $nota = $delPlan ? ($encendido ? 'Del plan' : 'Quitado · −' . dinero($m['precio_mensual']))
+                        : ($encendido ? ($elegido ? 'Elegido · incluido en el plan' : 'Extra · +' . dinero($precioExtra)) : '+' . dinero($m['precio_mensual']));
                     if (Modulos::porCotizacion($m) && !$delPlan) $nota = $encendido ? 'Extra · por cotización (ponlo en el precio acordado)' : 'Por cotización';
                     $dep = $m['depende_de'] ? 'Necesita: ' . implode(', ', array_map([Modulos::class, 'nombre'], $m['depende_de'])) : ''; ?>
                     <label class="adm-mod-item <?= $encendido ? 'on' : '' ?>">
@@ -54,6 +58,7 @@ $pendientes = array_values(array_filter($pedidosModulos, fn($s) => $s['estado'] 
         </div>
         <ul class="adm-mod-cuenta">
             <li><span>Plan <?= e($n['plan_nombre']) ?></span><span class="monto"><?= dinero($me['precio_plan']) ?></span></li>
+            <?php if (($me['modulos_elegir'] ?? 0) > 0): ?><li><span>Módulos a elegir incluidos</span><span class="monto"><?= count($me['elegidos']) ?> de <?= (int) $me['modulos_elegir'] ?></span></li><?php endif; ?>
             <li><span>Módulos extra</span><span class="monto">+<?= dinero($me['precio_extra']) ?></span></li>
             <li><span>Módulos quitados</span><span class="monto">−<?= dinero($me['descuento']) ?></span></li>
             <li class="total"><span>Calculado al mes</span><span class="monto"><?= dinero($me['calculado']) ?></span></li>

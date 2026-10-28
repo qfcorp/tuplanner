@@ -2,6 +2,7 @@
 # Día del evento: cronograma de ejemplo y modo en vivo, personal + staff, proveedores, mobiliario,
 # invitados y mesas, invitación pública + RSVP + QR, puerta + ingreso por QR, portal de los novios, PDF, CSV,
 # candado del plan Salón y aislamiento entre negocios.
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 FECHA=$(date -d '+45 days' +%Y-%m-%d)
 FECHA2=$(date -d '-3 days' +%Y-%m-%d)
 

@@ -18,7 +18,7 @@ $activosLista = array_filter($espacios, fn($e) => $e['activo']);
 <?php if ($max !== null): ?>
     <p class="<?= !$puedeAgregar ? 'aviso aviso-alerta' : 'suave' ?>">
         Tu plan <?= e($u['plan_nombre'] ?? '') ?> permite <?= $max ?> <?= $max === 1 ? 'lugar activo' : 'lugares activos' ?> (tienes <?= $activos ?>).
-        <?php if (!$puedeAgregar): ?>Para agregar más, desactiva uno o cambia de plan (el plan <strong>Agencia</strong> no tiene límite de lugares).
+        <?php if (!$puedeAgregar): ?>Para agregar más, desactiva uno o cambia de plan (el plan <strong>Completo</strong> no tiene límite de lugares).
             <?php if (es_admin_total($u)): ?><a href="<?= e(url('planes')) ?>">Ver Mi plan</a><?php endif; ?>
         <?php endif; ?>
     </p>

@@ -14,6 +14,9 @@ use RuntimeException;
  *  - Por negocio: `modulos_extra` (encendidos además del plan, se cobran) y `modulos_quitados` (del plan, apagados, se
  *    descuentan), `precio_acordado` (precio fijo al mes, o NULL) y `modulos_prueba` (en demo: NULL = todos encendidos).
  *  - Activos = (módulos del plan − quitados) + extra, respetando dependencias. En demo: todos (o los elegidos).
+ *  - Planes de $20 y $45 (migración 112, decisión de Dimitry del 28 oct 2026): los primeros `planes.modulos_elegir` extra
+ *    (en el orden del catálogo) van incluidos en el precio del plan y los demás cuestan `planes.precio_modulo_extra`
+ *    (NULL = su precio del catálogo). Los de FUERA_DEL_CUPO (Asistente IA) no cuentan y van a su precio del catálogo.
  *  - Apagar un módulo NUNCA borra datos: solo se esconden sus pantallas, botones, portales, tareas y avisos.
  */
 final class Modulos
@@ -69,16 +72,23 @@ final class Modulos
         'metas' => ['Metas y reportes avanzados', '🎯', 'Metas de ventas del local y por vendedor con su avance en el Inicio, embudo y conversión, rentabilidad por evento y comisiones de vendedores.', 4.0, [], 'gestion'],
         'telegram' => ['Avisos por Telegram', '📲', 'Pagos, firmas, consultas nuevas, cuotas por cobrar y seguimientos del día llegan solos al celular del equipo.', 3.0, [], 'conexiones'],
         'exportar' => ['Exportar a Excel y Google Calendar', '📤', 'Descarga eventos, cobros y reportes para Excel y ve tus eventos en Google Calendar.', 3.0, [], 'conexiones'],
-        // Anexo C (migración 110): precio 0 en el catálogo = POR COTIZACIÓN (lo que se acuerde va en precio_acordado)
-        'asistente_ia' => ['Asistente IA', '✨', 'Lee fotos de documentos y llena los datos por usted, y responde las dudas al instante. Arma la cotización a partir del mensaje de WhatsApp del cliente.', 0.0, [], 'extras'],
+        // Incluido en Completo. En Básico es un extra de $5 al mes que no cuenta entre los 3 módulos a elegir (migración 112).
+        'asistente_ia' => ['Asistente IA', '✨', 'Lee fotos de documentos y llena los datos por usted, y responde las dudas al instante. Arma la cotización a partir del mensaje de WhatsApp del cliente.', 5.0, [], 'extras'],
     ];
 
     /**
-     * Módulos que se dan solo a pedido (por cotización): no entran en "*" (todos los módulos) ni en la demo con todos encendidos.
-     * Un plan los trae si se nombran después del asterisco: "*,asistente_ia" (el plan más caro, migración 111). En los demás planes
+     * Módulos que se dan solo a pedido: no entran en "*" (todos los módulos) ni en la demo con todos encendidos.
+     * Un plan los trae si se nombran después del asterisco: "*,asistente_ia" (Completo, migraciones 111 y 112). En Básico
      * se encienden uno por uno como extra (súper usuario, Panel Tukán Central o pedido aprobado).
      */
     public const SOLO_A_PEDIDO = ['asistente_ia'];
+
+    /**
+     * Planes de $20 y $45 (migración 112): el plan Básico trae `planes.modulos_elegir` módulos a elección del cliente y cada
+     * uno más cuesta `planes.precio_modulo_extra`. Estos módulos NO cuentan entre los que elige: siempre se cobran a su
+     * precio del catálogo (Asistente IA $5 al mes).
+     */
+    public const FUERA_DEL_CUPO = ['asistente_ia'];
 
     /**
      * Módulo de cada ruta de public/index.php ('' = base: la tienen todos). Toda ruta debe estar aquí (lo revisa una prueba).
@@ -223,14 +233,19 @@ final class Modulos
         return $this->catalogoCache = $r;
     }
 
-    /** Planes con sus módulos: codigo => [codigo, nombre, precio_mensual, modulos (ids), todos (bool)]. */
+    /**
+     * Planes con sus módulos: codigo => [codigo, nombre, precio_mensual, modulos (ids), todos (bool), modulos_elegir (int),
+     * precio_modulo_extra (float|null = precio del catálogo)].
+     */
     public function planes(): array
     {
         if ($this->planesCache !== null) return $this->planesCache;
         $r = [];
-        foreach ($this->db->query('SELECT codigo, nombre, precio_mensual, modulos FROM planes ORDER BY precio_mensual, codigo')->fetchAll() as $p) {
+        foreach ($this->db->query('SELECT codigo, nombre, precio_mensual, modulos, modulos_elegir, precio_modulo_extra FROM planes ORDER BY precio_mensual, codigo')->fetchAll() as $p) {
             $r[$p['codigo']] = ['codigo' => (string) $p['codigo'], 'nombre' => (string) $p['nombre'], 'precio_mensual' => round((float) $p['precio_mensual'], 2),
-                                'modulos' => self::parse($p['modulos']), 'todos' => str_starts_with(trim((string) $p['modulos']), '*')];
+                                'modulos' => self::parse($p['modulos']), 'todos' => str_starts_with(trim((string) $p['modulos']), '*'),
+                                'modulos_elegir' => max(0, (int) $p['modulos_elegir']),
+                                'precio_modulo_extra' => $p['precio_modulo_extra'] === null ? null : round((float) $p['precio_modulo_extra'], 2)];
         }
         return $this->planesCache = $r;
     }
@@ -286,10 +301,13 @@ final class Modulos
 
     /**
      * Estado de los módulos de un negocio (forma de Anexo B.2 "cliente.modulos"):
-     * del_plan, extra, quitados, activos, precio_plan, precio_extra, descuento, precio_acordado, mensual, demo, demo_todos.
-     * $plan: calcularlo con otro plan (para cotizar un cambio de plan).
+     * del_plan, extra, quitados, activos, precio_plan, precio_extra, descuento, precio_acordado, mensual, demo, demo_todos,
+     * y de los planes de $20 y $45 (migración 112): modulos_elegir, elegidos (extra incluidos en el plan), por_elegir y
+     * precio_por_extra (id => lo que cuesta al mes; 0 = elegido).
+     * $plan: calcularlo con otro plan (para cotizar un cambio de plan). $sumar: módulos que se suman como extra (para
+     * saber cuánto pagaría con un pedido).
      */
-    public function estado(int $negocioId, ?string $plan = null): array
+    public function estado(int $negocioId, ?string $plan = null, array $sumar = []): array
     {
         $n = $this->filaNegocio($negocioId);
         if (!$n) throw new RuntimeException('Negocio no encontrado.');
@@ -299,7 +317,7 @@ final class Modulos
         if (!$pl) throw new RuntimeException('Plan no válido.');
         $cat = $this->catalogo();
         $delPlan = $pl['modulos'];
-        $extra = array_values(array_diff(self::parse($n['modulos_extra']), $delPlan));
+        $extra = array_values(array_diff(self::parse(self::csv(array_merge(self::parse($n['modulos_extra']), self::conDependencias($sumar)))), $delPlan));
         $quitados = array_values(array_intersect(self::parse($n['modulos_quitados']), $delPlan));
         $pagados = self::respetarDependencias(array_merge(array_diff($delPlan, $quitados), $extra));
         $demo = self::enDemo($n);
@@ -307,7 +325,17 @@ final class Modulos
         $activos = $demo ? ($demoTodos ? array_values(array_unique(array_merge(self::todos(), array_intersect($pagados, self::SOLO_A_PEDIDO))))
                               : self::respetarDependencias(self::parse($n['modulos_prueba']))) : $pagados;
         $activos = array_values(array_intersect(array_keys($cat), $activos));   // en el orden del catálogo
-        $precioExtra = round(array_sum(array_map(fn($m) => $cat[$m]['precio_mensual'], $extra)), 2);
+        // Planes de $20 y $45 (migración 112): los primeros `modulos_elegir` extra (en el orden del catálogo) van en el precio
+        // del plan; los demás cuestan `precio_modulo_extra` (o su precio del catálogo). Los de FUERA_DEL_CUPO, a su precio del catálogo.
+        $elegir = $pl['modulos_elegir'] ?? 0;
+        $precioFijo = $pl['precio_modulo_extra'] ?? null;
+        $elegidos = array_slice(array_values(array_diff($extra, self::FUERA_DEL_CUPO)), 0, $elegir);
+        $precioPorExtra = [];
+        foreach ($extra as $m) {
+            $precioPorExtra[$m] = in_array($m, $elegidos, true) ? 0.0
+                : (in_array($m, self::FUERA_DEL_CUPO, true) || $precioFijo === null ? (float) $cat[$m]['precio_mensual'] : (float) $precioFijo);
+        }
+        $precioExtra = round(array_sum($precioPorExtra), 2);
         $descuento = round(min($pl['precio_mensual'], array_sum(array_map(fn($m) => $cat[$m]['precio_mensual'], $quitados))), 2);
         $acordado = $n['precio_acordado'] === null ? null : round((float) $n['precio_acordado'], 2);
         $calculado = round(max(0, $pl['precio_mensual'] + $precioExtra - $descuento), 2);
@@ -317,6 +345,8 @@ final class Modulos
             'precio_plan' => $pl['precio_mensual'], 'precio_extra' => $precioExtra, 'descuento' => $descuento,
             'precio_acordado' => $acordado, 'calculado' => $calculado, 'mensual' => $acordado ?? $calculado,
             'demo' => $demo, 'demo_todos' => $demoTodos,
+            'modulos_elegir' => $elegir, 'elegidos' => $elegidos, 'por_elegir' => max(0, $elegir - count($elegidos)),
+            'precio_por_extra' => $precioPorExtra,
         ];
     }
 
@@ -533,7 +563,7 @@ final class Modulos
             foreach ($e['activos'] as $m) $r[$m]['clientes_activos']++;
             foreach ($e['extra'] as $m) {
                 $r[$m]['clientes_extra']++;
-                $r[$m]['mensual_extra'] += $cat[$m]['precio_mensual'];
+                $r[$m]['mensual_extra'] += $e['precio_por_extra'][$m] ?? $cat[$m]['precio_mensual'];   // los elegidos del Básico valen 0 (migración 112)
             }
         }
         return array_values(array_map(function ($x) { $x['mensual_extra'] = round($x['mensual_extra'], 2); return $x; }, $r));

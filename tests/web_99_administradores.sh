@@ -1,5 +1,6 @@
 # Administradores (migración 099) en pantalla: crear hasta 4, no cuentan en el plan, mismo menú y accesos que el dueño,
 # no tocan al dueño ni a sí mismos, rol inválido rechazado y formularios con token CSRF.
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 clave_nueva() { get "r=usuarios" > /dev/null; grep -o 'class="clave-temporal">[^<]*' "$TMP/pag.html" | head -1 | sed 's/.*>//'; }
 crear_usuario() { # nombre email rol
   post_desde "r=usuarios" "r=usuarios&accion=crear" --data-urlencode "nombre=$1" --data-urlencode "email=$2" --data-urlencode "rol=$3" > /dev/null

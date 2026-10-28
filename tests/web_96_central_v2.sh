@@ -4,6 +4,7 @@
 # Prueba de punta a punta por HTTP: transporte y códigos, capacidades, clientes = estado v1, demo creada desde el Central
 # que entra con la clave devuelta, pago sin duplicar, solicitudes atendidas, finanzas, SSO con enlace directo y límite.
 # Variables: BASE, DB, PGPASSWORD, TMP, TUKAN_CENTRAL_* (de run_web.sh)
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 
 C96_ID=${TUKAN_CENTRAL_ID:-tuplanner-prueba}
 export C96_ID

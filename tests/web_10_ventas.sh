@@ -1,4 +1,5 @@
 # Ventas, calendario y página pública: de punta a punta
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 FUT=$(date -d "+45 days" +%Y-%m-%d)
 FUT2=$(date -d "+80 days" +%Y-%m-%d)
 ANIO=$(date -d "$FUT" +%Y); MES=$(date -d "$FUT" +%-m)

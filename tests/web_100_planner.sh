@@ -1,6 +1,7 @@
 # Organizador (migración 100): pestaña Planificación (tareas, presupuesto, pagos directos, comisión, honorarios),
 # pestaña Ideas (fotos, me encanta, temática y colores), Comisiones, Configuración, evento sin lugar,
 # portal del cliente (tareas, presupuesto sin costos de reventa, pagos, ideas) y permisos por rol y por negocio.
+planes_de_antes   # estas pruebas usan los planes de antes (Esencial $19, Planner $39, Agencia $69); los de $20 y $45: web_112_planes.sh
 FOTO100="$TMP/idea_100.jpg"
 php -r '$i=imagecreatetruecolor(400,400);imagefill($i,0,0,imagecolorallocate($i,240,200,210));imagestring($i,5,120,190,"Idea",0);imagejpeg($i,$argv[1]);' "$FOTO100"
 echo "hola" > "$TMP/no_foto.jpg"
