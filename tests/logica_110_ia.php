@@ -56,12 +56,12 @@ $db->exec("UPDATE negocios SET estado = 'activo', activo_hasta = CURRENT_DATE + 
 $mods = new Modulos($db);
 $ia = new Ia($db, $mods);
 check('Los otros planes NO traen el Asistente IA (extra de $5)', false, $ia->tieneModulo($nA));
-check('El plan más caro lo trae INCLUIDO (del plan, no extra) con tope de 4,00', [true, true, [], 4.0],
+check('El plan más caro lo trae INCLUIDO (del plan, no extra) con tope de 1,50', [true, true, [], 1.5],
       [$ia->tieneModulo($nQ), in_array('asistente_ia', $mods->estado($nQ)['del_plan'], true), $mods->estado($nQ)['extra'], $ia->tope($nQ)]);
 check('Demo con todos los módulos de un plan que no lo trae: sin el Asistente IA', false, in_array('asistente_ia', $mods->estado((int) negocio_prueba($db, 'salon', 'Demo IA')[0])['activos'], true));
 $mods->cambiar($nB, ['asistente_ia'], []);
 check('Encendido como extra: lo tiene y suma $5 al mes (migración 112: ya no es por cotización)', [true, 5.0], [$ia->tieneModulo($nB), $mods->estado($nB)['precio_extra']]);
-check('Tope sin el módulo = 0,50 · con el módulo comprado aparte = 4,00', [0.5, 4.0], [$ia->tope($nA), $ia->tope($nB)]);
+check('Tope sin el módulo = 0,50 · con el módulo comprado aparte = 1,50', [0.5, 1.5], [$ia->tope($nA), $ia->tope($nB)]);
 $ia->cambiarTope($nA, 1.25);
 check('Tope propio (lo pone Tukán) gana', [1.25, 1.25], [$ia->topePropio($nA), $ia->tope($nA)]);
 $ia->cambiarTope($nA, null);
@@ -75,7 +75,7 @@ $ia->cambiarTope($nD, 2.5);
 check('Demo con tope propio de Tukán: manda el propio', 2.5, $ia->tope($nD));
 $ia->cambiarTope($nD, null);
 (new \TuPlanner\Planes($db))->suscribir($nD, 'quinta', 'mensual', $hoy, 'transferencia');
-check('La demo pasa a cliente pagado con el módulo: vuelve sola a 4,00', [false, 4.0], [$ia->esDemo($nD), $ia->tope($nD)]);
+check('La demo pasa a cliente pagado con el módulo: vuelve sola a 1,50', [false, 1.5], [$ia->esDemo($nD), $ia->tope($nD)]);
 $db->exec("UPDATE negocios SET estado = 'cancelado' WHERE id = $nD");   // fuera del resto de esta prueba
 
 // ---------------------------------------------------------------------------------------------
@@ -172,7 +172,7 @@ $r = $ia->proponerCotizacion($nA, 'Boda de 150 personas el 14 de febrero', '/?r=
 check('Sin el módulo: no llama y da el mensaje neutro', [false, $antes], [$r['ok'], $nPedidos()]);
 $db->exec("UPDATE tukan_ia_gasto SET costo_usd = 4 WHERE negocio_id = '$nB'");
 $r = $ia->proponerCotizacion($nB, "Boda de 150 personas RESPONDER:$json", '/?r=evento_nuevo', $hoy);
-check('Con el módulo pero en su tope (4,00): no llama, mensaje neutro', [false, $antes, 'En este momento no pudimos procesar el texto automáticamente; puede hacerlo a mano aquí: /?r=evento_nuevo.'],
+check('Con el módulo pero en su tope (1,50): no llama, mensaje neutro', [false, $antes, 'En este momento no pudimos procesar el texto automáticamente; puede hacerlo a mano aquí: /?r=evento_nuevo.'],
       [$r['ok'], $nPedidos(), $r['aviso'] ?? null]);
 check('…sin «límite», «cupo» ni «saldo»', false, $prohibidas($r['aviso'] ?? ''));
 check_error('Mensaje muy corto', 'Pegue el mensaje', fn() => $ia->proponerCotizacion($nB, 'hola', '/'));
@@ -257,7 +257,7 @@ $db->exec("UPDATE tukan_ia_gasto SET costo_usd = 0.2 WHERE negocio_id = '$nA'");
 $db->exec("UPDATE tukan_ia_gasto SET costo_usd = 0.9 WHERE negocio_id = '$nB'");
 $r = $pedir('ia_uso', ['mes' => date('Y-m')]);
 $ng = $r[1]['negocios'] ?? [];
-check('ia_uso con dos negocios: el que más gastó primero, con nombre, tope y módulo', [200, [(string) $nB, (string) $nA], ['Hacienda Asistente', 4.0, true], [0.5, false]],
+check('ia_uso con dos negocios: el que más gastó primero, con nombre, tope y módulo', [200, [(string) $nB, (string) $nA], ['Hacienda Asistente', 1.5, true], [0.5, false]],
       [$r[0], array_column($ng, 'cliente_id'), [$ng[0]['nombre'] ?? null, $ng[0]['tope'] ?? null, $ng[0]['modulo'] ?? null], [$ng[1]['tope'] ?? null, $ng[1]['modulo'] ?? null]]);
 check('ia_uso: totales, FAQ, configurada, versión de la librería y producto', [round(1.1, 6), true, true, TUKAN_IA_VERSION, 'tuplanner', 'ia_uso'],
       [$r[1]['totales']['costo'], $r[1]['faq']['total'] >= 1, $r[1]['configurada'], $r[1]['version_libreria'], $r[1]['producto'], $r[1]['accion']]);

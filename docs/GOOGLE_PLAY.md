@@ -93,11 +93,11 @@ Productos sugeridos cuando se prenda (precio web ÷ 0,85, redondeado a ,99; cód
 
 | ID del producto | Plan | Período | Precio web | Google Play |
 |---|---|---|---|---|
-| `tuplanner_basico_mensual` | Básico (`esencial`) | 1 mes | $20 | $23,99 |
-| `tuplanner_basico_semestral` | Básico | 6 meses | $100 | $117,99 |
-| `tuplanner_basico_anual` | Básico | 1 año | $200 | $235,99 |
-| `tuplanner_completo_mensual` | Completo (`quinta`) | 1 mes | $45 | $52,99 |
-| `tuplanner_completo_semestral` | Completo | 6 meses | $225 | $264,99 |
-| `tuplanner_completo_anual` | Completo | 1 año | $450 | $529,99 |
+| `tuplanner_basico_mensual` | Básico (`esencial`) | 1 mes | $12 | $14,99 |
+| `tuplanner_basico_semestral` | Básico | 6 meses | $60 | $70,99 |
+| `tuplanner_basico_anual` | Básico | 1 año | $120 | $141,99 |
+| `tuplanner_completo_mensual` | Completo (`quinta`) | 1 mes | $25 | $29,99 |
+| `tuplanner_completo_semestral` | Completo | 6 meses | $125 | $147,99 |
+| `tuplanner_completo_anual` | Completo | 1 año | $250 | $294,99 |
 
 Mientras esté apagado, en Play Console **no** se crean suscripciones (`tienda/tuplanner/play.json` → `"suscripciones": []`).

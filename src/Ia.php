@@ -28,7 +28,7 @@ final class Ia
     public const PROGRAMA = 'tuplanner';
     public const NOMBRE = 'TuPlanner';
     public const MODULO = 'asistente_ia';
-    public const TOPE_MODULO = 4.00;              // USD al mes con «Asistente IA» (incluido en el plan más caro o comprado aparte): decisión del dueño
+    public const TOPE_MODULO = 1.50;              // USD al mes con «Asistente IA» (incluido en el plan más caro o comprado aparte). (6 nov 2026) «uso limitado»: la IA vale $3 (antes 4,00)
     public const TOPE_AYUDA = 0.50;               // USD al mes sin el módulo: solo la Ayuda (LEEME_IA.md 3.1)
     public const TOPE_DEMO = 0.50;                // USD al mes en TOTAL para una demo, aunque tenga todos los módulos: decisión del dueño (21 oct 2026)
     public const MAX_NUEVAS_SIN_MODULO = 30;      // respuestas NUEVAS de la Ayuda al mes sin el módulo

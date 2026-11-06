@@ -95,8 +95,28 @@ function base_limpia(): PDO
  * módulos a elegir), Planner (código salon) $39 (lugares sin límite, 3 usuarios, con sus módulos) y Agencia (código quinta) $69.
  * Los planes de $20 y $45 de verdad (Básico y Completo) se prueban en tests/logica_112_planes_20_45.php.
  */
+/**
+ * (6 nov 2026) La instalación nueva trae los precios de $12 y $25 (migración 113: cada módulo $5, IA $3). Las pruebas escritas
+ * antes hacen sus cuentas con los precios del catálogo (src/Modulos.php): esto los vuelve a poner. Los de $12 y $25: logica_113.
+ */
+function precios_de_antes(PDO $db): void
+{
+    $st = $db->prepare('UPDATE modulos SET precio_mensual = ? WHERE id = ?');
+    foreach (\TuPlanner\Modulos::CATALOGO as $id => $m) $st->execute([$m[3], $id]);
+    $db->exec("UPDATE modulos SET precio_mensual = 5.00 WHERE id = 'asistente_ia'");
+}
+
+/** Los planes de $20 y $45 (migración 112, antes de la 113) con los precios de antes de cada módulo. */
+function planes_20_45(PDO $db): void
+{
+    precios_de_antes($db);
+    $db->exec("UPDATE planes SET precio_mensual = 20.00, modulos_elegir = 3, precio_modulo_extra = 5.00 WHERE codigo = 'esencial';
+               UPDATE planes SET precio_mensual = 45.00 WHERE codigo = 'quinta'");
+}
+
 function planes_de_antes(PDO $db): void
 {
+    precios_de_antes($db);
     $db->exec("UPDATE planes SET nombre = 'Esencial', precio_mensual = 19, modulos = '', modulos_elegir = 0, precio_modulo_extra = NULL,
                                  max_espacios = NULL, max_usuarios = 2 WHERE codigo = 'esencial';
                INSERT INTO planes (codigo, nombre, precio_mensual, max_espacios, max_usuarios, descripcion, modulos)

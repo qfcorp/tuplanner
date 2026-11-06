@@ -61,8 +61,8 @@ en Mi plan solo ve el precio de lo que ya paga). Se cambian en Panel Tukán → 
 
 | Plan (código) | Precio interno | Límites | Módulos incluidos |
 |---|---|---|---|
-| **Básico** (`esencial`) | $20 al mes | lugares sin límite, 1 usuario más el dueño | La base + **3 módulos que el cliente elige**; cada módulo más **$5** al mes |
-| **Completo** (`quinta`) | $45 al mes | sin límite | Todos, **incluido el Asistente IA** (con su tope de uso) |
+| **Básico** (`esencial`) | $12 + IVA al mes (desde el 6 nov 2026) | lugares sin límite, 1 usuario más el dueño | La base + **3 módulos que el cliente elige**; cada módulo más **$5** al mes |
+| **Completo** (`quinta`) | $25 + IVA al mes | sin límite | Todos, **incluido el Asistente IA** (con su tope de uso) |
 
 - El **Asistente IA** en Básico es un extra de **$5** al mes que **no cuenta** entre los 3 elegidos (`Modulos::FUERA_DEL_CUPO`).
 - Columnas `planes.modulos_elegir` (cuántos extra van incluidos) y `planes.precio_modulo_extra` (cada uno más; vacío = precio del catálogo).

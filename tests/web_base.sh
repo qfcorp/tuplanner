@@ -58,7 +58,13 @@ pagar_plan() {
 }
 # Planes de ANTES de la migración 112 (para las pruebas escritas con ese modelo): Esencial $19 sin módulos a elegir,
 # Planner (salon) $39 (lugares sin límite, 3 usuarios, con sus módulos) y Agencia (quinta) $69. Los de $20 y $45: web_112_planes.sh.
+# (6 nov 2026) La instalación nueva trae los precios de $12 y $25 (migración 113: cada módulo $5, IA $3). Las pruebas escritas
+# antes hacen sus cuentas con los precios del catálogo de src/Modulos.php: esto los vuelve a poner. Los de $12 y $25: web_113.
+precios_de_antes() {
+  sql "UPDATE modulos SET precio_mensual=6 WHERE id='planificacion'; UPDATE modulos SET precio_mensual=6 WHERE id='presupuesto'; UPDATE modulos SET precio_mensual=4 WHERE id='comisiones'; UPDATE modulos SET precio_mensual=4 WHERE id='ideas'; UPDATE modulos SET precio_mensual=3 WHERE id='paquetes'; UPDATE modulos SET precio_mensual=6 WHERE id='contratos'; UPDATE modulos SET precio_mensual=6 WHERE id='portal_cliente'; UPDATE modulos SET precio_mensual=4 WHERE id='cobros_linea'; UPDATE modulos SET precio_mensual=5 WHERE id='cuestionarios'; UPDATE modulos SET precio_mensual=8 WHERE id='dia_evento'; UPDATE modulos SET precio_mensual=8 WHERE id='invitados'; UPDATE modulos SET precio_mensual=6 WHERE id='plano'; UPDATE modulos SET precio_mensual=5 WHERE id='mobiliario'; UPDATE modulos SET precio_mensual=5 WHERE id='boda_vivo'; UPDATE modulos SET precio_mensual=7 WHERE id='proveedores'; UPDATE modulos SET precio_mensual=4 WHERE id='portal_proveedor'; UPDATE modulos SET precio_mensual=3 WHERE id='incidencias'; UPDATE modulos SET precio_mensual=4 WHERE id='metas'; UPDATE modulos SET precio_mensual=3 WHERE id='telegram'; UPDATE modulos SET precio_mensual=3 WHERE id='exportar'; UPDATE modulos SET precio_mensual=5 WHERE id='asistente_ia';" > /dev/null
+}
 planes_de_antes() {
+  precios_de_antes
   sql "UPDATE planes SET nombre='Esencial', precio_mensual=19, modulos='', modulos_elegir=0, precio_modulo_extra=NULL, max_espacios=NULL, max_usuarios=2 WHERE codigo='esencial';
        INSERT INTO planes (codigo, nombre, precio_mensual, max_espacios, max_usuarios, descripcion, modulos)
        VALUES ('salon', 'Planner', 39.00, NULL, 3, 'Para el organizador independiente (plan de antes de la migración 112).',
@@ -68,6 +74,7 @@ planes_de_antes() {
 }
 # Los planes de $20 y $45 como los deja la migración 112 (Básico y Completo; sin el plan del medio)
 planes_20_45() {
+  precios_de_antes
   sql "UPDATE negocios SET plan_codigo='quinta' WHERE plan_codigo='salon'; UPDATE suscripciones SET plan_codigo='quinta' WHERE plan_codigo='salon';
        DELETE FROM planes WHERE codigo='salon';
        UPDATE planes SET nombre='Básico', precio_mensual=20, modulos='', modulos_elegir=3, precio_modulo_extra=5, max_espacios=NULL, max_usuarios=2,

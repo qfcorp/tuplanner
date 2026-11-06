@@ -10,6 +10,7 @@
 use TuPlanner\{Ia, Modulos, PanelTukan, Planes, TukanCentralV2};
 
 $db = base_limpia();
+planes_20_45($db);   // (6 nov 2026) la instalación nueva ya trae $12 y $25 (migración 113): aquí se prueba la 112
 $hoy = new DateTimeImmutable('today');
 $cuenta = fn(string $sql) => (int) $db->query($sql)->fetchColumn();
 $valor = fn(string $sql) => $db->query($sql)->fetchColumn();
