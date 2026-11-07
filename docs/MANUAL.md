@@ -1,7 +1,7 @@
 # Manual de TuPlanner (por módulo)
 
 Versión completa con capturas: [Manual_TuPlanner.pdf](Manual_TuPlanner.pdf) (38 páginas). Las capturas están en [manual/capturas](manual/capturas) y salen del negocio de ejemplo «Planner Demo Tukanec».
-Entrar: **tuplanner.tukanec.com** con tu correo y tu contraseña. Ayuda: WhatsApp 099 640 8397 · info@tukansoftware.com · tukansoftware.com.
+Entrar: **tuplanner.tukanec.com** con tu correo y tu contraseña. Ayuda: WhatsApp 098 366 2181 · info@tukansoftware.com · tukansoftware.com.
 
 Cada parte dice si es de la **base** (la tienen todos) o de un **módulo** (se enciende en Mi plan). Si un módulo no está en tu plan, su pantalla dice «Este módulo no está en tu plan» con el botón **Ver Mi plan**. Apagar un módulo no borra nada.
 
@@ -88,10 +88,10 @@ Paquetes y simulador · Contratos con firma (firma con el dedo, QR de verificaci
 - **Planes:** **Básico** (la base + **3 módulos que tú eliges**; si necesitas más, se suman a tu plan) y **Completo** (todos los módulos, con el **Asistente IA** incluido, usuarios sin límite). Tukán cotiza por WhatsApp.
 - **Más → Mi plan**: módulos encendidos, los que puedes agregar («Precio por cotización» y **Pedir cotización**) y lo que viene siempre incluido. En el Básico dice «Tu plan trae 3 módulos a tu elección» y cuántos te quedan: los que elegiste dicen «Incluido · lo elegiste», los demás que pagas dicen «Extra», y mientras te queden por elegir, los que no tienes dicen «Puedes elegirlo en tu plan» con **Elegir este módulo**. El **Asistente IA** viene incluido en el plan Completo; en el Básico dice «Pídalo y le cotizamos».
 - No hay registro abierto: **Solicitar demo**. Tukán crea la demo; al contratar, nada de lo cargado se pierde.
-- El valor del programa siempre es por cotización según los módulos: WhatsApp 099 640 8397.
+- El valor del programa siempre es por cotización según los módulos: WhatsApp 098 366 2181.
 
 ## Ayuda e inteligencia artificial
-- **Ayuda (base, todos los planes y cargos):** **Más → Ayuda** → cuadro **¿Qué necesita hacer?** (hasta 500 letras) → **Preguntar**. Responde al instante y paso a paso con el manual. Las preguntas ya hechas quedan guardadas (Tukán las revisa) y salen de inmediato. Hasta 10 preguntas por minuto. Si no sirvió: **WhatsApp 099 640 8397**.
+- **Ayuda (base, todos los planes y cargos):** **Más → Ayuda** → cuadro **¿Qué necesita hacer?** (hasta 500 letras) → **Preguntar**. Responde al instante y paso a paso con el manual. Las preguntas ya hechas quedan guardadas (Tukán las revisa) y salen de inmediato. Hasta 10 preguntas por minuto. Si no sirvió: **WhatsApp 098 366 2181**.
 - **Asistente IA (incluido en el plan Completo; en el Básico, «Pídalo y le cotizamos»):**
   - **Eventos** o **Nuevo evento** → **✨ Desde un mensaje de WhatsApp** → pega el mensaje del cliente → **Proponer la cotización** → borrador con cliente, tipo, fecha, invitados, lugar (o por definir), paquete y servicios de **tu catálogo** → **Guardar evento y cotización** (evento en Consulta, cotización en borrador; no se envía nada).
   - **Planificación → Presupuesto** → **✨ Leer cotización de proveedor** → sube la foto o el PDF de la proforma (y una nota) → **Leer la cotización** → marca las partidas → **Agregar al presupuesto** (quedan «Pidiendo precios», el cliente le paga directo).

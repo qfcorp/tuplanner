@@ -1026,7 +1026,7 @@ final class DiaEvento
             $this->db->prepare("UPDATE eventos SET transmision_estado = 'solicitada' WHERE id = ?")->execute([$eventoId]);
             $this->cambio($negocioId, $eventoId, 'Pidió la transmisión en vivo a QF Producciones', $usuario);
         }
-        return self::wa((string) $n['whatsapp_transmision'] ?: '593996408397', self::mensajeTransmision($ev, $n));
+        return self::wa((string) $n['whatsapp_transmision'] ?: '593983662181', self::mensajeTransmision($ev, $n));
     }
 
     public static function mensajeTransmision(array $ev, array $n): string

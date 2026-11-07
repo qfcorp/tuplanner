@@ -1,7 +1,7 @@
 <?php
 use TuPlanner\Ia;
 /** Ayuda (todos los planes). @var string $pregunta @var ?array $respuesta @var ?string $error */
-$waAyuda = 'https://wa.me/593996408397?text=' . rawurlencode('Hola, necesito ayuda con TuPlanner' . ($pregunta !== '' ? ': ' . $pregunta : ''));
+$waAyuda = 'https://wa.me/593983662181?text=' . rawurlencode('Hola, necesito ayuda con TuPlanner' . ($pregunta !== '' ? ': ' . $pregunta : ''));
 ?>
 <div class="cabecera">
     <div><h1>Ayuda</h1><p>¿En qué le ayudamos? Pregunte cómo hacer algo en TuPlanner y le respondemos al instante con el manual.</p></div>
@@ -26,7 +26,7 @@ $waAyuda = 'https://wa.me/593996408397?text=' . rawurlencode('Hola, necesito ayu
     <section class="bloque ia-respuesta" aria-labelledby="ia-t-respuesta" aria-live="polite">
         <h2 id="ia-t-respuesta">Respuesta</h2>
         <div class="ia-texto"><?= Ia::html((string) $respuesta['respuesta']) ?></div>
-        <p class="ia-pie">¿Le sirvió? Si no, <a href="<?= e($waAyuda) ?>" target="_blank" rel="noopener">escríbanos por WhatsApp 099 640 8397</a>.</p>
+        <p class="ia-pie">¿Le sirvió? Si no, <a href="<?= e($waAyuda) ?>" target="_blank" rel="noopener">escríbanos por WhatsApp 098 366 2181</a>.</p>
     </section>
 <?php endif; ?>
 
@@ -35,6 +35,6 @@ $waAyuda = 'https://wa.me/593996408397?text=' . rawurlencode('Hola, necesito ayu
     <ul>
         <li>Diga qué quiere hacer: «¿Cómo envío la cotización por WhatsApp?», «¿Cómo separo una fecha?».</li>
         <li>Una pregunta a la vez.</li>
-        <li>¿Algo urgente o que no funciona? <a href="<?= e($waAyuda) ?>" target="_blank" rel="noopener">Escríbanos por WhatsApp 099 640 8397</a>.</li>
+        <li>¿Algo urgente o que no funciona? <a href="<?= e($waAyuda) ?>" target="_blank" rel="noopener">Escríbanos por WhatsApp 098 366 2181</a>.</li>
     </ul>
 </section>

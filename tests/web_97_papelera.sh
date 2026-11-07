@@ -60,7 +60,7 @@ check "El dueño pausado: va a su pantalla de cuenta" "302 $BASE/?r=prueba_termi
 curl -s -b "$JAR_A" -c "$JAR_A" -o "$TMP/c97_pag.html" "$BASE/?r=prueba_terminada"
 contiene "Pantalla: Tu cuenta está pausada" "$TMP/c97_pag.html" "Tu cuenta está pausada"
 contiene "Pantalla: con el motivo" "$TMP/c97_pag.html" "Debe la mensualidad de octubre"
-contiene "Pantalla: WhatsApp de Tukán" "$TMP/c97_pag.html" "https://wa.me/593996408397"
+contiene "Pantalla: WhatsApp de Tukán" "$TMP/c97_pag.html" "https://wa.me/593983662181"
 check "Sitio del pausado: 503" "503" "$(c97_codigo "r=sitio&s=$SLUG_A")"
 contiene "Sitio: temporalmente no disponible" "$TMP/c97_pag.html" "Temporalmente no disponible"
 no_contiene "Sitio: sin el nombre del negocio" "$TMP/c97_pag.html" "$NOMBRE_A"

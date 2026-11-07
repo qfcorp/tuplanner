@@ -8,7 +8,7 @@
 <ul>
 <li><b>Cada negocio</b> (organizador o agencia de eventos) es el responsable de los datos de sus clientes, invitados y personal. TuPlanner los guarda por cuenta del negocio.</li>
 <li><b>Tukán Software</b> es responsable de los datos de la cuenta del negocio (dueño, plan y pagos del plan).</li>
-<li>Contacto: <a href="mailto:info@tukansoftware.com">info@tukansoftware.com</a> · WhatsApp 099 640 8397.</li>
+<li>Contacto: <a href="mailto:info@tukansoftware.com">info@tukansoftware.com</a> · WhatsApp 098 366 2181.</li>
 </ul>
 
 <h2>Qué datos guardamos</h2>

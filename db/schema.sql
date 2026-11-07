@@ -68,7 +68,7 @@ CREATE TABLE negocios (
     payphone_token        VARCHAR(600),
     payphone_store_id     VARCHAR(80),
     -- Transmisión en vivo con QF Producciones
-    whatsapp_transmision  VARCHAR(20) NOT NULL DEFAULT '593996408397',
+    whatsapp_transmision  VARCHAR(20) NOT NULL DEFAULT '593983662181',
     -- Calendario externo (Google Calendar) por enlace secreto
     token_ical            VARCHAR(64) NOT NULL DEFAULT encode(gen_random_bytes(16), 'hex'),
     reporte_enviado_mes   CHAR(7),
@@ -131,7 +131,7 @@ INSERT INTO ajustes (clave, valor) VALUES
     ('semestral_paga', '5'), ('semestral_recibe', '6'),
     ('anual_paga', '10'),    ('anual_recibe', '12'),
     ('dias_gracia', '3'),
-    ('whatsapp_ventas', '593996408397');
+    ('whatsapp_ventas', '593983662181');
 CREATE TABLE registro_admin (
     id                    SERIAL PRIMARY KEY,
     admin_id              INT REFERENCES superadmins(id) ON DELETE SET NULL,

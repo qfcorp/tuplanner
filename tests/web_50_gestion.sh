@@ -254,7 +254,7 @@ check "Planes" "200" "$(get "r=planes")"
 contiene "Plan Agencia" "$TMP/pag.html" "Plan Agencia"
 contiene "Precio Salón" "$TMP/pag.html" "\$39,00"
 contiene "Semestral" "$TMP/pag.html" "Cada 6 meses"
-contiene "Pagar por WhatsApp" "$TMP/pag.html" "wa.me/593996408397?text="
+contiene "Pagar por WhatsApp" "$TMP/pag.html" "wa.me/593983662181?text="
 contiene "Cuánto pagas" "$TMP/pag.html" "Cuánto pagas"
 check "Con la prueba vigente, prueba_terminada vuelve al inicio" "302" "$(get "r=prueba_terminada")"
 sql "UPDATE negocios SET prueba_hasta = '$HOY'::date - 1 WHERE id=$NID_S" > /dev/null
@@ -341,7 +341,7 @@ r=$(post_desde "r=admin_planes" "r=admin_planes" --data-urlencode "accion=plan" 
      --data-urlencode "precio_mensual=42" --data-urlencode "max_espacios=3" --data-urlencode "max_usuarios=4" --data-urlencode "descripcion=Para salones")
 check "Guardar plan con máximos" "42.00|3|4" "$(sql "SELECT precio_mensual||'|'||max_espacios||'|'||max_usuarios FROM planes WHERE codigo='salon'")"
 r=$(post_desde "r=admin_planes" "r=admin_planes" --data-urlencode "accion=ajustes" --data-urlencode "dias_prueba=21" --data-urlencode "dias_gracia=3" \
-     --data-urlencode "whatsapp_ventas=593996408397" --data-urlencode "semestral_paga=5" --data-urlencode "semestral_recibe=6" --data-urlencode "anual_paga=10" --data-urlencode "anual_recibe=12")
+     --data-urlencode "whatsapp_ventas=593983662181" --data-urlencode "semestral_paga=5" --data-urlencode "semestral_recibe=6" --data-urlencode "anual_paga=10" --data-urlencode "anual_recibe=12")
 check "Guardar ajustes" "21" "$(sql "SELECT valor FROM ajustes WHERE clave='dias_prueba'")"
 sql "UPDATE planes SET precio_mensual=39, max_espacios=2, max_usuarios=3 WHERE codigo='salon'; UPDATE ajustes SET valor='7' WHERE clave='dias_prueba'" > /dev/null
 get "r=admin_planes" > /dev/null

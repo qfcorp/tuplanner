@@ -207,7 +207,7 @@ check_error('Otro negocio no confirma mis proveedores', 'No se encontró', fn() 
 check('Mensaje al proveedor con hora de llegada', true, str_contains(DiaEvento::mensajeProveedor($lp[1], $dia->evento($nid, $e1), $dia->negocio($nid)), '15:00'));
 $wa = $dia->pedirTransmision($nid, $e1, $dueno);
 check('Pedir transmisión: queda "solicitada"', 'solicitada', $db->query("SELECT transmision_estado FROM eventos WHERE id = $e1")->fetchColumn());
-check('WhatsApp a QF Producciones con los datos', true, str_starts_with($wa, 'https://wa.me/593996408397?text=') && str_contains(urldecode($wa), 'Invitados: 150'));
+check('WhatsApp a QF Producciones con los datos', true, str_starts_with($wa, 'https://wa.me/593983662181?text=') && str_contains(urldecode($wa), 'Invitados: 150'));
 check_error('Enlace de transmisión inválido', 'https://', fn() => $dia->guardarTransmision($nid, $e1, 'youtube', 'confirmada'));
 $dia->guardarTransmision($nid, $e1, 'https://youtube.com/live/abc123', 'confirmada');
 check('Transmisión confirmada con enlace', 'https://youtube.com/live/abc123', $db->query("SELECT transmision_url FROM eventos WHERE id = $e1")->fetchColumn());

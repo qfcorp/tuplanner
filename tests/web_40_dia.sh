@@ -159,7 +159,7 @@ echo "5. Boda en vivo"
 check "Sección boda en vivo" "200" "$(get "r=evento_dia&id=$EV&ver=vivo")"
 contiene "Botón pedir a QF Producciones" "$TMP/pag.html" "Pedir transmisión a QF Producciones"
 r=$(post_desde "r=evento_dia&id=$EV&ver=vivo" "r=evento_dia&id=$EV" --data-urlencode "accion=pedir_transmision" --data-urlencode "ver=vivo")
-check "Pedir transmisión abre WhatsApp de QF" "302 https://wa.me/593996408397" "$(echo "$r" | cut -d'?' -f1)"
+check "Pedir transmisión abre WhatsApp de QF" "302 https://wa.me/593983662181" "$(echo "$r" | cut -d'?' -f1)"
 check "Queda solicitada" "solicitada" "$(sql "SELECT transmision_estado FROM eventos WHERE id=$EV")"
 post_desde "r=evento_dia&id=$EV&ver=vivo" "r=evento_dia&id=$EV" --data-urlencode "accion=transmision" --data-urlencode "transmision_url=https://youtube.com/live/boda123" \
   --data-urlencode "transmision_estado=confirmada" --data-urlencode "ver=vivo" > /dev/null
