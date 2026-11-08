@@ -177,3 +177,10 @@ Regla de Dimi: "todos los programas deben ser modulares para encender o apagar l
 - [x] Se guarda de dónde vino cada negocio (se registró solo, panel de Tukán o demo del central)
 - [x] Pruebas: logica_96 (301) y web_96 (86), migración 096. Totales: lógica 2135/2135 y pantallas 1803/1803
 - Falta (no existe en TuPlanner): pedidos de demo, comprobantes de pago y soporte. Si se quieren en el central, hay que construirlos aquí primero (subir comprobante desde la pantalla de prueba terminada y un formulario de ayuda)
+
+## 7 nov 2026 — Legal (auditoría de 20 puntos)
+- **Cancelar mi plan** (módulo común `TukanCancelarPlan.php`, copia igual a la de tukan-central/herramientas/cancelar_plan): sección al final de Mi plan con casilla de confirmar y motivo; no borra nada, sigue hasta el último día pagado; guarda en `tukan_cancelaciones` y avisa al Panel (`plux_api.php` acción `cancelar_plan`), que cancela las suscripciones Plux, lo muestra en Inicio y avisa por Telegram. «Seguir con mi plan» lo deshace. En la app de Google Play solo explica cómo cancelar en Google Play.
+- **Aceptar términos y privacidad** (módulo común `TukanLegal.php`): aviso arriba para el dueño/administrador hasta que acepte (casilla + Aceptar, se guarda en `tukan_aceptaciones` con versión `2026-10-27` de tukansoftware.com/terminos.html); enlaces **Términos · Privacidad** en el menú y en la pantalla de entrar.
+- **+ IVA**: Mi plan y el mensaje de renovación muestran los precios del software con «+ IVA».
+- Manual: capítulo nuevo «Términos, privacidad y cancelar tu plan» y PDF regenerado (`SOLO_PDF=1`).
+- Pruebas nuevas en las pruebas de pantallas (cancelar, seguir, aceptar términos, casilla de reserva).
