@@ -28,6 +28,16 @@ $hechos = count(array_filter($pasos, fn($p) => $p['hecho']));
     <a class="g-franja" href="<?= e(url('mi_cuenta')) ?>#clave">🔑 Entraste con una contraseña temporal. Cámbiala por una tuya en Mi cuenta.</a>
 <?php endif; ?>
 
+<?php if (($u['estado'] ?? '') === 'prueba'): /* (10 nov 2026) tarjeta de la demo: hasta cuándo dura y dónde bajar el manual y los primeros pasos */ ?>
+    <section class="bloque" id="tarjeta-demo" aria-label="Tu demo">
+        <p style="margin:0 0 8px"><strong>Tu demo dura hasta el <?= e(!empty($u['prueba_hasta']) ? (new DateTimeImmutable($u['prueba_hasta']))->format('d/m') : '—') ?>.</strong> Descarga el manual y la guía de primeros pasos.</p>
+        <div class="acciones">
+            <a class="boton boton-chico" href="/manual.pdf" download="Manual_TuPlanner.pdf">Descargar el manual</a>
+            <a class="boton boton-claro boton-chico" href="/primeros_pasos.pdf" download="TuPlanner_Primeros_Pasos.pdf">Descargar primeros pasos</a>
+        </div>
+    </section>
+<?php endif; ?>
+
 <nav class="g-accesos" aria-label="Accesos rápidos">
     <?php if (es_comercial($u)): ?>
         <a class="g-acceso principal-acc" href="<?= e(url('evento_nuevo')) ?>"><?= $icono('M12 5v14M5 12h14') ?>Nuevo evento</a>

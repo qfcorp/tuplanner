@@ -27,6 +27,9 @@ if (getenv('TUPLANNER_UPLOADS') === false) {
 if (getenv('TUKAN_IA_ENV') === false) putenv('TUKAN_IA_ENV=' . sys_get_temp_dir() . '/tuplanner_pruebas_sin_ia.env');
 if (getenv('TUKAN_CORREO_ENV') === false) putenv('TUKAN_CORREO_ENV=' . sys_get_temp_dir() . '/tuplanner_pruebas_sin_correo.env');
 
+/** Datos que el pedido de demo exige desde el 10 nov 2026 (demos automáticas): para las pruebas escritas antes. */
+const DEMO_BASE = ['telefono' => '022345678', 'direccion' => 'Av. Amazonas N34-120 y Atahualpa'];
+
 $GLOBALS['ok'] = 0;
 $GLOBALS['fallos'] = [];
 

@@ -14,12 +14,12 @@ use RuntimeException;
  *    Completo $45 (código quinta: todos los módulos, con el Asistente IA). El Asistente IA en Básico: $5 aparte.
  *  - Semestral: paga 5, recibe 6
  *  - Anual: paga 10, recibe 12 + dominio propio (a nombre de Tukán)
- *  - Demo: 7 días (solo la crea Tukán; no hay registro abierto con periodo de prueba). Cada plan = base + módulos (Modulos)
+ *  - Demo: 3 días (10 nov 2026; la crea Tukán o sola el Panel Tukán Central; no hay registro abierto con periodo de prueba). Cada plan = base + módulos (Modulos)
  */
 final class Planes
 {
     public const AJUSTES = [
-        'dias_prueba' => '7',
+        'dias_prueba' => '3',   // demos automáticas de 3 días (10 nov 2026, migración 116)
         'semestral_paga' => '5', 'semestral_recibe' => '6',
         'anual_paga' => '10', 'anual_recibe' => '12',
         'dias_gracia' => '3',

@@ -30,6 +30,15 @@ $waAyuda = 'https://wa.me/593983662181?text=' . rawurlencode('Hola, necesito ayu
     </section>
 <?php endif; ?>
 
+<section class="bloque" id="ayuda-descargas" aria-labelledby="t-descargas">
+    <h2 id="t-descargas">Manual y primeros pasos</h2>
+    <p class="suave" style="margin:0 0 8px">Descárguelos para leerlos con calma o imprimirlos.</p>
+    <div class="acciones">
+        <a class="boton boton-chico" href="/manual.pdf" download="Manual_TuPlanner.pdf">Descargar el manual</a>
+        <a class="boton boton-claro boton-chico" href="/primeros_pasos.pdf" download="TuPlanner_Primeros_Pasos.pdf">Descargar primeros pasos</a>
+    </div>
+</section>
+
 <section class="bloque ia-consejos">
     <h2>Para preguntar mejor</h2>
     <ul>

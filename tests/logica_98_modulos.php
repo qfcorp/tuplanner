@@ -201,16 +201,16 @@ check('Pedir no enciende nada todavía', false, $mods->activo($nS, 'mobiliario')
 // ---------------------------------------------------------------------------------------------
 titulo('8. Pedidos de demo (no hay registro abierto con periodo de prueba)');
 $pd = new PedidosDemo($db);
-check_error('Pedido sin WhatsApp', 'WhatsApp', fn() => $pd->crear(['nombre' => 'Ana', 'negocio' => 'Quinta Ana', 'whatsapp' => '12', 'email' => 'ana@x.ec']));
-check_error('Pedido sin correo válido', 'correo', fn() => $pd->crear(['nombre' => 'Ana', 'negocio' => 'Quinta Ana', 'whatsapp' => '0991112222', 'email' => 'malo']));
+check_error('Pedido sin celular válido', 'celular', fn() => $pd->crear(DEMO_BASE + ['ciudad' => 'Quito', 'nombre' => 'Ana', 'negocio' => 'Quinta Ana', 'whatsapp' => '12', 'email' => 'ana@x.ec']));
+check_error('Pedido sin correo válido', 'correo', fn() => $pd->crear(DEMO_BASE + ['ciudad' => 'Quito', 'nombre' => 'Ana', 'negocio' => 'Quinta Ana', 'whatsapp' => '0991112222', 'email' => 'malo']));
 $antesNeg = $cuenta('SELECT count(*) FROM negocios');
-$pdA = $pd->crear(['nombre' => 'Ana Ruiz', 'negocio' => 'Quinta Ana', 'ciudad' => 'Loja', 'whatsapp' => '0991112222', 'email' => 'ANA@x.ec',
+$pdA = $pd->crear(DEMO_BASE + ['nombre' => 'Ana Ruiz', 'negocio' => 'Quinta Ana', 'ciudad' => 'Loja', 'whatsapp' => '0991112222', 'email' => 'ANA@x.ec',
                    'necesita' => 'Bodas', 'modulos' => ['invitados', 'nada']], '203.0.113.5');
 check('Pedido guardado: correo en minúsculas, solo módulos que existen', ['nueva', 'ana@x.ec', 'invitados'], array_values($db->query("SELECT estado, email, modulos FROM pedidos_demo WHERE id = $pdA")->fetch()));
 check('Pedir una demo NO crea una cuenta', $antesNeg, $cuenta('SELECT count(*) FROM negocios'));
-check('Mismo correo con pedido abierto: se actualiza (no se repite)', $pdA, $pd->crear(['nombre' => 'Ana Ruiz', 'negocio' => 'Quinta Ana 2', 'whatsapp' => '0991112222', 'email' => 'ana@x.ec'], '203.0.113.5'));
-for ($i = 0; $i < 5; $i++) $pd->crear(['nombre' => 'Robot', 'negocio' => 'Robot ' . $i, 'whatsapp' => '0991112222', 'email' => "r$i@x.ec"], '203.0.113.9');
-check_error('Límite por IP: 5 pedidos por hora', 'varios pedidos', fn() => $pd->crear(['nombre' => 'Robot', 'negocio' => 'Robot 9', 'whatsapp' => '0991112222', 'email' => 'r9@x.ec'], '203.0.113.9'));
+check('Mismo correo con pedido abierto: se actualiza (no se repite)', $pdA, $pd->crear(DEMO_BASE + ['ciudad' => 'Quito', 'nombre' => 'Ana Ruiz', 'negocio' => 'Quinta Ana 2', 'whatsapp' => '0991112222', 'email' => 'ana@x.ec'], '203.0.113.5'));
+for ($i = 0; $i < 5; $i++) $pd->crear(DEMO_BASE + ['ciudad' => 'Quito', 'nombre' => 'Robot', 'negocio' => 'Robot ' . $i, 'whatsapp' => '0991112222', 'email' => "r$i@x.ec"], '203.0.113.9');
+check_error('Límite por IP: 5 pedidos por hora', 'varios pedidos', fn() => $pd->crear(DEMO_BASE + ['ciudad' => 'Quito', 'nombre' => 'Robot', 'negocio' => 'Robot 9', 'whatsapp' => '0991112222', 'email' => 'r9@x.ec'], '203.0.113.9'));
 $db->exec("UPDATE pedidos_demo SET estado = 'descartada' WHERE nombre = 'Robot'");
 
 // ---------------------------------------------------------------------------------------------

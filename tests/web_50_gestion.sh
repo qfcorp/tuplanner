@@ -323,7 +323,7 @@ r=$(post_desde "r=admin_negocio&id=$NID_S" "r=admin_negocio&id=$NID_S&accion=pag
      --data-urlencode "inicio=$HOY" --data-urlencode "metodo=deuna" --data-urlencode "monto=60")
 check "Pago con monto especial y cambio a Quinta" "60.00|quinta" "$(sql "SELECT s.monto||'|'||n.plan_codigo FROM suscripciones s JOIN negocios n ON n.id=s.negocio_id WHERE s.negocio_id=$NID_S AND NOT s.anulada")"
 r=$(post_desde "r=admin_negocio&id=$NID_G" "r=admin_negocio&id=$NID_G&accion=prueba" --data-urlencode "dias=7")
-check "Extender prueba" "$(date -d "+14 days" +%Y-%m-%d)" "$(sql "SELECT prueba_hasta FROM negocios WHERE id=$NID_G")"
+check "Extender prueba (demo de 3 días + 7)" "$(date -d "+10 days" +%Y-%m-%d)" "$(sql "SELECT prueba_hasta FROM negocios WHERE id=$NID_G")"
 r=$(post_desde "r=admin_negocio&id=$NID_G" "r=admin_negocio&id=$NID_G&accion=notas" --data-urlencode "notas=Cliente piloto")
 check "Notas internas" "Cliente piloto" "$(sql "SELECT notas_admin FROM negocios WHERE id=$NID_G")"
 r=$(post_desde "r=admin_negocio&id=$NID_S" "r=admin_negocio&id=$NID_S&accion=estado" --data-urlencode "estado=suspendido")

@@ -24,5 +24,7 @@
     </div>
     <div class="campo"><label for="plan">Plan</label>
         <select id="plan" name="plan"><?php foreach ($listaPlanes as $p): ?><option value="<?= e($p['codigo']) ?>" <?= $d['plan'] === $p['codigo'] ? 'selected' : '' ?>><?= e($p['nombre']) ?> · <?= dinero($p['precio_mensual']) ?> al mes</option><?php endforeach; ?></select></div>
+    <?php $diasDemoNueva = max(1, (int) planes()->ajuste('dias_prueba')); /* (10 nov 2026) «3 días en todo»: toda demo dura lo mismo */ ?>
+    <p class="g-nota" id="dias-demo-nueva">La demo dura <strong><?= $diasDemoNueva ?> <?= $diasDemoNueva === 1 ? 'día' : 'días' ?></strong>, igual que las que se piden en el formulario. Si hace falta, en la ficha del negocio puedes darle más días.</p>
     <button class="boton boton-ancho" type="submit">Crear demo</button>
 </form>

@@ -10,7 +10,7 @@ contiene "Pide los módulos que le interesan" "$TMP/pag.html" 'value="invitados"
 no_contiene "Sin contraseña (no crea cuenta)" "$TMP/pag.html" 'name="clave"'
 no_contiene "Sin prueba gratis" "$TMP/pag.html" "gratis"
 NEG0=$(sql "SELECT count(*) FROM negocios")
-r=$(post "r=registro" --data-urlencode "negocio=Hacienda Quiere Demo" --data-urlencode "nombre=Carla Demo" --data-urlencode "ciudad=Cuenca" \
+r=$(post "r=registro" --data-urlencode "telefono=022345678" --data-urlencode "direccion=Av. Amazonas N34-120" --data-urlencode "negocio=Hacienda Quiere Demo" --data-urlencode "nombre=Carla Demo" --data-urlencode "ciudad=Cuenca" \
      --data-urlencode "whatsapp=0991234567" --data-urlencode "email=carla.demo@prueba.ec" --data-urlencode "necesita=Tenemos 2 jardines" \
      --data-urlencode "modulos[]=invitados" --data-urlencode "modulos[]=plano")
 contiene "Pedido recibido" "$TMP/post.html" "Recibimos tu pedido"
@@ -19,7 +19,7 @@ check "No se creó ninguna cuenta" "$NEG0" "$(sql "SELECT count(*) FROM negocios
 check "Sin sesión después de pedir" "302" "$(curl -s -o /dev/null -w '%{http_code}' -b "$JAR" "$BASE/?r=inicio")"
 r=$(post "r=registro" --data-urlencode "negocio=X" --data-urlencode "nombre=X" --data-urlencode "whatsapp=1" --data-urlencode "email=malo")
 contiene "Pedido con errores muestra el mensaje" "$TMP/post.html" "El correo no es válido"
-r=$(post "r=registro" --data-urlencode "negocio=Robot SA" --data-urlencode "nombre=Robot" --data-urlencode "whatsapp=0991234567" --data-urlencode "email=robot@x.ec" --data-urlencode "sitio_web=http://spam")
+r=$(post "r=registro" --data-urlencode "telefono=022345678" --data-urlencode "direccion=Av. Amazonas N34-120" --data-urlencode "ciudad=Quito" --data-urlencode "negocio=Robot SA" --data-urlencode "nombre=Robot" --data-urlencode "whatsapp=0991234567" --data-urlencode "email=robot@x.ec" --data-urlencode "sitio_web=http://spam")
 check "Trampa para robots: no guarda" "0" "$(sql "SELECT count(*) FROM pedidos_demo WHERE email='robot@x.ec'")"
 registrar quinta "Hacienda La Prueba"
 check "Se creó el negocio" "1" "$(sql "SELECT count(*) FROM negocios WHERE id=$NID")"

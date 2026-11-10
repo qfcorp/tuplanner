@@ -104,7 +104,7 @@ sql "UPDATE modulos SET precio_mensual = 6 WHERE id='plano'" > /dev/null
 
 echo "5. Panel Tukán: pedidos de demo → crear demo"
 rm -f "$JAR"
-post "r=registro" --data-urlencode "negocio=Quinta Pedido Panel $RANDOM" --data-urlencode "nombre=Rita Panel" --data-urlencode "whatsapp=0991230000" \
+post "r=registro" --data-urlencode "telefono=022345678" --data-urlencode "direccion=Av. Amazonas N34-120" --data-urlencode "ciudad=Quito" --data-urlencode "negocio=Quinta Pedido Panel $RANDOM" --data-urlencode "nombre=Rita Panel" --data-urlencode "whatsapp=0991230000" \
      --data-urlencode "email=rita$RANDOM@panel.ec" --data-urlencode "modulos[]=plano" > /dev/null
 PDP=$(sql "SELECT id FROM pedidos_demo ORDER BY id DESC LIMIT 1")
 post "r=admin_entrar" --data-urlencode "email=$ADM" --data-urlencode "clave=ClaveDelPanel123" > /dev/null

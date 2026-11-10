@@ -100,9 +100,9 @@ $db->exec("UPDATE negocios SET estado = 'prueba' WHERE id = $P1");
 $cli = (int) $db->query("INSERT INTO clientes (negocio_id, nombre, telefono) VALUES ($A2, 'Cliente Secreto Del Salón', '0987654321') RETURNING id")->fetchColumn();
 // Ya no hay registro abierto con periodo de prueba: llegan pedidos de demo (demo_pedida) y pedidos de módulos desde Mi plan (cambio_modulos)
 $pedidosDemo = new \TuPlanner\PedidosDemo($db);
-$PD1 = $pedidosDemo->crear(['nombre' => 'Rosa Pérez', 'negocio' => 'Hacienda La Pedida', 'ciudad' => 'Ibarra', 'whatsapp' => '0981112233',
+$PD1 = $pedidosDemo->crear(DEMO_BASE + ['nombre' => 'Rosa Pérez', 'negocio' => 'Hacienda La Pedida', 'ciudad' => 'Ibarra', 'whatsapp' => '0981112233',
                             'email' => 'rosa@pedida.ec', 'necesita' => 'Tenemos 3 salones', 'modulos' => ['invitados', 'plano']]);
-$PD2 = $pedidosDemo->crear(['nombre' => 'Luis Mora', 'negocio' => 'Salón Los Pinos', 'whatsapp' => '0982223344', 'email' => 'luis@pinos.ec']);
+$PD2 = $pedidosDemo->crear(DEMO_BASE + ['ciudad' => 'Quito', 'nombre' => 'Luis Mora', 'negocio' => 'Salón Los Pinos', 'whatsapp' => '0982223344', 'email' => 'luis@pinos.ec']);
 $pedidosDemo->marcar($PD2, 'contactada');
 $PM1 = (new \TuPlanner\Modulos($db))->pedir($A2, null, ['dia_evento'], 'Para las bodas grandes');
 check('12 negocios', 12, $cuenta('SELECT count(*) FROM negocios'));
@@ -303,7 +303,7 @@ check('planes: precios de Salón', [39.0, 195.0, 390.0], array_column($r['planes
 check('planes: meses gratis', [0, 1, 2], array_column($r['planes'][1]['precios'], 'meses_gratis'));
 check('planes: clientes por plan', [0, 6, 6], array_column($r['planes'], 'clientes'));
 check('planes: límites', ['Espacios' => '2', 'Usuarios' => '3'], $r['planes'][1]['limites']);
-check('planes: ajustes', ['dias_prueba' => 7, 'dias_demo' => 7, 'dias_gracia' => 3, 'dias_gracia_demo' => 0, 'registro_abierto' => false], $r['ajustes']);
+check('planes: ajustes', ['dias_prueba' => 3, 'dias_demo' => 3, 'dias_gracia' => 3, 'dias_gracia_demo' => 0, 'registro_abierto' => false], $r['ajustes']);
 
 // ---------------------------------------------------------------------------------------------
 titulo('7. solicitudes (§5.8, §5.9): registros nuevos y recordatorios');
@@ -480,13 +480,13 @@ check('Pedido de demo que no existe → 404', [404, 'no_encontrado'], $codigo($e
 check('Solicitud que no es pedido de demo → 422', 'datos.solicitud_id', $ej('crear_demo', ['solicitud_id' => 'renovacion:1', 'email' => 'otro5@ejemplo.com'] + $datosDemo)[1]['campo']);
 check('Ningún error creó cuentas', 0, $cuenta("SELECT count(*) FROM usuarios WHERE email LIKE 'otro%@ejemplo.com'"));
 $r = $ej('crear_demo', ['nombre' => 'Salón Sin Plan', 'contacto_nombre' => 'Ana', 'email' => 'ana.demo@ejemplo.com', 'telefono' => '0987777777']);
-check('Sin plan ni días: plan por defecto y días del ajuste', [200, 'quinta', $d('+7 days'), 'Quito'], [$r[0], $r[1]['cliente']['plan']['codigo'], $r[1]['resultado']['prueba_hasta'], $r[1]['cliente']['ciudad']]);
+check('Sin plan ni días: plan por defecto y días del ajuste (3)', [200, 'quinta', $d('+3 days'), 'Quito'], [$r[0], $r[1]['cliente']['plan']['codigo'], $r[1]['resultado']['prueba_hasta'], $r[1]['cliente']['ciudad']]);
 
 // ---------------------------------------------------------------------------------------------
 titulo('11. Las demás operaciones con su efecto real');
 // extender_prueba
 $r = $ej('extender_prueba', ['dias' => 10], $P1);
-check('Alargar prueba: desde su fin', [200, $d('+17 days'), $d('+17 days')], [$r[0], $r[1]['resultado']['prueba_hasta'], $db->query("SELECT prueba_hasta FROM negocios WHERE id = $P1")->fetchColumn()]);
+check('Alargar prueba: desde su fin', [200, $d('+13 days'), $d('+13 days')], [$r[0], $r[1]['resultado']['prueba_hasta'], $db->query("SELECT prueba_hasta FROM negocios WHERE id = $P1")->fetchColumn()]);
 $r = $ej('extender_prueba', ['dias' => 7], $A2);
 check('Alargar la prueba de quien paga → 403 no_permitido', [403, 'no_permitido'], $codigo($r));
 check('… y no le cambia nada', 'activo', $db->query("SELECT estado FROM negocios WHERE id = $A2")->fetchColumn());

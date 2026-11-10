@@ -8,7 +8,7 @@ use RuntimeException;
 
 /**
  * "Todo se pide demo": ya no hay registro abierto con periodo de prueba. Quien quiere conocer TuPlanner llena
- * el formulario de /?r=registro (pedido de demo); Tukán lo ve en el Panel Tukán Central (solicitud demo_pedida) o en
+ * el formulario de /?r=registro (pedido de demo, con sus 7 datos obligatorios: CAMPOS); Tukán lo ve en el Panel Tukán Central (solicitud demo_pedida) o en
  * el panel de Tukán del programa y, si corresponde, crea la demo (crear_demo) con los módulos que le interesan.
  * Estados: nueva → contactada → demo_creada (o descartada).
  */
@@ -19,27 +19,54 @@ final class PedidosDemo
 
     public function __construct(private PDO $db) {}
 
-    /** Guarda un pedido. $d: nombre, negocio, ciudad, whatsapp, email, necesita, modulos (lista de ids). Devuelve el id. */
+    /** Los 7 datos obligatorios del pedido (contrato de las demos automáticas, 10 nov 2026), con estas claves exactas. */
+    public const CAMPOS = ['nombre', 'nombre_comercial', 'telefono', 'celular', 'direccion', 'ciudad', 'email'];
+
+    /**
+     * Deja los datos listos: acepta también los nombres de antes (negocio = nombre_comercial, whatsapp = celular),
+     * quita espacios, pasa el correo a minúsculas y deja los teléfonos solo con números y +.
+     */
+    public static function limpiar(array $d): array
+    {
+        $t = fn(string $k, string $viejo = '') => trim((string) ($d[$k] ?? ($viejo !== '' ? ($d[$viejo] ?? '') : '')));
+        $tel = fn(string $v) => (string) preg_replace('/[\s\-().]+/', '', $v);
+        $mods = $d['modulos'] ?? [];
+        return [
+            'nombre' => $t('nombre'), 'nombre_comercial' => $t('nombre_comercial', 'negocio'), 'telefono' => $tel($t('telefono')),
+            'celular' => $tel($t('celular', 'whatsapp')), 'direccion' => $t('direccion'), 'ciudad' => $t('ciudad'),
+            'email' => strtolower((string) preg_replace('/\s+/', '', $t('email'))), 'necesita' => $t('necesita'),
+            'modulos' => array_values(array_filter(is_array($mods) ? $mods : [], fn($m) => is_string($m) && Modulos::existe($m))),
+        ];
+    }
+
+    /** Revisa el pedido campo por campo. Devuelve [campo => qué corregir] (vacío = todo bien). */
+    public static function validar(array $d): array
+    {
+        $d = self::limpiar($d);
+        $e = [];
+        if (mb_strlen($d['nombre']) < 3 || mb_strlen($d['nombre']) > 80) $e['nombre'] = 'Escribe tu nombre y apellido.';
+        if (mb_strlen($d['nombre_comercial']) < 3 || mb_strlen($d['nombre_comercial']) > 120) $e['nombre_comercial'] = 'Escribe el nombre de tu negocio de eventos.';
+        if (!preg_match('/^\+?\d{7,15}$/', $d['telefono'])) $e['telefono'] = 'Escribe un teléfono de contacto: solo números (7 a 15), ej. 022345678.';
+        if (!preg_match('/^\+?\d{9,15}$/', $d['celular']) || (str_starts_with($d['celular'], '0') && !preg_match('/^09\d{8}$/', $d['celular']))
+            || (str_starts_with($d['celular'], '+593') && !preg_match('/^\+5939\d{8}$/', $d['celular']))) {
+            $e['celular'] = 'Escribe tu celular: 09XXXXXXXX o +5939XXXXXXXX.';
+        }
+        if (mb_strlen($d['direccion']) < 5 || mb_strlen($d['direccion']) > 250) $e['direccion'] = 'Escribe la dirección de tu negocio.';
+        if (mb_strlen($d['ciudad']) < 2 || mb_strlen($d['ciudad']) > 80) $e['ciudad'] = 'Escribe tu ciudad.';
+        if (!filter_var($d['email'], FILTER_VALIDATE_EMAIL) || mb_strlen($d['email']) > 120) $e['email'] = 'El correo no es válido. Revísalo: ahí te llega la clave de tu demo.';
+        if (mb_strlen($d['necesita']) > 1000) $e['necesita'] = 'Cuéntanos en menos palabras qué necesitas (máximo 1000 letras).';
+        return $e;
+    }
+
+    /**
+     * Guarda un pedido. $d: los 7 datos de CAMPOS (todos obligatorios), más necesita y modulos (lista de ids), que son opcionales.
+     * Devuelve el id. Si algo falta, lanza el error con todo lo que hay que corregir.
+     */
     public function crear(array $d, string $ip = ''): int
     {
-        $nombre = trim((string) ($d['nombre'] ?? ''));
-        $negocio = trim((string) ($d['negocio'] ?? ''));
-        $ciudad = trim((string) ($d['ciudad'] ?? ''));
-        $wa = trim((string) ($d['whatsapp'] ?? ''));
-        $email = strtolower(trim((string) ($d['email'] ?? '')));
-        $necesita = trim((string) ($d['necesita'] ?? ''));
-        $errores = [];
-        if (mb_strlen($nombre) < 2 || mb_strlen($nombre) > 80) $errores[] = 'Escribe tu nombre.';
-        if (mb_strlen($negocio) < 3 || mb_strlen($negocio) > 120) $errores[] = 'Escribe el nombre de tu negocio de eventos.';
-        if (mb_strlen($ciudad) > 80) $errores[] = 'La ciudad es muy larga.';
-        $digitos = preg_replace('/\D+/', '', $wa);
-        if (strlen((string) $digitos) < 9 || strlen((string) $digitos) > 15 || mb_strlen($wa) > 30) $errores[] = 'Escribe tu WhatsApp (ej. 0991234567).';
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 120) $errores[] = 'El correo no es válido.';
-        if (mb_strlen($necesita) > 1000) $errores[] = 'Cuéntanos en menos palabras qué necesitas (máximo 1000 letras).';
-        $mods = $d['modulos'] ?? [];
-        if (!is_array($mods)) $mods = [];
-        $mods = array_values(array_filter($mods, fn($m) => is_string($m) && Modulos::existe($m)));
+        $errores = self::validar($d);
         if ($errores) throw new RuntimeException(implode(' ', $errores));
+        $d = self::limpiar($d);
         if ($ip !== '') {
             $st = $this->db->prepare("SELECT count(*) FROM pedidos_demo WHERE ip = ? AND creado > now() - interval '1 hour'");
             $st->execute([$ip]);
@@ -47,16 +74,45 @@ final class PedidosDemo
         }
         // El mismo correo con un pedido abierto: se actualiza ese pedido (no se repite)
         $st = $this->db->prepare("SELECT id FROM pedidos_demo WHERE lower(email) = ? AND estado IN ('nueva','contactada') ORDER BY id DESC LIMIT 1");
-        $st->execute([$email]);
+        $st->execute([$d['email']]);
         $abierto = $st->fetchColumn();
         if ($abierto) {
-            $this->db->prepare('UPDATE pedidos_demo SET nombre = ?, negocio = ?, ciudad = COALESCE(?, ciudad), whatsapp = ?, necesita = COALESCE(?, necesita), modulos = COALESCE(NULLIF(?, \'\'), modulos), actualizado = now() WHERE id = ?')
-                     ->execute([$nombre, $negocio, $ciudad ?: null, $wa, $necesita ?: null, Modulos::csv($mods), $abierto]);
+            $this->db->prepare('UPDATE pedidos_demo SET nombre = ?, negocio = ?, ciudad = ?, whatsapp = ?, telefono = ?, direccion = ?, necesita = COALESCE(?, necesita), modulos = COALESCE(NULLIF(?, \'\'), modulos), actualizado = now() WHERE id = ?')
+                     ->execute([$d['nombre'], $d['nombre_comercial'], $d['ciudad'], $d['celular'], $d['telefono'], $d['direccion'], $d['necesita'] ?: null, Modulos::csv($d['modulos']), $abierto]);
             return (int) $abierto;
         }
-        $st = $this->db->prepare('INSERT INTO pedidos_demo (nombre, negocio, ciudad, whatsapp, email, necesita, modulos, ip) VALUES (?,?,?,?,?,?,?,?) RETURNING id');
-        $st->execute([$nombre, $negocio, $ciudad ?: null, $wa, $email, $necesita ?: null, Modulos::csv($mods), mb_substr($ip, 0, 45) ?: null]);
+        $st = $this->db->prepare('INSERT INTO pedidos_demo (nombre, negocio, ciudad, whatsapp, telefono, direccion, email, necesita, modulos, ip) VALUES (?,?,?,?,?,?,?,?,?,?) RETURNING id');
+        $st->execute([$d['nombre'], $d['nombre_comercial'], $d['ciudad'], $d['celular'], $d['telefono'], $d['direccion'], $d['email'], $d['necesita'] ?: null, Modulos::csv($d['modulos']), mb_substr($ip, 0, 45) ?: null]);
         return (int) $st->fetchColumn();
+    }
+
+    /**
+     * Aviso al instante al Panel Tukán Central (demo_aviso.php) para que cree la demo en segundos y no en su revisión de cada
+     * 15 minutos. Token v2 de tipo «demo» firmado con el secreto del Panel (el de conectar_central.sh). Máximo 5 segundos.
+     * Si el Panel no contesta o TuPlanner no está conectado, no pasa nada: devuelve false y el pedido ya quedó guardado.
+     * $enviar (pruebas): fn(string $url, string $cuerpo, string $token): int (código HTTP).
+     */
+    public static function avisarPanel(int $id, ?callable $enviar = null): bool
+    {
+        try {
+            $c = TukanCentral::config();
+            if (!$c) return false;
+            $cuerpo = (string) json_encode(['accion' => 'demo_pedida', 'id' => 'demo_pedida:' . $id], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $ahora = time();
+            $token = TukanCentral::firmar(['v' => 2, 'tipo' => 'demo', 'inst' => $c['id'], 'email' => 'sistema@tukanec.com', 'nombre' => 'Solicitar demo', 'rol' => 'dueno',
+                                           'iat' => $ahora, 'exp' => $ahora + 60, 'nonce' => bin2hex(random_bytes(16)), 'bh' => TukanCentral::b64(hash('sha256', $cuerpo, true))], $c['secreto']);
+            $url = TukanCentral::urlCentral() . '/demo_aviso.php';
+            if ($enviar) return in_array($enviar($url, $cuerpo, $token), [200, 202], true);
+            if (!function_exists('curl_init')) return false;
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $cuerpo, CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 3, CURLOPT_TIMEOUT => 5,
+                CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Accept: application/json', 'X-Tukan-Token: ' . $token]]);
+            $r = curl_exec($ch);
+            $http = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+            return $r !== false && in_array($http, [200, 202], true);
+        } catch (\Throwable) {
+            return false;   // nunca se le muestra un error al interesado por esto
+        }
     }
 
     public function obtener(int $id): ?array

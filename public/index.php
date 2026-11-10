@@ -7,6 +7,21 @@ if (parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) === '/.we
     require dirname(__DIR__) . '/app/bootstrap.php';
     \TuPlanner\AppAndroid::responder();
 }
+// (10 nov 2026) Manual y guía de primeros pasos, públicos y sin sesión: /manual.pdf y /primeros_pasos.pdf salen de docs/.
+// El Panel Tukán Central los adjunta al correo de la demo; dentro del programa se bajan desde Inicio (demo) y Ayuda.
+$pdfPublicos = ['/manual.pdf' => 'Manual_TuPlanner.pdf', '/primeros_pasos.pdf' => 'TuPlanner_Primeros_Pasos.pdf'];
+$rutaPdf = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+if (isset($pdfPublicos[$rutaPdf])) {
+    $archivoPdf = dirname(__DIR__) . '/docs/' . $pdfPublicos[$rutaPdf];
+    if (!is_file($archivoPdf)) { http_response_code(404); header('Content-Type: text/plain; charset=utf-8'); exit('No encontrado.'); }
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: attachment; filename="' . $pdfPublicos[$rutaPdf] . '"');
+    header('Content-Length: ' . filesize($archivoPdf));
+    header('Cache-Control: public, max-age=3600');
+    header('X-Content-Type-Options: nosniff');
+    readfile($archivoPdf);
+    exit;
+}
 require dirname(__DIR__) . '/app/bootstrap.php';
 
 /*

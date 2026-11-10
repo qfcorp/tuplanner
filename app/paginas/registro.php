@@ -1,7 +1,7 @@
 <?php
 /**
  * "Todo se pide demo": /?r=registro ya no crea una cuenta. Es el formulario para PEDIR UNA DEMO
- * (nombre, negocio, ciudad, WhatsApp, correo, qué necesita y los módulos que le interesan). Queda como solicitud
+ * (nombre, nombre comercial, teléfono, celular, dirección, ciudad y correo, todos obligatorios; qué necesita y los módulos que le interesan). Queda como solicitud
  * demo_pedida en el Panel Tukán Central; Tukán crea la demo y le manda los accesos.
  */
 use TuPlanner\{Modulos, PedidosDemo};
@@ -9,22 +9,28 @@ use TuPlanner\{Modulos, PedidosDemo};
 if (usuario()) {
     redirigir('inicio');
 }
-$errores = [];
+// (10 nov 2026) Demos automáticas de 3 días: los 7 datos son obligatorios (PedidosDemo::CAMPOS), la clave llega al correo y,
+// apenas se guarda el pedido, se avisa al Panel Tukán Central (demo_aviso.php) para que cree la demo en segundos.
+$errores = [];      // errores generales (arriba del formulario)
+$porCampo = [];     // campo => qué corregir (junto a cada campo)
 $listo = false;
-$d = ['nombre' => '', 'negocio' => '', 'ciudad' => '', 'whatsapp' => '', 'email' => '', 'necesita' => '', 'modulos' => []];
+$d = PedidosDemo::limpiar([]);
 if (es_post()) {
     verificar_csrf();
-    foreach (['nombre', 'negocio', 'ciudad', 'whatsapp', 'email', 'necesita'] as $k) $d[$k] = trim((string) ($_POST[$k] ?? ''));
-    $d['modulos'] = array_values(array_filter((array) ($_POST['modulos'] ?? []), fn($m) => is_string($m) && Modulos::existe($m)));
+    $d = PedidosDemo::limpiar($_POST);
     if (!empty($_POST['sitio_web'])) {
         $errores[] = 'No se pudo enviar el pedido.';   // trampa para robots
+    } elseif ($porCampo = PedidosDemo::validar($_POST)) {
+        $errores[] = 'Revisa los datos marcados: todos son obligatorios.';
     } else {
         try {
-            (new PedidosDemo(db()))->crear($d, ip_visitante());
+            $id = (new PedidosDemo(db()))->crear($_POST, ip_visitante());
+            PedidosDemo::avisarPanel($id);   // si el Panel no contesta no pasa nada: lo verá en su revisión de cada 15 minutos
             $listo = true;
         } catch (RuntimeException $e) {
             $errores[] = $e->getMessage();
         }
     }
 }
-vista('registro', ['errores' => $errores, 'd' => $d, 'listo' => $listo, 'catalogo' => modulos()->catalogo()], 'Solicitar demo · TuPlanner');
+$diasDemo = max(1, (int) planes()->ajuste('dias_prueba'));
+vista('registro', ['errores' => $errores, 'porCampo' => $porCampo, 'd' => $d, 'listo' => $listo, 'diasDemo' => $diasDemo, 'catalogo' => modulos()->catalogo()], 'Solicitar demo · TuPlanner');

@@ -191,7 +191,7 @@ c96_txt "… mensaje en español" "$(c96_json error)" "forma de pago"
 echo "6. Solicitudes: un pedido de demo (Solicitar demo) se atiende y se convierte en demo"
 rm -f "$JAR"
 NEG_ANTES=$(sql "SELECT count(*) FROM negocios")
-r=$(post "r=registro" --data-urlencode "negocio=Hacienda Pide Demo $RANDOM" --data-urlencode "nombre=Marta Pide" --data-urlencode "ciudad=Ambato" \
+r=$(post "r=registro" --data-urlencode "telefono=022345678" --data-urlencode "direccion=Av. Amazonas N34-120" --data-urlencode "negocio=Hacienda Pide Demo $RANDOM" --data-urlencode "nombre=Marta Pide" --data-urlencode "ciudad=Ambato" \
      --data-urlencode "whatsapp=0987771234" --data-urlencode "email=marta$RANDOM@pide.ec" --data-urlencode "necesita=Bodas grandes" --data-urlencode "modulos[]=invitados")
 PDW=$(sql "SELECT id FROM pedidos_demo ORDER BY id DESC LIMIT 1")
 check "Pedir demo no crea cuenta" "$NEG_ANTES" "$(sql "SELECT count(*) FROM negocios")"
