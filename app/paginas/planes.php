@@ -1,5 +1,5 @@
 <?php
-use TuPlanner\{Modulos, PanelTukan};
+use TuPlanner\{Modulos, PagoPlan, PanelTukan};
 
 /**
  * Mi plan (dueño): sus módulos encendidos, lo que paga al mes por SU plan, los módulos y planes que puede pedir y sus pagos.
@@ -7,6 +7,8 @@ use TuPlanner\{Modulos, PanelTukan};
  * Planes de $20 y $45 (migración 112): en Básico el cliente elige 3 módulos incluidos; «Tu plan trae 3 módulos a tu elección».
  * "Pedir cotización" (de un módulo o de un plan) crea un pedido (solicitud cambio_modulos) que llega al Panel Tukán Central.
  * También se abre con la demo terminada o el plan vencido.
+ * (10 nov 2026) Pagar solo con tarjeta: si el Panel Tukán Central tiene prendido el cobro con tarjeta para TuPlanner, el dueño
+ * elige plan y período y paga aquí mismo (src/PagoPlan.php). Si no, o en la app de Google Play, esta página queda como siempre.
  */
 const NO_EN_APP = 'Desde la app solo se eligen los módulos incluidos en tu plan.';
 exigir(es_admin_total($u), 'Solo el dueño o un administrador puede ver y cambiar el plan de TuPlanner.');
@@ -39,6 +41,26 @@ if (es_post() && in_array($_POST['accion'] ?? '', ['cancelar_plan', 'seguir_plan
         aviso($e->getMessage(), 'error');
     }
     header('Location: ' . url('planes') . '#cancelar-plan');
+    exit;
+}
+// Pagar el plan con tarjeta, solo (src/PagoPlan.php). En la app de Google Play no existe (regla de Google).
+$pagoPlan = en_app_android() ? null : new PagoPlan(db());
+if (es_post() && in_array($_POST['accion'] ?? '', ['pagar_tarjeta', 'cancelar_tarjeta'], true)) {
+    verificar_csrf();
+    try {
+        if (!$pagoPlan) throw new RuntimeException(NO_EN_APP);
+        if ($_POST['accion'] === 'cancelar_tarjeta') {
+            $pagoPlan->cancelar($nid, (int) ($_POST['id'] ?? 0), (string) $u['email']);
+            aviso('Listo: ese pago con tarjeta quedó cancelado. Ya puedes elegir otro.');
+        } else {
+            $cobro = $pagoPlan->crear($u, (string) ($_POST['plan'] ?? ''), (string) ($_POST['periodo'] ?? ''), ($_POST['forma'] ?? '') !== 'una_vez', url_completa('planes'));
+            header('Location: ' . $cobro['url_pago']);   // la página de pago segura (Plux, por Tukán Pagos)
+            exit;
+        }
+    } catch (RuntimeException $e) {
+        aviso($e->getMessage(), 'error');
+    }
+    header('Location: ' . url('planes') . '#pagar-tarjeta');
     exit;
 }
 if (!es_post()) TukanCancelarPlan::reintentar(db(), (string) $nid, (string) $u['email']);
@@ -95,5 +117,14 @@ $st = db()->prepare("SELECT (SELECT count(*) FROM espacios WHERE negocio_id = ? 
 $st->execute([$nid, $nid]);
 $uso = $st->fetch();
 $listaPlanes = $p->lista();
-vista('planes', compact('cancelacion', 'estadoMod', 'catalogo', 'planesMod', 'precios', 'estadoCuenta', 'pagos', 'pedidos', 'pedidosPendientes', 'uso', 'listaPlanes'),
+// Pago con tarjeta: solo si el Panel dice que está prendido para TuPlanner (si no contesta o está apagado, $tarjeta = null y nada cambia)
+$tarjeta = null;
+if ($pagoPlan && $pagoPlan->activo($nid, (string) $u['email'])) {
+    $planesPago = $pagoPlan->planes($nid);
+    $planPago = isset($planesPago[(string) ($_GET['plan'] ?? '')]) ? (string) $_GET['plan'] : (string) $u['plan_codigo'];
+    $tarjeta = ['pruebas' => $pagoPlan->pruebas($nid), 'vivos' => $pagoPlan->vivos($nid), 'suscripcion' => $pagoPlan->suscripcion($nid),
+                'planes' => $planesPago, 'plan' => $planPago, 'opciones' => $pagoPlan->opciones($nid, $planPago),
+                'incluye' => $mods->estado($nid, $planPago), 'vuelta' => (string) ($_GET['plux'] ?? '')];
+}
+vista('planes', compact('cancelacion', 'estadoMod', 'catalogo', 'planesMod', 'precios', 'estadoCuenta', 'pagos', 'pedidos', 'pedidosPendientes', 'uso', 'listaPlanes', 'tarjeta'),
       'Mi plan · TuPlanner');

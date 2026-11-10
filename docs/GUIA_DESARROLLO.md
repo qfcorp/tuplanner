@@ -103,6 +103,7 @@ bash tests/run_web.sh
 - En las pruebas de pantallas, `registrar` crea la cuenta en demo (como Tukán, con `tests/crear_cuenta.php`) y `pagar_plan salon` la pasa a pagada.
 
 ## Archivos de cada módulo
+- 114 pagar el plan solo con tarjeta (10 nov 2026, no es un módulo del cliente): `src/PagoPlan.php` (le pide el cobro al Panel Tukán Central con `TukanCancelarPlan::llamarPanel`: acciones `estado`, `crear` y `cancelar` de `plux_api.php`), `app/paginas/planes.php` (acciones `pagar_tarjeta` y `cancelar_tarjeta`) y la sección `#pagar-tarjeta` de `app/vistas/planes.php`. Solo se muestra si el Panel contesta `activo`; nunca en la app (`en_app_android()`). El pago lo registra el Panel con `registrar_pago` (conector v2). Pruebas: `logica_114`, `web_114` con `tests/panel_simulado.php`.
 - 098 módulos y pedidos de demo: `src/Modulos.php`, `src/PedidosDemo.php`, `app/paginas/planes.php` (Mi plan), `app/paginas/registro.php` (Solicitar demo), `app/vistas/modulo_apagado.php`, `app/vistas/_admin_modulos.php`, `public/assets/mod_modulos.*`, `tests/logica_98_modulos.php`, `tests/web_98_modulos.sh`
 | Módulo | Pruebas | Migración | Clases |
 |---|---|---|---|

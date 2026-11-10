@@ -1,0 +1,182 @@
+<?php
+/**
+ * Pagar el plan SOLO con tarjeta desde «Mi plan» (src/PagoPlan.php, 10 nov 2026). TuPlanner le pide el cobro al Panel Tukán
+ * Central; aquí el Panel es simulado (una función que contesta como plux_api.php y guarda lo que le piden).
+ * Cubre: Panel caído / apagado / prendido, precios que se mandan (los de Planes::cotizarNegocio, sin IVA), suscripción y pago
+ * de una vez, suscripción viva (no se crea otra), cancelar un pago sin terminar, precio acordado, errores del Panel y que
+ * «registrar_pago» del conector v2 (lo que manda el Panel cuando Plux aprueba) deja la cuenta activa, también una demo.
+ */
+use TuPlanner\{Modulos, PagoPlan, Planes, TukanCentralV2};
+
+$db = base_limpia();
+$hoy = new DateTimeImmutable('today');
+$valor = fn(string $sql) => $db->query($sql)->fetchColumn();
+
+/** Panel simulado: $panel['modo'] = caido | apagado | activo; guarda los pedidos en $panel['pedidos'] y los cobros en $panel['cobros']. */
+$panel = new ArrayObject(['modo' => 'activo', 'pruebas' => true, 'pedidos' => [], 'cobros' => [], 'crear' => null]);
+$llamar = function (array $d, string $email = '') use ($panel): array {
+    $panel['pedidos'] = array_merge($panel['pedidos'], [$d + ['_email' => $email]]);
+    if ($panel['modo'] === 'caido') return [0, null];
+    $mios = array_values(array_filter($panel['cobros'], fn($c) => $c['cliente_id'] === $d['cliente_id']));
+    if ($d['accion'] === 'estado') return [200, ['ok' => true, 'activo' => $panel['modo'] === 'activo', 'iva' => 15, 'pruebas' => $panel['pruebas'], 'cobros' => $panel['modo'] === 'activo' ? $mios : []]];
+    if ($panel['modo'] !== 'activo') return [409, ['ok' => false, 'codigo' => 'apagado', 'error' => 'El pago con tarjeta no está disponible por ahora.']];
+    if ($d['accion'] === 'cancelar') {
+        $todos = $panel['cobros'];
+        foreach ($todos as $i => $c) if ($c['id'] === $d['id'] && $c['cliente_id'] === $d['cliente_id']) $todos[$i]['estado'] = 'cancelada';
+        $panel['cobros'] = $todos;
+        return [200, ['ok' => true, 'programada' => false]];
+    }
+    if ($panel['crear'] !== null) return $panel['crear'];
+    foreach ($mios as $c) if ($d['tipo'] === 'suscripcion' && $c['tipo'] === 'suscripcion' && in_array($c['estado'], PagoPlan::VIVAS, true)) return [409, ['ok' => false, 'codigo' => 'ya_tiene', 'error' => 'Ya tiene una suscripción con tarjeta (Esperando el pago).']];
+    $id = count($panel['cobros']) + 1;
+    $c = ['id' => $id, 'cliente_id' => $d['cliente_id'], 'tipo' => $d['tipo'], 'estado' => 'pendiente', 'estado_texto' => 'Esperando el pago', 'descripcion' => $d['descripcion'],
+          'plan' => $d['plan'], 'periodo' => $d['periodo'], 'subtotal' => $d['subtotal'], 'total' => round($d['subtotal'] * 1.15, 2), 'url_pago' => 'https://pagos.prueba.ec/p/' . $id];
+    $panel['cobros'] = array_merge($panel['cobros'], [$c]);
+    return [201, ['ok' => true, 'cobro' => $c]];
+};
+$pp = fn() => new PagoPlan($db, $llamar);   // uno nuevo cada vez: el estado del Panel se pide una vez por página
+$ultimo = fn() => $panel['pedidos'][count($panel['pedidos']) - 1];
+$usuarioDe = function (int $nid) use ($db): array {
+    return $db->query("SELECT u.id, u.nombre, u.email, u.telefono, u.negocio_id, n.plan_codigo, n.estado FROM usuarios u JOIN negocios n ON n.id = u.negocio_id WHERE u.negocio_id = $nid AND u.rol = 'dueno'")->fetch();
+};
+$VOLVER = 'https://tuplanner.prueba.ec/?r=planes';
+
+titulo('1. El Panel no contesta o tiene apagado el cobro con tarjeta: no se ofrece nada');
+[$b] = negocio_prueba($db, 'esencial', 'Local Básico Tarjeta');
+$db->prepare("UPDATE negocios SET estado = 'activo', activo_hasta = CURRENT_DATE + 10, modulos_extra = 'paquetes,contratos,portal_cliente,plano,asistente_ia' WHERE id = ?")->execute([$b]);
+$ub = $usuarioDe($b);
+$panel['modo'] = 'caido';
+check('Panel caído: sin estado', null, $pp()->estado($b));
+check('Panel caído: no está activo', false, $pp()->activo($b, $ub['email']));
+check('… y se le preguntó por este negocio, firmando con el correo del dueño', ['estado', (string) $b, $ub['email']], [$ultimo()['accion'], $ultimo()['cliente_id'], $ultimo()['_email']]);
+check_error('Panel caído: pagar no sigue', 'no está disponible', fn() => $pp()->crear($ub, 'esencial', 'mensual', true, $VOLVER));
+$panel['modo'] = 'apagado';
+check('Apagado para TuPlanner: no está activo', false, $pp()->activo($b));
+check('Apagado: sin pagos abiertos', [], $pp()->vivos($b));
+check_error('Apagado: pagar no sigue', 'no está disponible', fn() => $pp()->crear($ub, 'esencial', 'mensual', true, $VOLVER));
+check('Una respuesta rara (sin «activo») cuenta como que no contesta', null, (new PagoPlan($db, fn() => [200, ['ok' => true, 'canceladas' => 0]]))->estado($b));
+check('El estado se pide una sola vez por página', 1, (function () use ($pp, $panel, $b) { $antes = count($panel['pedidos']); $x = $pp(); $x->activo($b); $x->vivos($b); $x->suscripcion($b); $x->pruebas($b); return count($panel['pedidos']) - $antes; })());
+
+titulo('2. Prendido: los precios son los que TuPlanner ya calcula (sin IVA)');
+$panel['modo'] = 'activo';
+check('Activo', true, $pp()->activo($b));
+check('Modo de prueba', true, $pp()->pruebas($b));
+check('Puede pagar los dos planes', ['esencial' => 'Básico', 'quinta' => 'Completo'], $pp()->planes($b));
+$op = $pp()->opciones($b, 'esencial');
+check('Su plan Básico con 4 módulos y la IA: $20,99 al mes (lo mismo que Modulos::mensual)', [(new Modulos($db))->mensual($b), 20.99], [$op['mensual']['monto'], $op['mensual']['monto']]);
+check('6 meses: paga 5 = $104,95 y recibe 6', [104.95, 6], [$op['semestral']['monto'], $op['semestral']['meses_recibidos']]);
+check('1 año: paga 10 = $209,90 y recibe 12', [209.90, 12], [$op['anual']['monto'], $op['anual']['meses_recibidos']]);
+check('Si elige el Completo: $25 / $125 / $250', [25.0, 125.0, 250.0], array_values(array_column($pp()->opciones($b, 'quinta'), 'monto')));
+check('Un plan que no existe: sin opciones', [], $pp()->opciones($b, 'salon'));
+
+titulo('3. Pagar: suscripción (se cobra sola) por defecto, o una sola vez');
+$c = $pp()->crear($ub, 'esencial', 'semestral', true, $VOLVER);
+$p = $ultimo();
+check('Devuelve la página de pago', 'https://pagos.prueba.ec/p/1', $c['url_pago']);
+check('Pide una suscripción cada 6 meses del plan Básico', ['crear', 'suscripcion', (string) $b, 'esencial', 'Básico', 'semestral', 6], [$p['accion'], $p['tipo'], $p['cliente_id'], $p['plan'], $p['plan_nombre'], $p['periodo'], $p['meses']]);
+check('… por $104,95 sin IVA (el IVA lo suma Tukán Pagos)', 104.95, $p['subtotal']);
+check('… con la descripción que ve al pagar', 'TuPlanner plan Básico · suscripción cada 6 meses · Local Básico Tarjeta', $p['descripcion']);
+check('… el comprador es quien paga', [$ub['nombre'], $ub['email']], [$p['comprador']['nombre'], $p['comprador']['correo']]);
+check('… con el RUC y la razón social para la factura', ['1790000000001', 'Arrayanes Eventos S.A.'], [$p['fiscal']['identificacion'], $p['fiscal']['razon_social']]);
+check('… y vuelve a Mi plan', $VOLVER, $p['volver']);
+check('Ahora tiene una suscripción viva', 1, $pp()->suscripcion($b)['id']);
+check_error('Con suscripción viva no se crea otra (ni se le pide al Panel)', 'Ya tienes una suscripción', fn() => $pp()->crear($ub, 'esencial', 'mensual', true, $VOLVER));
+$antes = count($panel['pedidos']);
+$x = $pp();
+check_error('Cancelar un pago que no es suyo: no', 'ya no se puede cancelar', fn() => $x->cancelar($b, 99));
+$pp()->cancelar($b, 1, $ub['email']);
+check('Cancelar el pago sin terminar: el Panel lo cancela', ['cancelar', 1, 'cancelada'], [$ultimo()['accion'], $ultimo()['id'], $panel['cobros'][0]['estado']]);
+check('… y ya puede elegir otro', null, $pp()->suscripcion($b));
+$c = $pp()->crear($ub, 'esencial', 'anual', false, $VOLVER);
+$p = $ultimo();
+check('Pago de una sola vez por 1 año: cobro de $209,90 por 12 meses', ['cobro', 'anual', 12, 209.90], [$p['tipo'], $p['periodo'], $p['meses'], $p['subtotal']]);
+check('… descripción', 'TuPlanner plan Básico · anual (12 meses) · Local Básico Tarjeta', $p['descripcion']);
+check('Un pago de una vez no cuenta como suscripción viva', null, $pp()->suscripcion($b));
+check('… pero se ve entre los pagos abiertos', 1, count($pp()->vivos($b)));
+check_error('Período que no existe', 'Elige el plan', fn() => $pp()->crear($ub, 'esencial', 'trimestral', true, $VOLVER));
+check_error('Plan que no existe', 'Elige el plan', fn() => $pp()->crear($ub, 'platino', 'mensual', true, $VOLVER));
+$todos = $panel['cobros']; $todos[] = ['id' => 50, 'cliente_id' => (string) $b, 'tipo' => 'suscripcion', 'estado' => 'activa', 'estado_texto' => 'Suscripción activa', 'descripcion' => 'x', 'total' => 24.14, 'url_pago' => null]; $panel['cobros'] = $todos;
+check('Suscripción activa: es la viva', 50, $pp()->suscripcion($b)['id']);
+check_error('La activa no se cancela con este botón (va por «Cancelar mi plan»)', 'Cancelar mi plan', fn() => $pp()->cancelar($b, 50));
+
+titulo('4. Errores del Panel: se muestran y no se manda al cliente a ninguna parte');
+[$e] = negocio_prueba($db, 'quinta', 'Quinta Errores');
+$db->prepare("UPDATE negocios SET estado = 'activo', activo_hasta = CURRENT_DATE + 10, ruc = NULL WHERE id = ?")->execute([$e]);
+$ue = $usuarioDe($e);
+$panel['crear'] = [409, ['ok' => false, 'codigo' => 'ya_tiene', 'error' => 'Ya tiene una suscripción con tarjeta (Suscripción activa).']];
+check_error('409 del Panel: su mensaje', 'Ya tiene una suscripción con tarjeta', fn() => $pp()->crear($ue, 'quinta', 'mensual', true, $VOLVER));
+check('Sin RUC: no manda datos de factura (el Panel decide)', [], $ultimo()['fiscal']);
+$panel['crear'] = [0, null];
+check_error('El Panel se cae al crear', 'No se pudo conectar', fn() => $pp()->crear($ue, 'quinta', 'mensual', true, $VOLVER));
+$panel['crear'] = [201, ['ok' => true, 'cobro' => ['id' => 9, 'url_pago' => 'javascript:alert(1)']]];
+check_error('Una dirección de pago rara no se usa', 'no devolvió la página de pago', fn() => $pp()->crear($ue, 'quinta', 'mensual', true, $VOLVER));
+$panel['crear'] = null;
+
+titulo('5. Precio acordado con Tukán: paga su plan a ese precio y no cambia de plan aquí');
+$db->prepare('UPDATE negocios SET precio_acordado = 18 WHERE id = ?')->execute([$e]);
+check('Solo su plan', ['quinta' => 'Completo'], $pp()->planes($e));
+check('$18 al mes, $90 por 6 meses, $180 al año', [18.0, 90.0, 180.0], array_values(array_column($pp()->opciones($e, 'quinta'), 'monto')));
+check('El otro plan: sin opciones', [], $pp()->opciones($e, 'esencial'));
+$db->prepare('UPDATE negocios SET precio_acordado = 0 WHERE id = ?')->execute([$e]);
+check('Precio acordado $0 (cortesía): no hay nada que pagar con tarjeta', [], $pp()->opciones($e, 'quinta'));
+
+titulo('6. Una demo paga: al llegar «registrar_pago» del Panel queda como cliente activo');
+$SECRETO = str_repeat('cd34', 16);
+putenv('TUKAN_CENTRAL_ID=tuplanner'); putenv("TUKAN_CENTRAL_SECRET=$SECRETO"); putenv('TUKAN_CENTRAL_URL=https://panel.prueba.ec');
+$b64 = fn($s) => rtrim(strtr(base64_encode($s), '+/', '-_'), '=');
+/** Pedido del Panel por el conector v2 (como lo arma tukan-central): $v2('ejecutar', [...]) -> [http, json] */
+$v2 = function (string $accion, array $cuerpo) use ($db, $SECRETO, $b64): array {
+    $c = json_encode($cuerpo === [] ? new stdClass() : $cuerpo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION);
+    $t = time();
+    $a = $b64(json_encode(['v' => 2, 'tipo' => $accion, 'inst' => 'tuplanner', 'email' => 'sistema@tukanec.com', 'nombre' => 'Tukán Pagos', 'rol' => 'dueno', 'iat' => $t, 'exp' => $t + 30,
+                           'nonce' => bin2hex(random_bytes(16)), 'bh' => $b64(hash('sha256', $c, true))]));
+    $db->exec('DELETE FROM tukan_central_pedidos');
+    return (new TukanCentralV2($db))->procesar($accion, 'POST', 'application/json; charset=utf-8', $c, $a . '.' . $b64(hash_hmac('sha256', $a, $SECRETO, true)), '198.51.100.20');
+};
+$cap = $v2('capacidades', [])[1];
+check('TuPlanner le dice al Panel sus períodos (6 y 12 meses recibidos) y que acepta el método «plux»', [['mensual' => 1, 'semestral' => 6, 'anual' => 12], true],
+      [array_column($cap['periodos'], 'meses', 'periodo'), in_array('plux', array_column($cap['metodos_pago'], 'metodo'), true)]);
+[$d] = negocio_prueba($db, 'quinta', 'Quinta Demo Paga');
+$ud = $usuarioDe($d);
+check('Es una demo del plan Completo', ['prueba', 'quinta'], [$ud['estado'], $ud['plan_codigo']]);
+check('La demo puede elegir cualquiera de los dos planes', ['esencial', 'quinta'], array_keys($pp()->planes($d)));
+check('Si elige el Básico: $12,99 al mes', 12.99, $pp()->opciones($d, 'esencial')['mensual']['monto']);
+$pp()->crear($ud, 'esencial', 'mensual', true, $VOLVER);
+$p = $ultimo();
+check('Pide la suscripción mensual del Básico por $12,99', ['suscripcion', 'esencial', 'mensual', 12.99], [$p['tipo'], $p['plan'], $p['periodo'], $p['subtotal']]);
+check('Mientras no pague sigue en demo', 'prueba', $valor("SELECT estado FROM negocios WHERE id = $d"));
+// Plux aprobó: el Panel manda registrar_pago con el plan, el período, el método plux, el valor sin IVA y la fecha (PagosPlux::datosRegistrar)
+$r = $v2('ejecutar', ['operacion_id' => bin2hex(random_bytes(16)), 'accion' => 'registrar_pago', 'cliente_id' => (string) $d,
+                      'datos' => ['plan' => $p['plan'], 'periodo' => $p['periodo'], 'metodo' => 'plux', 'monto' => $p['subtotal'], 'fecha' => $hoy->format('Y-m-d'), 'nota' => 'Plux · suscripción 1']]);
+check('registrar_pago aceptado', [200, true], [$r[0], $r[1]['ok'] ?? null]);
+$n = $db->query("SELECT estado, plan_codigo, activo_hasta FROM negocios WHERE id = $d")->fetch();
+check('La demo queda como cliente activo, con el plan Básico, pagado un mes', ['activo', 'esencial', $hoy->modify('+1 month -1 day')->format('Y-m-d')], [$n['estado'], $n['plan_codigo'], $n['activo_hasta']]);
+check('El pago queda en «Pagos hechos»: Básico mensual, $12,99, por Plux', ['esencial', 'mensual', '12.99', 'plux'],
+      array_values($db->query("SELECT plan_codigo, periodo, monto, metodo_pago FROM suscripciones WHERE negocio_id = $d")->fetch(PDO::FETCH_ASSOC)));
+check('Ya no está en demo: le quedan sus 3 módulos por elegir', [false, 3], [(new Modulos($db))->estado($d)['demo'], (new Modulos($db))->estado($d)['por_elegir']]);
+check('Cuenta al día', 'activo', (new Planes($db))->estadoCuenta($n));
+// La cuota siguiente de la suscripción (Plux cobra sola): el Panel manda otro registrar_pago
+$r = $v2('ejecutar', ['operacion_id' => bin2hex(random_bytes(16)), 'accion' => 'registrar_pago', 'cliente_id' => (string) $d,
+                      'datos' => ['plan' => 'esencial', 'periodo' => 'mensual', 'metodo' => 'plux', 'monto' => 12.99, 'fecha' => $hoy->format('Y-m-d'), 'nota' => 'Plux · suscripción 1 · cuota 2']]);
+check('La cuota siguiente suma otro mes', $hoy->modify('+1 month -1 day')->modify('+1 day +1 month -1 day')->format('Y-m-d'), $valor("SELECT activo_hasta FROM negocios WHERE id = $d"));
+
+[$a] = negocio_prueba($db, 'quinta', 'Quinta Demo Anual');
+$db->prepare("UPDATE negocios SET prueba_hasta = CURRENT_DATE - 5 WHERE id = ?")->execute([$a]);   // demo terminada
+$ua = $usuarioDe($a);
+$pp()->crear($ua, 'quinta', 'anual', true, $VOLVER);
+$p = $ultimo();
+check('Demo terminada también puede pagar: Completo anual $250 (paga 10 meses)', ['quinta', 'anual', 12, 250.0], [$p['plan'], $p['periodo'], $p['meses'], $p['subtotal']]);
+$r = $v2('ejecutar', ['operacion_id' => bin2hex(random_bytes(16)), 'accion' => 'registrar_pago', 'cliente_id' => (string) $a,
+                      'datos' => ['plan' => 'quinta', 'periodo' => 'anual', 'metodo' => 'plux', 'monto' => 250.0, 'fecha' => $hoy->format('Y-m-d'), 'nota' => 'Plux']]);
+$n = $db->query("SELECT estado, plan_codigo, activo_hasta FROM negocios WHERE id = $a")->fetch();
+check('… y queda activa 12 meses con el plan Completo', [200, 'activo', 'quinta', $hoy->modify('+12 months -1 day')->format('Y-m-d')], [$r[0], $n['estado'], $n['plan_codigo'], $n['activo_hasta']]);
+
+titulo('7. Cliente Básico que paga el Completo: cambia de plan al aprobarse');
+check('Antes: Básico', 'esencial', $valor("SELECT plan_codigo FROM negocios WHERE id = $b"));
+$r = $v2('ejecutar', ['operacion_id' => bin2hex(random_bytes(16)), 'accion' => 'registrar_pago', 'cliente_id' => (string) $b,
+                      'datos' => ['plan' => 'quinta', 'periodo' => 'semestral', 'metodo' => 'plux', 'monto' => 125.0, 'fecha' => $hoy->format('Y-m-d'), 'nota' => 'Plux']]);
+$n = $db->query("SELECT plan_codigo, activo_hasta FROM negocios WHERE id = $b")->fetch();
+check('Después: Completo, y los 6 meses se suman a lo que ya tenía pagado', [200, 'quinta', $hoy->modify('+11 days +6 months -1 day')->format('Y-m-d')], [$r[0], $n['plan_codigo'], $n['activo_hasta']]);
+check('En el Completo paga $25 (sus módulos extra ya vienen en el plan)', 25.0, (new Modulos($db))->mensual($b));
+
+putenv('TUKAN_CENTRAL_ID'); putenv('TUKAN_CENTRAL_SECRET'); putenv('TUKAN_CENTRAL_URL');

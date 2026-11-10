@@ -1,7 +1,8 @@
 <?php
 use TuPlanner\{Modulos, PanelTukan, Planes};
 /** Mi plan (Anexo B). @var array $estadoMod @var array $catalogo @var array $planesMod @var array $precios @var string $estadoCuenta
- *  @var array $pagos @var array $pedidos @var array $pedidosPendientes @var array $uso @var array $listaPlanes */
+ *  @var array $pagos @var array $pedidos @var array $pedidosPendientes @var array $uso @var array $listaPlanes
+ *  @var ?array $tarjeta pago con tarjeta por el Panel (null = apagado, el Panel no contesta o app de Google Play: no se muestra nada) */
 $me = $estadoMod;
 $nombres = ['mensual' => 'Cada mes', 'semestral' => 'Cada 6 meses', 'anual' => 'Cada año'];
 $wa = fn(string $texto) => 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode($texto . ' (' . $u['negocio'] . ', ' . $u['email'] . ')');
@@ -17,6 +18,8 @@ $encendidos = count($me['pagados']);
 // App de Google Play (docs/GOOGLE_PLAY.md): sin precios del software, sin «Pedir cotización», sin «Pagar» ni WhatsApp de ventas.
 // Se ve el plan, su estado, los módulos encendidos y se pueden elegir los módulos incluidos en el plan (no cuesta nada más).
 $enApp = en_app_android();
+// ¿Ese plan se puede pagar solo con tarjeta ahora? (Panel prendido, sin suscripción viva)
+$conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] && isset($tarjeta['planes'][$cod]) && $tarjeta['opciones'];
 ?>
 <div class="cabecera">
     <div><h1>Mi plan</h1><p>Tus módulos de TuPlanner para <?= e($u['negocio']) ?><?= $enApp ? '.' : ': lo que tienes, lo que pagas y lo que puedes agregar.' ?></p></div>
@@ -48,6 +51,67 @@ $enApp = en_app_android();
 <?php if ($me['demo']): ?>
     <p class="aviso aviso-alerta">Estás en tu demo: <?= $me['demo_todos'] ? 'tienes todos los módulos encendidos para que veas todo' : 'tienes encendidos los módulos que elegimos contigo' ?>.
         <?= $enApp ? 'Nada de lo que cargues se pierde.' : 'Al contratar te quedas con los módulos de tu plan y los que agregues; nada de lo que cargaste se pierde.' ?></p>
+<?php endif; ?>
+
+<?php if (!empty($tarjeta)): /* Pagar el plan solo, con tarjeta (src/PagoPlan.php). Solo si el Panel lo tiene prendido; nunca en la app de Google Play */
+    $tFecha = fn(?string $f) => $f && strtotime(substr($f, 0, 10)) ? date('d/m/Y', strtotime(substr($f, 0, 10))) : '';
+    $tInc = $tarjeta['incluye']; $tPm = $planesMod[$tarjeta['plan']] ?? null; ?>
+<?php if ($tarjeta['vuelta'] === 'aprobado'): ?>
+    <p class="aviso aviso-ok" id="pago-recibido">✅ ¡Pago recibido! Tu plan se actualiza en unos segundos (vuelve a abrir esta página). La factura te llega al correo.</p>
+<?php elseif ($tarjeta['vuelta'] !== ''): ?>
+    <p class="aviso aviso-alerta" id="pago-no-completado">El pago no se completó. Puedes intentarlo otra vez, con la misma tarjeta o con otra.</p>
+<?php endif; ?>
+<section class="bloque" id="pagar-tarjeta" aria-labelledby="mp-t-tarjeta">
+    <h2 id="mp-t-tarjeta">Pagar con tarjeta</h2>
+    <?php if ($tarjeta['pruebas']): ?><p class="aviso aviso-alerta">Pagos con tarjeta en <strong>modo de prueba: no se cobra de verdad</strong>.</p><?php endif; ?>
+    <?php if ($tarjeta['vivos']): ?>
+        <ul class="filas">
+        <?php foreach ($tarjeta['vivos'] as $c): $esSus = ($c['tipo'] ?? '') === 'suscripcion'; $sinPagar = in_array($c['estado'], ['pendiente', 'rechazado'], true); ?>
+            <li><span><strong><?= e($c['descripcion'] ?? 'Pago con tarjeta') ?></strong>
+                <small class="suave" style="display:block"><?= e($c['estado_texto'] ?? $c['estado']) ?> · <?= dinero((float) ($c['total'] ?? 0)) ?> con IVA<?= $esSus && !empty($c['cobra_sola']) ? ' · se cobra sola a tu tarjeta' : '' ?><?= !empty($c['pagado_hasta']) ? ' · pagada hasta el ' . e($tFecha($c['pagado_hasta'])) : '' ?></small></span>
+                <span class="derecha">
+                    <?php if (!empty($c['url_pago'])): ?><a class="boton boton-chico" href="<?= e($c['url_pago']) ?>">Pagar ahora</a><?php endif; ?>
+                    <?php if ($esSus && $sinPagar): ?>
+                        <form method="post" style="display:inline"><?= campo_csrf() ?><input type="hidden" name="accion" value="cancelar_tarjeta"><input type="hidden" name="id" value="<?= (int) $c['id'] ?>">
+                            <button class="boton boton-claro boton-chico" type="submit">Cancelar este pago</button></form>
+                    <?php endif; ?>
+                </span></li>
+        <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+    <?php if ($tarjeta['suscripcion']): ?>
+        <p class="g-nota" id="ya-suscrito"><?= in_array($tarjeta['suscripcion']['estado'], ['pendiente', 'rechazado'], true)
+            ? 'Tienes un pago con tarjeta sin terminar: termínalo con «Pagar ahora» o cancélalo para elegir otro plan u otro período.'
+            : 'Ya tienes una suscripción con tarjeta: se cobra sola y no hace falta pagar otra vez. Para dejarla, usa «Cancelar mi plan», al final de esta página.' ?></p>
+    <?php elseif ($tarjeta['opciones']): ?>
+        <?php if (count($tarjeta['planes']) > 1): ?>
+            <p style="margin:0 0 8px">Elige tu plan:
+            <?php foreach ($tarjeta['planes'] as $cod => $nom): ?>
+                <a class="boton boton-chico <?= $cod === $tarjeta['plan'] ? '' : 'boton-claro' ?>" href="<?= e(url('planes', ['plan' => $cod])) ?>#pagar-tarjeta"<?= $cod === $tarjeta['plan'] ? ' aria-current="true"' : '' ?>><?= e($nom) ?></a>
+            <?php endforeach; ?></p>
+        <?php endif; ?>
+        <p style="margin:0 0 4px">Vas a pagar el plan <strong><?= e($tarjeta['planes'][$tarjeta['plan']]) ?></strong><?= $tarjeta['plan'] === $u['plan_codigo'] ? ' (el tuyo)' : '' ?>:
+            <?= $tPm ? ($tPm['todos'] ? 'todos los módulos' . (in_array('asistente_ia', $tPm['modulos'], true) ? ', con el Asistente IA' : '')
+                      : ($tPm['modulos_elegir'] > 0 ? 'la base + ' . (int) $tPm['modulos_elegir'] . ' módulos que tú eliges' : 'la base + ' . count($tPm['modulos']) . ' módulos')) : '' ?>.</p>
+        <p class="suave" style="margin:0 0 10px"><?= $tInc['precio_acordado'] !== null ? 'Precio acordado con Tukán: '
+            : 'Plan ' . dinero($tInc['precio_plan']) . ($tInc['precio_extra'] > 0 ? ' + tus módulos extra ' . dinero($tInc['precio_extra']) : '') . ($tInc['descuento'] > 0 ? ' − módulos quitados ' . dinero($tInc['descuento']) : '') . ' = ' ?><strong><?= dinero($tInc['mensual']) ?> + IVA al mes</strong>.</p>
+        <form method="post" action="<?= e(url('planes')) ?>"><?= campo_csrf() ?>
+            <input type="hidden" name="accion" value="pagar_tarjeta"><input type="hidden" name="plan" value="<?= e($tarjeta['plan']) ?>">
+            <?php $i = 0; foreach ($tarjeta['opciones'] as $per => $c): ?>
+                <label style="display:block;margin:6px 0"><input type="radio" name="periodo" value="<?= e($per) ?>"<?= $i++ === 0 ? ' checked' : '' ?> required>
+                    <strong><?= e($nombres[$per] ?? $per) ?></strong>: <?= dinero($c['monto']) ?> + IVA<?= $per !== 'mensual' ? ' <small class="suave">(' . e(mb_strtolower(planes()->textoPeriodo($per))) . ')</small>' : '' ?></label>
+            <?php endforeach; ?>
+            <p style="margin:12px 0 4px"><strong>¿Cómo quieres pagar?</strong></p>
+            <label style="display:block;margin:6px 0"><input type="radio" name="forma" value="suscripcion" checked>
+                <strong>Suscripción:</strong> se cobra sola a tu tarjeta cada período que elegiste (ese valor + IVA), hasta que la canceles. Cancelas cuando quieras.</label>
+            <label style="display:block;margin:6px 0"><input type="radio" name="forma" value="una_vez">
+                <strong>Solo esta vez:</strong> pagas este período y no se vuelve a cobrar sola.</label>
+            <p style="margin:12px 0 0"><button class="boton" type="submit">Pagar con tarjeta</button></p>
+            <p class="g-nota" style="margin-top:8px">Te llevamos a la página de pago segura. Los valores son sin IVA: el IVA se suma al pagar y la factura te llega al correo.<?= $u['estado'] === 'prueba'
+                ? ' Al aprobarse el pago, tu demo pasa a ser tu cuenta: nada de lo que cargaste se pierde.' : ' Tu plan se activa solo al aprobarse el pago.' ?></p>
+        </form>
+    <?php endif; ?>
+</section>
 <?php endif; ?>
 
 <section class="bloque" aria-labelledby="mp-t-mods">
@@ -133,9 +197,12 @@ $enApp = en_app_android();
             <div class="mp-plan <?= $pl['codigo'] === $u['plan_codigo'] ? 'actual' : '' ?>">
                 <h3>Plan <?= e($pl['nombre']) ?><?= $pl['codigo'] === $u['plan_codigo'] ? ' <small class="suave">(el tuyo)</small>' : '' ?></h3>
                 <p><?= $pm['todos'] ? 'Todos los módulos' . (in_array('asistente_ia', $pm['modulos'], true) ? ', con el Asistente IA' : '')
-                       : ($pm['modulos_elegir'] > 0 ? 'La base + ' . ($pm['modulos'] ? count($pm['modulos']) . ' módulos + ' : '') . $pm['modulos_elegir'] . ' módulos que tú eliges' : count($pm['modulos']) . ' módulos') ?><?= $pl['codigo'] === $u['plan_codigo'] ? '' : ' · precio por cotización' ?></p>
+                       : ($pm['modulos_elegir'] > 0 ? 'La base + ' . ($pm['modulos'] ? count($pm['modulos']) . ' módulos + ' : '') . $pm['modulos_elegir'] . ' módulos que tú eliges' : count($pm['modulos']) . ' módulos') ?><?= $pl['codigo'] === $u['plan_codigo'] || $conTarjeta($pl['codigo']) ? '' : ' · precio por cotización' ?></p>
                 <p><?= $pl['max_espacios'] ? 'Hasta ' . (int) $pl['max_espacios'] . ' espacios' : 'Espacios sin límite' ?> · <?= $pl['max_usuarios'] ? 'hasta ' . (int) $pl['max_usuarios'] . ' usuarios' : 'usuarios sin límite' ?></p>
                 <p><?= e($pl['descripcion'] ?? '') ?></p>
+                <?php if ($pl['codigo'] !== $u['plan_codigo'] && $conTarjeta($pl['codigo'])): ?>
+                    <p><a class="boton boton-chico" href="<?= e(url('planes', ['plan' => $pl['codigo']])) ?>#pagar-tarjeta">Elegir este plan y pagar con tarjeta</a></p>
+                <?php endif; ?>
                 <?php if ($pl['codigo'] !== $u['plan_codigo']): ?>
                     <?php $faltanPlan = array_diff($pm['todos'] ? array_keys($catalogo) : $pm['modulos'], $me['pagados']); ?>
                     <?php if ($faltanPlan): ?>

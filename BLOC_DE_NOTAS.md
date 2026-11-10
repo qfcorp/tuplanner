@@ -192,3 +192,23 @@ Regla de Dimi: "todos los programas deben ser modulares para encender o apagar l
 - No toca el plan ni el precio acordado de cada cliente.
 - Google Play: $15,99 / $76,99 / $152,99 (Básico). Completo igual: $29,99 / $147,99 / $294,99.
 - Pruebas del 10 nov: lógica y pantallas bien con el precio nuevo.
+
+## 10 nov 2026 — El cliente paga su plan SOLO, con tarjeta, desde Mi plan
+Pedido de Dimitry: «¿el cliente puede solicitar y pagar desde su mismo panel, ya sea de demo… o debo hacerlo yo?». Ahora puede.
+- **Cómo funciona:** TuPlanner no habla con Plux. Le pide el cobro al Panel Tukán Central (`plux_api.php`, misma firma de «Cancelar mi plan»). El Panel devuelve la página de pago; cuando Plux aprueba, el Panel manda `registrar_pago` (conector v2) y emite la factura. La cuenta queda activa sola, también si era una demo.
+- **Qué ve el dueño o administrador** en Mi plan, solo si el Panel tiene prendido el cobro con tarjeta para TuPlanner: sección **Pagar con tarjeta** con su plan (puede tocar el otro), lo que incluye, la cuenta del mes y los tres períodos con su valor + IVA: cada mes, cada 6 meses (paga 5) y cada año (paga 10). Elige **Suscripción** (viene marcada: se cobra sola cada período) o **Solo esta vez**.
+- **Precios:** los mismos que ya calcula el programa (`Planes::cotizarNegocio`: plan + módulos extra + IA, o el precio acordado). Se mandan sin IVA; el IVA lo suma Tukán Pagos. No se inventó ningún precio y no se tocó la migración 115.
+- **El precio de otro plan** solo se ve cuando el cliente toca ese plan para pagarlo (es su compra). En el resto de Mi plan sigue sin verse.
+- **Con precio acordado** solo paga su plan a ese precio (para cambiar de plan conversa con Tukán). Con precio acordado $0 no se ofrece pagar.
+- **Suscripción viva:** se ve su estado y no se ofrece crear otra. Un pago sin terminar tiene **Pagar ahora** y **Cancelar este pago** (para elegir otro). La suscripción activa se deja con «Cancelar mi plan», como antes.
+- **Regreso:** `?plux=aprobado` → «¡Pago recibido!»; otro valor → «El pago no se completó». En modo de prueba: «no se cobra de verdad».
+- **Si el Panel no contesta o está apagado:** Mi plan queda exactamente igual que antes (probado comparando la página entera).
+- **App de Google Play:** no se muestra nada, no se le pregunta al Panel y el servidor rechaza `pagar_tarjeta`.
+- **No es un módulo del cliente:** es el plan de Tukán. Se prende y apaga en el Panel (Más → Pagos con Plux → programas).
+- Mismo código que TuEvento (se hizo allá primero y se trajo igual).
+- Archivos: `src/PagoPlan.php` (nuevo), `app/paginas/planes.php`, `app/vistas/planes.php`, `tests/panel_simulado.php`, `tests/logica_114_pago_solo.php` (62), `tests/web_114_pago_solo.sh` (108), manual (sección «Pagar tu plan con tarjeta», antes de «Cancelar mi plan»), `docs/MANUAL.md`, `docs/GOOGLE_PLAY.md`, `docs/GUIA_DESARROLLO.md`.
+- **Falta / para decidir:**
+  - DIMI: actualizar TuPlanner en el servidor y prender TuPlanner en el Panel (Pagos con Plux). Sin eso nadie ve el botón.
+  - Probar un pago de punta a punta con el Panel y Plux de verdad en modo de prueba (aquí solo se probó con el Panel simulado).
+  - Si a un cliente con suscripción viva se le cambian los módulos, el valor de la suscripción no cambia solo (el Panel tiene la acción `cambiar`; TuPlanner todavía no la usa).
+  - «Cuánto pagas» con el botón Pagar por WhatsApp sigue visible junto al pago con tarjeta. Si Dimitry quiere, se oculta cuando hay tarjeta.

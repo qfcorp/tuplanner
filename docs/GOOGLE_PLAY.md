@@ -23,7 +23,7 @@ Dentro de la app (`en_app_android()`) **no** se ve nada para comprar o pagar el 
 
 | Pantalla | En la web | En la app |
 |---|---|---|
-| Mi plan | Precio al mes, desglose, «Cuánto pagas» con **Pagar** (WhatsApp), otros planes con **Pedir cotización**, pagos hechos, «Preguntar por WhatsApp» | Plan, estado, fecha, módulos encendidos y **Elegir este módulo** (solo los incluidos en el plan Básico: no cuesta más). Sin montos, sin cotizaciones, sin pagos, sin WhatsApp de ventas. El servidor rechaza `pedir_plan` y pedir módulos fuera del plan |
+| Mi plan | Precio al mes, desglose, «Cuánto pagas» con **Pagar** (WhatsApp), otros planes con **Pedir cotización**, pagos hechos, «Preguntar por WhatsApp» | Plan, estado, fecha, módulos encendidos y **Elegir este módulo** (solo los incluidos en el plan Básico: no cuesta más). Sin montos, sin cotizaciones, sin pagos, sin WhatsApp de ventas, sin «Pagar con tarjeta» (10 nov 2026: ni se le pregunta al Panel). El servidor rechaza `pedir_plan`, `pagar_tarjeta`, `cancelar_tarjeta` y pedir módulos fuera del plan |
 | Módulo apagado | «Pedir cotización» | Solo «Ver Mi plan» |
 | Franja «Tu plan vence…» | con **Renovar** | sin Renovar |
 | Demo terminada / plan vencido / cuenta pausada | WhatsApp de Tukán y «Ver mi plan y pedir cotización» | Texto neutro, sin enlaces |
