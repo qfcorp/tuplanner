@@ -12,7 +12,7 @@ $valor = fn(string $sql) => $db->query($sql)->fetchColumn();
 
 titulo('1. Instalación nueva: Básico $12 (3 a elegir, $5 cada uno más) y Completo $25 con todo');
 $pl = $mods->planes();
-check('Básico $12, 3 módulos a elegir, $5 cada uno más (el nombre no cambia)', ['Básico', 12.0, 3, 5.0],
+check('Básico $12,99 (desde el 10 nov 2026, migración 115), 3 módulos a elegir, $5 cada uno más (el nombre no cambia)', ['Básico', 12.99, 3, 5.0],
       [$pl['esencial']['nombre'], $pl['esencial']['precio_mensual'], $pl['esencial']['modulos_elegir'], $pl['esencial']['precio_modulo_extra']]);
 check('Completo $25 con todos los módulos y el Asistente IA', ['Completo', 25.0, '*,asistente_ia'], [$pl['quinta']['nombre'], $pl['quinta']['precio_mensual'], $valor("SELECT modulos FROM planes WHERE codigo = 'quinta'")]);
 $cat = $mods->catalogo();
@@ -24,10 +24,10 @@ titulo('2. Precios: Básico + extras, Completo');
 [$n] = negocio_prueba($db, 'esencial', 'Local Básico');
 $db->prepare("UPDATE negocios SET estado = 'activo', activo_hasta = CURRENT_DATE + 30, modulos_extra = 'paquetes,contratos,portal_cliente,cobros_linea' WHERE id = ?")->execute([$n]);
 $mods->olvidar();
-check('Básico con 4 módulos: 3 incluidos + 1 extra = $17', 17.0, $mods->mensual($n));
+check('Básico con 4 módulos: 3 incluidos + 1 extra = $17,99', 17.99, $mods->mensual($n));
 $db->prepare("UPDATE negocios SET modulos_extra = 'paquetes,asistente_ia' WHERE id = ?")->execute([$n]);
 $mods->olvidar();
-check('Básico con 1 módulo + IA: la IA no cuenta entre los 3 = $15', 15.0, $mods->mensual($n));
+check('Básico con 1 módulo + IA: la IA no cuenta entre los 3 = $15,99', 15.99, $mods->mensual($n));
 [$q] = negocio_prueba($db, 'quinta', 'Quinta Completa');
 $db->prepare("UPDATE negocios SET estado = 'activo', activo_hasta = CURRENT_DATE + 30 WHERE id = ?")->execute([$q]);
 $mods->olvidar();
