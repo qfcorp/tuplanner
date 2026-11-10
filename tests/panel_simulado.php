@@ -5,7 +5,7 @@ declare(strict_types=1);
  * Panel Tukán Central SIMULADO para probar «Pagar con tarjeta» de Mi plan (php -S 127.0.0.1:PUERTO tests/panel_simulado.php).
  * Imita plux_api.php del Panel (tukan-central/public/plux_api.php y PagosPlux::atenderPrograma): revisa el token v2 de tipo
  * «plux» (firma con TUKAN_CENTRAL_SECRET, programa TUKAN_CENTRAL_ID y «bh» = sha256 del cuerpo) y contesta estado, crear,
- * cancelar, cambiar (como PagosPlux «cambiar»: sube con proporcional, 409 no_baja, 409 sin_pagar, igual) y cancelar_plan. No cobra nada: no habla con Plux ni con nadie.
+ * cancelar, cambiar (como PagosPlux «cambiar»: sube con proporcional, pasa_a_completo aunque baje, 409 no_baja, 409 sin_pagar, igual) y cancelar_plan. No cobra nada: no habla con Plux ni con nadie.
  *  - PANEL_SIM_DIR/config.json: {"activo": true|false, "pruebas": true|false, "caido": true|false} (lo cambian las pruebas).
  *  - PANEL_SIM_DIR/cobros.json: los cobros creados (las pruebas leen y cambian su estado, p. ej. a «activa»).
  *  - PANEL_SIM_DIR/pedidos.log: una línea JSON por cada pedido recibido con firma buena.
@@ -78,6 +78,14 @@ if ($accion === 'cambiar') {   // como PagosPlux::atenderPrograma «cambiar» + 
     if (in_array($f['estado'], ['pendiente', 'rechazado'], true)) $json(409, ['ok' => false, 'codigo' => 'sin_pagar', 'error' => 'Todavía no pagó la primera cuota: cancele ese pago y vuelva a pagar con el valor nuevo.', 'cobro' => $publico($f)]);
     if (abs($nuevo - $antes) < 0.01) $json(200, ['ok' => true, 'cambio' => false, 'cobro' => $publico($f)]);
     $hasta = (string) ($f['pagado_hasta'] ?? '');
+    if ($nuevo < $antes && !empty($b['pasa_a_completo'])) {   // pasarse al Completo sí se acepta aunque baje: desde el próximo cobro
+        $cobros[$i]['subtotal'] = $nuevo;
+        $cobros[$i]['total'] = round($nuevo * 1.15, 2);
+        $guardar();
+        $json(200, ['ok' => true, 'cambio' => true, 'baja_al_renovar' => true, 'cambiado_en_plux' => true, 'proporcional' => null,
+                    'mensaje' => 'Pasó al plan Completo. Desde el próximo cobro' . ($hasta ? ' (' . date('d/m/Y', strtotime($hasta)) . ')' : '') . ' paga $' . number_format($cobros[$i]['total'], 2, ',', '.') . ' con IVA. Lo ya pagado no se devuelve.',
+                    'cobro' => $publico($cobros[$i])]);
+    }
     if ($nuevo < $antes) $json(409, ['ok' => false, 'codigo' => 'no_baja', 'error' => 'Los módulos ya contratados no se pueden quitar mientras dure el período pagado' . ($hasta ? ' (hasta el ' . date('d/m/Y', strtotime($hasta)) . ')' : '') . '. La suscripción con tarjeta sigue en $' . number_format((float) $f['total'], 2, ',', '.') . '.', 'cobro' => $publico($f)]);
     $cobros[$i]['subtotal'] = $nuevo;
     $cobros[$i]['total'] = round($nuevo * 1.15, 2);

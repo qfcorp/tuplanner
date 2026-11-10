@@ -38,7 +38,11 @@ contiene "El cuarto módulo y el Asistente IA: «Extra · \$5»" "$TMP/pag.html"
 contiene "Total: \$20 + \$5 + \$5 = \$30" "$TMP/pag.html" '<p class="mp-precio">\$30,00'
 contiene "Desglose: plan \$20" "$TMP/pag.html" "Plan \$20,00"
 no_contiene "Sin el precio de un módulo que no tiene (Invitados \$8)" "$TMP/pag.html" "\$8,00"
-no_contiene "Sin el precio del Completo" "$TMP/pag.html" "\$45,00"
+# (10 nov 2026, tercera parte) El precio del Completo solo puede salir en el aviso «te sugerimos el Completo» de un módulo que lo
+# igualaría (comisiones arrastra planificación y presupuesto: $30 + $15 = $45); fuera de ese aviso, no
+grep -v 'mp-sugerencia-mod\|confirm(' "$TMP/pag.html" > "$TMP/pag_sin_sugerencia.html"
+no_contiene "Sin el precio del Completo (fuera del aviso de sugerencia)" "$TMP/pag_sin_sugerencia.html" "\$45,00"
+contiene "… el aviso sale en el módulo que lo igualaría" "$TMP/pag.html" "Con este módulo pagarías \$45,00 + IVA al mes"
 contiene "El Completo: todos los módulos con el Asistente IA, precio por cotización" "$TMP/pag.html" "Todos los módulos, con el Asistente IA · precio por cotización"
 
 echo "2. Básico con 1 elegido: le quedan 2; los demás «Puedes elegirlo en tu plan» y se eligen desde Mi plan"

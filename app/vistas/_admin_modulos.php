@@ -12,6 +12,13 @@ $pendientes = array_values(array_filter($pedidosModulos, fn($s) => $s['estado'] 
 <section class="bloque adm-mod" id="modulos">
     <div class="dia-titulo-acciones"><h2>Módulos</h2>
         <span class="adm-mod-total">Paga <strong><?= dinero($me['mensual']) ?></strong> al mes<?= $me['precio_acordado'] !== null ? ' <small>(precio acordado)</small>' : '' ?></span></div>
+    <?php $sugAdm = (new TuPlanner\PagoPlan(db(), fn() => [0, null]))->sugerenciaCompleto((int) $n['id']);   /* (10 nov 2026) solo cuentas, sin llamar al Panel */ ?>
+    <?php if ($sugAdm): ?>
+        <p class="aviso <?= $sugAdm['tipo'] === 'mayor' ? 'aviso-alerta' : 'aviso-suave' ?> adm-sugerencia" data-sugerencia="<?= e($sugAdm['tipo']) ?>"><?= $sugAdm['tipo'] === 'mayor'
+            ? '<strong>Con sus módulos paga ' . dinero($sugAdm['actual']) . ' al mes</strong> y el plan Completo cuesta ' . dinero($sugAdm['completo']) . ' con todos los módulos y el Asistente IA: sugiérele pasarse al Completo.'
+            : 'Con sus módulos paga ' . dinero($sugAdm['actual']) . ' al mes: <strong>por ' . dinero($sugAdm['diferencia']) . ' más tendría el Completo</strong> con todo.' ?>
+            Se cambia en «Plan» (con suscripción con tarjeta, el Completo se cobra desde el próximo cobro).</p>
+    <?php endif; ?>
     <?php if ($me['demo']): ?>
         <p class="aviso aviso-alerta">Está en demo: <?= $me['demo_todos'] ? 'tiene <strong>todos</strong> los módulos encendidos para que vea todo' : 'tiene encendidos solo los módulos que elegiste' ?>.
             Lo que marques aquí es lo que tendrá cuando pague.</p>

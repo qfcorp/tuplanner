@@ -2,6 +2,7 @@
 use TuPlanner\{Modulos, PanelTukan, Planes};
 /** Mi plan (Anexo B). @var array $estadoMod @var array $catalogo @var array $planesMod @var array $precios @var string $estadoCuenta
  *  @var array $pagos @var array $pedidos @var array $pedidosPendientes @var array $uso @var array $listaPlanes
+ *  @var ?array $sugerencia «te sugerimos el Completo» (PagoPlan::sugerenciaCompleto) @var array $sugerenciaModulo
  *  @var ?array $tarjeta pago con tarjeta por el Panel (null = apagado, el Panel no contesta o app de Google Play: no se muestra nada) */
 $me = $estadoMod;
 $nombres = ['mensual' => 'Cada mes', 'semestral' => 'Cada 6 meses', 'anual' => 'Cada año'];
@@ -18,6 +19,28 @@ $encendidos = count($me['pagados']);
 // App de Google Play (docs/GOOGLE_PLAY.md): sin precios del software, sin «Pedir cotización», sin «Pagar» ni WhatsApp de ventas.
 // Se ve el plan, su estado, los módulos encendidos y se pueden elegir los módulos incluidos en el plan (no cuesta nada más).
 $enApp = en_app_android();
+// «Te sugerimos el Completo» (10 nov 2026, tercera parte, Dimitry: «queremos que más gente vaya al Completo»). Nunca en la app.
+$avisoCompleto = function (string $donde) use ($sugerencia, $tarjeta, $u): string {
+    if (!$sugerencia || en_app_android()) return '';
+    $s = $sugerencia;
+    $pagas = ($u['estado'] === 'prueba' ? 'pagarías ' : 'pagas ') . dinero($s['actual']) . ' + IVA al mes';
+    $h = $s['tipo'] === 'mayor'
+        ? '<div class="aviso aviso-alerta mp-sugerencia" data-sugerencia="mayor"><strong>Con tus módulos ' . $pagas . '.</strong> El plan Completo cuesta ' . dinero($s['completo'])
+          . ' + IVA y trae <strong>todos</strong> los módulos y el Asistente IA. Te sugerimos pasarte al Completo.'
+        : '<div class="aviso aviso-suave mp-sugerencia" data-sugerencia="cerca">Con tus módulos ' . $pagas . '. <strong>Por ' . dinero($s['diferencia'])
+          . ' más tienes el plan Completo</strong> con todos los módulos y el Asistente IA.';
+    // El botón: pagar el Completo con tarjeta · pasarse ya (suscripción pagada) · o el pedido de cambio de plan de siempre
+    $sus = $tarjeta['suscripcion'] ?? null;
+    if ($tarjeta && !$sus && !empty($tarjeta['opciones'][$s['plan']])) {
+        $h .= ' <a class="boton boton-chico" href="' . e(url('planes', ['pagar' => $s['plan']])) . '#pagar-' . e($s['plan']) . '">Pasarme al Completo</a>';
+    } else {
+        $pagada = $sus && in_array($sus['estado'] ?? '', ['activa', 'en_gracia'], true);
+        $h .= ' <form method="post" action="' . e(url('planes')) . '" style="display:inline"' . ($pagada
+                ? ' onsubmit="return confirm(' . e(json_encode('¿Pasarte al plan Completo? Tienes todos los módulos desde ahora y la suscripción con tarjeta cobra el Completo desde el próximo cobro.', JSON_UNESCAPED_UNICODE)) . ')"' : '') . '>'
+            . campo_csrf() . '<input type="hidden" name="accion" value="pasar_completo"><button class="boton boton-chico" type="submit">Pasarme al Completo</button></form>';
+    }
+    return $h . '</div>';
+};
 // ¿Ese plan se puede pagar solo con tarjeta ahora? (Panel prendido, sin suscripción viva)
 $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] && !empty($tarjeta['opciones'][$cod]);
 ?>
@@ -48,6 +71,7 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
     </div>
     <?php if (!$enApp): ?><a class="boton boton-wa" href="<?= e($wa('Hola, tengo una pregunta sobre mi plan de TuPlanner')) ?>" target="_blank" rel="noopener">Preguntar por WhatsApp</a><?php endif; ?>
 </section>
+<?= $avisoCompleto('arriba') ?>
 <?php if ($me['demo']): ?>
     <p class="aviso aviso-alerta">Estás en tu demo: <?= $me['demo_todos'] ? 'tienes todos los módulos encendidos para que veas todo' : 'tienes encendidos los módulos que elegimos contigo' ?>.
         <?= $enApp ? 'Nada de lo que cargues se pierde.' : 'Al contratar te quedas con los módulos de tu plan y los que agregues; nada de lo que cargaste se pierde.' ?></p>
@@ -64,6 +88,7 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
 <section class="bloque" id="pagar-tarjeta" aria-labelledby="mp-t-tarjeta">
     <h2 id="mp-t-tarjeta">Pagar con tarjeta</h2>
     <?php if ($tarjeta['pruebas']): ?><p class="aviso aviso-alerta">Pagos con tarjeta en <strong>modo de prueba: no se cobra de verdad</strong>.</p><?php endif; ?>
+    <?= $avisoCompleto('tarjeta') ?>
     <?php if ($tarjeta['vivos']): ?>
         <ul class="filas">
         <?php foreach ($tarjeta['vivos'] as $c): $esSus = ($c['tipo'] ?? '') === 'suscripcion'; $sinPagar = in_array($c['estado'], ['pendiente', 'rechazado'], true); ?>
@@ -89,7 +114,8 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
             <p style="margin:0 0 8px"><strong>Elige tu plan y cada cuánto pagas</strong> (valores sin IVA):</p>
             <div class="mp-planes">
             <?php $codDef = isset($tarjeta['opciones'][$u['plan_codigo']]) ? (string) $u['plan_codigo'] : (string) array_key_first($tarjeta['opciones']);
-                  $marcadoDef = $codDef . '|' . array_key_first($tarjeta['opciones'][$codDef]);   // su plan, cada mes
+                  if (isset($tarjeta['opciones'][$tarjeta['marcar']])) $codDef = $tarjeta['marcar'];   // viene de «Pasarme al Completo»
+                  $marcadoDef = $codDef . '|' . array_key_first($tarjeta['opciones'][$codDef]);   // su plan (o el elegido), cada mes
                   foreach ($tarjeta['opciones'] as $cod => $ops): if (!$ops) continue;
                 $tPm = $planesMod[$cod] ?? null; $tInc = $tarjeta['incluye'][$cod]; $suyo = $cod === $u['plan_codigo']; ?>
                 <fieldset class="mp-plan <?= $suyo ? 'actual' : '' ?>" id="pagar-<?= e($cod) ?>" style="margin:0">
@@ -153,8 +179,11 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
                             : (in_array($id, $me['del_plan'], true) ? 'Incluido en tu plan'
                                : (in_array($id, $me['elegidos'] ?? [], true) ? 'Incluido · lo elegiste'
                                   : ($aPedido ? 'Agregado a tu plan' : 'Extra · ' . dinero($me['precio_por_extra'][$id] ?? $m['precio_mensual']) . ' + IVA al mes'))) ?></span>
-                        <?php if (!$on && !$pedido): ?>
-                            <form method="post"><?= campo_csrf() ?><input type="hidden" name="accion" value="pedir"><input type="hidden" name="modulo" value="<?= e($id) ?>">
+                        <?php if (!$on && !$pedido): $sm = $sugerenciaModulo[$id] ?? null; ?>
+                            <?php if ($sm): /* (10 nov 2026) con este módulo igualaría o pasaría al Completo: se avisa antes de pedirlo */ ?>
+                                <p class="aviso aviso-alerta mp-sugerencia-mod" style="margin:6px 0">Con este módulo pagarías <?= dinero($sm['actual']) ?> + IVA al mes. El plan Completo cuesta <?= dinero($sm['completo']) ?> + IVA y trae todos los módulos y el Asistente IA: te sugerimos el Completo.</p>
+                            <?php endif; ?>
+                            <form method="post"<?= $sm ? ' onsubmit="return confirm(' . e(json_encode('Con este módulo pagarías ' . dinero($sm['actual']) . ' + IVA al mes y el plan Completo, con todo, cuesta ' . dinero($sm['completo']) . ' + IVA. ¿Pedir este módulo igual?', JSON_UNESCAPED_UNICODE)) . ')"' : '' ?>><?= campo_csrf() ?><input type="hidden" name="accion" value="pedir"><input type="hidden" name="modulo" value="<?= e($id) ?>">
                                 <button class="boton boton-chico" type="submit"><?= $elegible ? 'Elegir este módulo' : 'Pedir cotización' ?></button></form>
                         <?php endif; ?>
                         <?php endif; ?>

@@ -28,7 +28,9 @@ if (es_post()) {
         try {
             $r = $hacer();
             $mods->olvidar();
-            PagoPlan::revisarBaja($susTarjeta, $antes, $mods->estado($id), $negocio['activo_hasta'] ?? null);
+            $despues = $mods->estado($id);
+            $aCompleto = $despues['plan'] !== $antes['plan'] && !empty($mods->planes()[$despues['plan']]['todos']);   // pasarse al Completo sí se permite
+            PagoPlan::revisarBaja($susTarjeta, $antes, $despues, $negocio['activo_hasta'] ?? null, $aCompleto);
             db()->commit();
             return $r;
         } catch (Throwable $e) {
@@ -39,7 +41,7 @@ if (es_post()) {
     };
     $avisoTarjeta = function () use ($pagoPlan, &$susTarjeta, $id): void {
         $m = $pagoPlan->ajustar($id, $susTarjeta, (string) (superadmin()['email'] ?? ''));
-        if ($m !== null) aviso($m, str_starts_with($m, 'La suscripción') ? 'ok' : 'error');
+        if ($m !== null) aviso($m, $pagoPlan->ultimoOk ? 'ok' : 'error');
     };
     try {
         switch ($accion) {

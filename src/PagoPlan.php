@@ -189,9 +189,11 @@ final class PagoPlan
      * ¿Se puede hacer este cambio? Con suscripción con tarjeta pagada, durante el período pagado no se quitan módulos contratados
      * ni baja el valor (tampoco bajar de plan). $antes / $despues = Modulos::estado() antes y después del cambio. Lanza el motivo.
      */
-    public static function revisarBaja(?array $sus, array $antes, array $despues, ?string $hastaNegocio = null): void
+    public static function revisarBaja(?array $sus, array $antes, array $despues, ?string $hastaNegocio = null, bool $aCompleto = false): void
     {
         if (!$sus) return;
+        // (10 nov 2026, tercera parte) Pasarse al Completo SÍ se permite aunque el valor baje: no se quita nada (trae todo).
+        if ($aCompleto && !array_diff($antes['pagados'], $despues['pagados'])) return;
         $hasta = substr((string) (($sus['pagado_hasta'] ?? '') ?: ($hastaNegocio ?? '')), 0, 10);
         $fecha = preg_match('/^\d{4}-\d{2}-\d{2}$/', $hasta) ? ' (hasta el ' . date('d/m/Y', strtotime($hasta)) . ')' : '';
         $quitados = array_diff($antes['pagados'], $despues['pagados']);
@@ -217,12 +219,21 @@ final class PagoPlan
         $nuevo = round((float) (new Planes($this->db))->cotizarNegocio($negocioId, $plan, (string) $sus['periodo'])['monto'], 2);
         if (abs($nuevo - (float) ($sus['subtotal'] ?? 0)) < 0.005) return null;   // el cambio no mueve el valor
         $datos = ['accion' => 'cambiar', 'cliente_id' => (string) $negocioId, 'subtotal' => $nuevo];
+        $completo = (bool) ((new Modulos($this->db))->planes()[$plan]['todos'] ?? false);
+        if ($completo) $datos['pasa_a_completo'] = true;   // el Panel acepta que baje: rige desde el próximo cobro
         if (!empty($sus['id'])) $datos['id'] = (int) $sus['id'];
+        $this->ultimoOk = false;
         [$http, $j] = ($this->llamar)($datos, $email);
         unset($this->estados[$negocioId]);
         if ($http === 0 || !is_array($j)) return 'El Panel Tukán no respondió: la suscripción con tarjeta se ajustará a ' . self::dinero($nuevo) . ' + IVA cuando el Panel responda (avísale a Tukán).';
         if (empty($j['ok'])) return 'Suscripción con tarjeta: ' . (string) ($j['error'] ?? 'el Panel no aceptó el cambio.');
         if (empty($j['cambio'])) return null;
+        $this->ultimoOk = true;
+        if (!empty($j['baja_al_renovar'])) {
+            $hasta = substr((string) ($sus['pagado_hasta'] ?? ''), 0, 10);
+            return 'Pasaste al plan Completo. Desde el próximo cobro' . (preg_match('/^\d{4}-\d{2}-\d{2}$/', $hasta) ? ' (' . date('d/m/Y', strtotime($hasta)) . ')' : '')
+                . ' la suscripción con tarjeta queda en ' . self::dinero($nuevo) . ' + IVA ' . self::PERIODOS_TEXTO[$sus['periodo']] . '. Lo ya pagado no se devuelve.';
+        }
         $m = 'La suscripción con tarjeta queda en ' . self::dinero($nuevo) . ' + IVA ' . self::PERIODOS_TEXTO[$sus['periodo']] . ' desde el próximo cobro.';
         $prop = is_array($j['proporcional'] ?? null) ? $j['proporcional'] : null;
         if ($prop) {
@@ -231,6 +242,36 @@ final class PagoPlan
         }
         return $m;
     }
+
+    /**
+     * ¿Le conviene el Completo? Solo para el Básico (sin precio acordado): compara lo que paga (o pagaría, con $sumar módulos más)
+     * con lo que le costaría el Completo. null = no hay nada que sugerir. tipo «mayor» (igual o más caro que el Completo) o
+     * «cerca» (a $5 o menos). Devuelve ['tipo', 'actual', 'completo', 'diferencia', 'plan' (código del Completo)].
+     */
+    public function sugerenciaCompleto(int $negocioId, array $sumar = []): ?array
+    {
+        $mods = new Modulos($this->db);
+        $st = $this->db->prepare('SELECT plan_codigo, precio_acordado FROM negocios WHERE id = ?');
+        $st->execute([$negocioId]);
+        $n = $st->fetch();
+        if (!$n || $n['precio_acordado'] !== null) return null;
+        $planes = $mods->planes();
+        if (!empty($planes[$n['plan_codigo']]['todos'])) return null;   // ya tiene el Completo
+        $completo = null;
+        foreach ($planes as $cod => $pl) if (!empty($pl['todos'])) $completo = (string) $cod;
+        if ($completo === null) return null;
+        $actual = $mods->estado($negocioId, null, $sumar)['mensual'];
+        $precioCompleto = $mods->estado($negocioId, $completo)['mensual'];
+        $dif = round($precioCompleto - $actual, 2);
+        if ($dif > self::CERCA_DEL_COMPLETO + 0.004) return null;
+        return ['tipo' => $dif <= 0.004 ? 'mayor' : 'cerca', 'actual' => $actual, 'completo' => $precioCompleto, 'diferencia' => max(0.0, $dif), 'plan' => $completo];
+    }
+
+    /** Desde cuántos dólares de diferencia se muestra «Por $Z más tienes el Completo». */
+    public const CERCA_DEL_COMPLETO = 5.0;
+
+    /** ¿El último ajustar() salió bien (aviso verde) o no (aviso rojo)? */
+    public bool $ultimoOk = false;
 
     private static function dinero(float $v): string
     {

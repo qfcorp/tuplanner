@@ -45,6 +45,43 @@ if (es_post() && in_array($_POST['accion'] ?? '', ['cancelar_plan', 'seguir_plan
 }
 // Pagar el plan con tarjeta, solo (src/PagoPlan.php). En la app de Google Play no existe (regla de Google).
 $pagoPlan = en_app_android() ? null : new PagoPlan(db());
+// «Pasarme al Completo» con suscripción con tarjeta pagada (10 nov 2026, tercera parte): cambia de plan ya y el Panel cobra el
+// Completo desde el próximo cobro (lo ya pagado no se devuelve). Sin suscripción pagada: el pedido de cambio de plan de siempre.
+if (es_post() && ($_POST['accion'] ?? '') === 'pasar_completo') {
+    verificar_csrf();
+    try {
+        if (!$pagoPlan) throw new RuntimeException(NO_EN_APP);
+        $sug = $pagoPlan->sugerenciaCompleto($nid);
+        $codCompleto = $sug['plan'] ?? null;
+        foreach (modulos()->planes() as $cod => $pl) if (!empty($pl['todos'])) $codCompleto ??= (string) $cod;
+        if (!$codCompleto || $codCompleto === (string) $u['plan_codigo']) throw new RuntimeException('Ya tienes el plan Completo.');
+        $sus = $pagoPlan->suscripcionPagada($nid, (string) $u['email']);
+        if (!$sus) {
+            $faltan = array_values(array_diff(array_keys(modulos()->catalogo()), modulos()->estado($nid)['pagados']));
+            modulos()->pedir($nid, (int) $u['id'], $faltan ?: ['asistente_ia'], 'Quiere pasarse al plan Completo (aviso «te sugerimos el Completo»).');
+            aviso('Listo: pediste pasarte al plan Completo. Tukán te escribe para activarlo; tus datos no cambian.');
+        } else {
+            $mods = modulos();
+            $antes = $mods->estado($nid);
+            db()->beginTransaction();
+            try {
+                (new PanelTukan(db()))->cambiarPlan($nid, $codCompleto);
+                $mods->olvidar();
+                PagoPlan::revisarBaja($sus, $antes, $mods->estado($nid), $u['activo_hasta'] ?? null, true);
+                db()->commit();
+            } catch (Throwable $e) {
+                if (db()->inTransaction()) db()->rollBack();
+                throw $e;
+            }
+            $m = $pagoPlan->ajustar($nid, $sus, (string) $u['email']);
+            aviso($m ?? 'Pasaste al plan Completo.', $m === null || $pagoPlan->ultimoOk ? 'ok' : 'error');
+        }
+    } catch (RuntimeException $e) {
+        aviso($e->getMessage(), 'error');
+    }
+    header('Location: ' . url('planes'));
+    exit;
+}
 if (es_post() && in_array($_POST['accion'] ?? '', ['pagar_tarjeta', 'cancelar_tarjeta'], true)) {
     verificar_csrf();
     try {
@@ -128,9 +165,19 @@ if ($pagoPlan && $pagoPlan->activo($nid, (string) $u['email'])) {
         $opcionesPago[$cod] = $pagoPlan->opciones($nid, $cod);
         $incluyePago[$cod] = $mods->estado($nid, $cod);
     }
-    $tarjeta = ['pruebas' => $pagoPlan->pruebas($nid), 'vivos' => $pagoPlan->vivos($nid), 'suscripcion' => $pagoPlan->suscripcion($nid),
+    $tarjeta = ['marcar' => (string) ($_GET['pagar'] ?? ''), 'pruebas' => $pagoPlan->pruebas($nid), 'vivos' => $pagoPlan->vivos($nid), 'suscripcion' => $pagoPlan->suscripcion($nid),
                 'planes' => $planesPago, 'opciones' => array_filter($opcionesPago),
                 'incluye' => $incluyePago, 'vuelta' => (string) ($_GET['plux'] ?? '')];
 }
-vista('planes', compact('cancelacion', 'estadoMod', 'catalogo', 'planesMod', 'precios', 'estadoCuenta', 'pagos', 'pedidos', 'pedidosPendientes', 'uso', 'listaPlanes', 'tarjeta'),
+// «Te sugerimos el Completo» (10 nov 2026, tercera parte): solo fuera de la app, para el Básico sin precio acordado
+$sugerencia = $pagoPlan ? $pagoPlan->sugerenciaCompleto($nid) : null;
+$sugerenciaModulo = [];   // módulo => lo que pagaría con él, si iguala o pasa al Completo (se avisa antes de pedirlo)
+if ($pagoPlan && $estadoMod['precio_acordado'] === null && empty($planesMod[$u['plan_codigo']]['todos'])) {
+    foreach (array_keys($catalogo) as $mid) {
+        if (in_array($mid, $estadoMod['pagados'], true) || ($estadoMod['por_elegir'] > 0 && !in_array($mid, Modulos::FUERA_DEL_CUPO, true))) continue;
+        $sm = $pagoPlan->sugerenciaCompleto($nid, [$mid]);
+        if ($sm && $sm['tipo'] === 'mayor') $sugerenciaModulo[$mid] = $sm;
+    }
+}
+vista('planes', compact('cancelacion', 'estadoMod', 'catalogo', 'planesMod', 'precios', 'estadoCuenta', 'pagos', 'pedidos', 'pedidosPendientes', 'uso', 'listaPlanes', 'tarjeta', 'sugerencia', 'sugerenciaModulo'),
       'Mi plan · TuPlanner');

@@ -67,3 +67,6 @@
 .adm-cat-tabla input[type=text], .adm-cat-tabla input[type=number] { width: 100%; min-width: 0; }
 .adm-cat-tabla td { vertical-align: top; }
 .adm-cat-planes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+/* «Te sugerimos el Completo» (10 nov 2026): el aviso fuerte usa .aviso-alerta; el suave (a $5 o menos del Completo) este */
+.aviso-suave { background: var(--superficie); border: 1px solid var(--linea); color: inherit; }
+.mp-sugerencia form, .mp-sugerencia .boton { margin-left: 6px; vertical-align: middle; }

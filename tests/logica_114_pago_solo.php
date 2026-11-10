@@ -31,6 +31,11 @@ $llamar = function (array $d, string $email = '') use ($panel): array {
         $todos = $panel['cobros'];
         foreach ($todos as $i => $c) {
             if ($c['cliente_id'] !== $d['cliente_id'] || $c['tipo'] !== 'suscripcion' || !in_array($c['estado'], ['activa', 'en_gracia'], true)) continue;
+            if ($d['subtotal'] < $c['subtotal'] && !empty($d['pasa_a_completo'])) {
+                $todos[$i]['subtotal'] = $d['subtotal'];
+                $panel['cobros'] = $todos;
+                return [200, ['ok' => true, 'cambio' => true, 'baja_al_renovar' => true, 'proporcional' => null, 'mensaje' => 'Pasó al plan Completo.']];
+            }
             if ($d['subtotal'] < $c['subtotal']) return [409, ['ok' => false, 'codigo' => 'no_baja', 'error' => 'Los módulos ya contratados no se pueden quitar mientras dure el período pagado.']];
             if (abs($d['subtotal'] - $c['subtotal']) < 0.01) return [200, ['ok' => true, 'cambio' => false]];
             $todos[$i]['subtotal'] = $d['subtotal'];
@@ -251,6 +256,47 @@ check('Panel caído sin pagos con Plux registrados aquí: no hay suscripción pa
 (new Planes($db))->suscribir($m, 'esencial', 'mensual', $hoy, 'plux', null, 17.99, $hoy);
 $loc = $pp()->suscripcionPagada($m);
 check('Panel caído con un pago con Plux que cubre hoy: igual no deja quitar módulos', [true, 'mensual', 17.99], [$loc['local'], $loc['periodo'], $loc['subtotal']]);
+$panel['modo'] = 'activo';
+
+titulo('9. «Te sugerimos el Completo» y pasarse al Completo a mitad del período (tercera parte)');
+[$k] = negocio_prueba($db, 'esencial', 'Local Sugerencia');
+$db->prepare("UPDATE negocios SET estado = 'activo', activo_hasta = CURRENT_DATE + 20, modulos_extra = '' WHERE id = ?")->execute([$k]);
+check('Lejos del Completo ($12,99 contra $25): no sugiere nada', null, $pp()->sugerenciaCompleto($k));
+$db->prepare("UPDATE negocios SET modulos_extra = 'paquetes,contratos,portal_cliente,plano,asistente_ia' WHERE id = ?")->execute([$k]);
+$sg = $pp()->sugerenciaCompleto($k);
+check('Cerca ($20,99, a $4,01 del Completo): aviso suave', ['cerca', 20.99, 25.0, 4.01, 'quinta'], [$sg['tipo'], $sg['actual'], $sg['completo'], $sg['diferencia'], $sg['plan']]);
+check('Con un módulo más ($25,99) igualaría o pasaría al Completo', ['mayor', 25.99], [($x = $pp()->sugerenciaCompleto($k, ['invitados']))['tipo'], $x['actual']]);
+$db->prepare("UPDATE negocios SET modulos_extra = 'paquetes,contratos,portal_cliente,plano,asistente_ia,invitados' WHERE id = ?")->execute([$k]);
+check('Mayor ($25,99 contra $25): aviso fuerte', ['mayor', 25.99, 25.0, 0.0], array_values(array_intersect_key($pp()->sugerenciaCompleto($k), array_flip(['tipo', 'actual', 'completo', 'diferencia']))));
+$db->exec("UPDATE planes SET precio_mensual = 25.99 WHERE codigo = 'quinta'");
+check('Igual ($25,99 y $25,99): aviso fuerte', ['mayor', 0.0], [($x = $pp()->sugerenciaCompleto($k))['tipo'], $x['diferencia']]);
+$db->exec("UPDATE planes SET precio_mensual = 31.00 WHERE codigo = 'quinta'");
+check('A $5,01 del Completo: ya no sugiere', null, $pp()->sugerenciaCompleto($k));
+$db->exec("UPDATE planes SET precio_mensual = 30.99 WHERE codigo = 'quinta'");
+check('A $5,00 justos: aviso suave', 'cerca', $pp()->sugerenciaCompleto($k)['tipo']);
+$db->exec("UPDATE planes SET precio_mensual = 25 WHERE codigo = 'quinta'");
+$db->prepare('UPDATE negocios SET precio_acordado = 30 WHERE id = ?')->execute([$k]);
+check('Con precio acordado con Tukán: no sugiere', null, $pp()->sugerenciaCompleto($k));
+$db->prepare('UPDATE negocios SET precio_acordado = NULL WHERE id = ?')->execute([$k]);
+check('Quien ya tiene el Completo: no sugiere', null, $pp()->sugerenciaCompleto($a));
+// Con suscripción con tarjeta pagada cada mes de $25,99: pasarse al Completo ($25) sí se permite
+$todos = $panel['cobros']; $todos[] = ['id' => 80, 'cliente_id' => (string) $k, 'tipo' => 'suscripcion', 'estado' => 'activa', 'estado_texto' => 'Suscripción activa', 'descripcion' => 'x', 'plan' => 'esencial',
+                                       'periodo' => 'mensual', 'subtotal' => 25.99, 'total' => 29.89, 'url_pago' => null, 'pagado_hasta' => $hoy->modify('+20 days')->format('Y-m-d')]; $panel['cobros'] = $todos;
+$susK = $pp()->suscripcionPagada($k);
+$antes = $mods->estado($k);
+$db->prepare("UPDATE negocios SET plan_codigo = 'quinta' WHERE id = ?")->execute([$k]);
+$mods->olvidar();
+check_error('Sin decir que pasa al Completo, bajar el valor sigue bloqueado', 'no puede bajar', fn() => PagoPlan::revisarBaja($susK, $antes, $mods->estado($k)));
+PagoPlan::revisarBaja($susK, $antes, $mods->estado($k), null, true);
+check('Pasarse al Completo: se permite aunque baje', true, true);
+$x = $pp();
+$msg = $x->ajustar($k, $susK);
+check('Le manda «cambiar» con pasa_a_completo y el Completo del mismo período ($25)', ['cambiar', true, 25.0], [$ultimo()['accion'], $ultimo()['pasa_a_completo'] ?? null, $ultimo()['subtotal']]);
+check('… y avisa que rige desde el próximo cobro', ['Pasaste al plan Completo. Desde el próximo cobro (' . $hoy->modify('+20 days')->format('d/m/Y') . ') la suscripción con tarjeta queda en $25,00 + IVA cada mes. Lo ya pagado no se devuelve.', true], [$msg, $x->ultimoOk]);
+check_error('Bajar del Completo al Básico sigue bloqueado', 'no se pueden quitar', fn() => PagoPlan::revisarBaja($susK, $mods->estado($k), $mods->estado($k, 'esencial')));
+$panel['modo'] = 'caido';
+$x = $pp();
+check('Panel caído al subir: aviso rojo', false, ($x->ajustar($m, $sus) !== null) && $x->ultimoOk);
 $panel['modo'] = 'activo';
 
 putenv('TUKAN_CENTRAL_ID'); putenv('TUKAN_CENTRAL_SECRET'); putenv('TUKAN_CENTRAL_URL');

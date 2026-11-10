@@ -240,10 +240,6 @@ check "Quitar Invitados (contratado): NO se quita" "1" "$(sql "SELECT count(*) F
 check "… y no se le pide nada al Panel" "1" "$(ps_cambiar)"
 get "r=admin_negocio&id=$NB" > /dev/null
 contiene "… con el motivo y la fecha" "$TMP/pag.html" "Los módulos ya contratados no se pueden quitar mientras dure el período pagado (hasta el $HASTA): Invitados con QR"
-post_desde "r=admin_negocio&id=$NB" "r=admin_negocio&id=$NB&accion=plan" -d plan=quinta > /dev/null
-check "Pasar al Completo aunque pague menos (\$25,99 → \$25): no se permite" "esencial" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NB")"
-get "r=admin_negocio&id=$NB" > /dev/null
-contiene "… y lo explica" "$TMP/pag.html" "no puede bajar mientras dure el período pagado (hasta el $HASTA)"
 entrar "$EB" claveSegura1
 get "r=planes" > /dev/null
 contiene "El dueño ve el proporcional en Mi plan, con «Pagar ahora»" "$TMP/pag.html" "Proporcional módulos del"
@@ -259,6 +255,26 @@ contiene "… y avisa que la suscripción se ajustará cuando el Panel responda"
 mods_post $NB paquetes contratos portal_cliente plano asistente_ia invitados
 check "Panel caído: quitar Mobiliario tampoco se puede (hay un pago con Plux que cubre hoy)" "1" "$(sql "SELECT count(*) FROM negocios WHERE id=$NB AND modulos_extra LIKE '%mobiliario%'")"
 panel_modo true
+# (tercera parte) El dueño con \$30,99 al mes ve «te sugerimos el Completo» y se pasa con su suscripción pagada
+check "Ficha del negocio: Tukán ve la sugerencia" "200" "$(get "r=admin_negocio&id=$NB")"
+contiene "… aviso fuerte: paga \$30,99 y el Completo cuesta \$25" "$TMP/pag.html" "<strong>Con sus módulos paga \$30,99 al mes</strong> y el plan Completo cuesta \$25,00"
+entrar "$EB" claveSegura1
+get "r=planes" > /dev/null
+contiene "Mi plan: aviso «te sugerimos el Completo» arriba" "$TMP/pag.html" '<div class="aviso aviso-alerta mp-sugerencia" data-sugerencia="mayor"><strong>Con tus módulos pagas \$30,99 + IVA al mes.</strong> El plan Completo cuesta \$25,00 + IVA y trae <strong>todos</strong> los módulos y el Asistente IA. Te sugerimos pasarte al Completo.'
+check "… también en la sección de pagar con tarjeta (2 veces en la página)" "2" "$(grep -o 'data-sugerencia="mayor"' "$TMP/pag.html" | wc -l)"
+contiene "… con suscripción pagada el botón se pasa al Completo ya" "$TMP/pag.html" 'name="accion" value="pasar_completo"><button class="boton boton-chico" type="submit">Pasarme al Completo</button>'
+post "r=planes" -d accion=pasar_completo > /dev/null
+check "«Pasarme al Completo»: ya tiene el Completo" "quinta" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NB")"
+check "… el Panel recibe «cambiar» con pasa_a_completo y el Completo de 6 meses (\$125)" "cambiar|1|125" "$(ps_pedido accion)|$(ps_pedido pasa_a_completo)|$(ps_pedido subtotal)"
+get "r=planes" > /dev/null
+contiene "… y avisa que rige desde el próximo cobro" "$TMP/pag.html" "Pasaste al plan Completo. Desde el próximo cobro ($HASTA) la suscripción con tarjeta queda en \$125,00 + IVA cada 6 meses. Lo ya pagado no se devuelve."
+no_contiene "Con el Completo ya no sale la sugerencia" "$TMP/pag.html" "data-sugerencia"
+check "El Panel simulado bajó la suscripción para el próximo cobro" "125" "$(php -r 'echo json_decode((string) file_get_contents($argv[1]), true)[0]["subtotal"];' "$PSIM/cobros.json")"
+rm -f "$JAR"; post "r=admin_entrar" --data-urlencode "email=$ADM" --data-urlencode "clave=ClaveDelPanel123" > /dev/null
+post_desde "r=admin_negocio&id=$NB" "r=admin_negocio&id=$NB&accion=plan" -d plan=esencial > /dev/null
+check "Bajar del Completo al Básico durante el período: no se permite" "quinta" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NB")"
+get "r=admin_negocio&id=$NB" > /dev/null
+contiene "… y lo explica" "$TMP/pag.html" "Los módulos ya contratados no se pueden quitar mientras dure el período pagado (hasta el $HASTA)"
 # Sin suscripción con tarjeta: todo como siempre
 registrar esencial "Local Sin Tarjeta $RANDOM"; pagar_plan esencial; NS=$NID
 sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano' WHERE id=$NS" > /dev/null
@@ -268,6 +284,38 @@ mods_post $NS paquetes contratos portal_cliente
 check "Sin suscripción: quitar un módulo sí se puede" "paquetes,contratos,portal_cliente" "$(sql "SELECT modulos_extra FROM negocios WHERE id=$NS")"
 mods_post $NS paquetes contratos portal_cliente invitados
 check "… y encender no le manda nada al Panel" "$ANTES" "$(ps_cambiar)"
+
+echo "11. «Te sugerimos el Completo»: cerca, lejos, módulo que lo pasaría, sin tarjeta y en la app"
+registrar esencial "Local Casi Completo $RANDOM"; pagar_plan esencial; NK=$NID
+sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia' WHERE id=$NK" > /dev/null
+get "r=planes" > /dev/null
+contiene "Cerca (\$20,99 contra \$25): aviso suave «por \$4,01 más»" "$TMP/pag.html" 'data-sugerencia="cerca">Con tus módulos pagas \$20,99 + IVA al mes. <strong>Por \$4,01 más tienes el plan Completo</strong>'
+contiene "… sin suscripción, «Pasarme al Completo» lleva a pagar el Completo con tarjeta" "$TMP/pag.html" 'href="/?r=planes&amp;pagar=quinta#pagar-quinta">Pasarme al Completo</a>'
+get "r=planes&pagar=quinta" > /dev/null
+contiene "… y deja marcado el Completo, cada mes" "$TMP/pag.html" 'value="quinta|mensual" checked required>'
+contiene "Invitados (lo pasaría al Completo): aviso antes de pedirlo" "$TMP/pag.html" "Con este módulo pagarías \$25,99 + IVA al mes. El plan Completo cuesta \$25,00 + IVA"
+contiene "… y pide confirmar al tocar «Pedir cotización»" "$TMP/pag.html" 'onsubmit="return confirm(&quot;Con este módulo pagarías \$25,99'
+sql "UPDATE negocios SET modulos_extra='paquetes' WHERE id=$NK" > /dev/null
+get "r=planes" > /dev/null
+no_contiene "Lejos del Completo (\$12,99): sin sugerencia" "$TMP/pag.html" "data-sugerencia"
+no_contiene "… ni avisos en los módulos" "$TMP/pag.html" "mp-sugerencia-mod"
+sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia,invitados' WHERE id=$NK" > /dev/null
+panel_modo false
+get "r=planes" > /dev/null
+contiene "Cobro con tarjeta apagado: la sugerencia igual sale" "$TMP/pag.html" 'data-sugerencia="mayor"'
+no_contiene "… sin el enlace a pagar con tarjeta" "$TMP/pag.html" "pagar=quinta"
+ANTES=$(sql "SELECT count(*) FROM modulos_solicitudes WHERE negocio_id=$NK")
+post "r=planes" -d accion=pasar_completo > /dev/null
+check "… «Pasarme al Completo» crea el pedido de cambio de plan como siempre" "$((ANTES+1))" "$(sql "SELECT count(*) FROM modulos_solicitudes WHERE negocio_id=$NK AND nota LIKE 'Quiere pasarse al plan Completo%'")"
+check "… sin cambiar el plan" "esencial" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NK")"
+get "r=planes" > /dev/null
+contiene "… y lo dice" "$TMP/pag.html" "Listo: pediste pasarte al plan Completo"
+panel_modo true
+get "r=inicio&app=play" > /dev/null
+get "r=planes" > /dev/null
+no_contiene "En la app de Google Play: sin sugerencia" "$TMP/pag.html" "data-sugerencia"
+no_contiene "… ni «Pasarme al Completo»" "$TMP/pag.html" "Pasarme al Completo"
+get "r=inicio&app=web" > /dev/null
 
 BASE=$BASE_DE_SIEMPRE
 kill $PANELSIM $SITIOPAGO 2>/dev/null
