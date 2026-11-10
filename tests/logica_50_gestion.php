@@ -231,7 +231,7 @@ check('Cuotas exportadas', true, count($filas) >= 3);
 [$enc, $filas] = $rep->exportar($nid, 'gastos', '2026-10-01', '2026-10-31');
 check('Gastos exportados', 2, count($filas));
 check('Gasto general marcado', 'Gasto general', $filas[0][5] === 'Gasto general' || $filas[1][5] === 'Gasto general' ? 'Gasto general' : '');
-[$enc, $filas] = $rep->exportar($nid, 'clientes', '2026-10-01', '2026-10-31');
+[$enc, $filas] = $rep->exportar($nid, 'clientes', '2026-10-01', date('Y-m-d'));   // los clientes se crean con la fecha real de la prueba
 check('Clientes exportados', true, count($filas) >= 5);
 check_error('Tipo de exportación inválido', 'no existe', fn() => $rep->exportar($nid, 'nada', '2026-10-01', '2026-10-31'));
 
@@ -374,7 +374,7 @@ check('Queda activo', 'activo', $N2['estado_cuenta']);
 check('Pagado hasta (12 meses)', '2027-10-11', $N2['activo_hasta']);
 check('Dominio guardado en minúsculas', 'laspalmas.com', $db->query("SELECT dominio FROM suscripciones WHERE id = {$pg['id']}")->fetchColumn());
 $res = $panel->resumen($hoy);
-check('Cobrado del mes', 390.0, $res['cobrado_mes']);
+check('Cobrado del mes', 390.0, $panel->resumen(new DateTimeImmutable('today'))['cobrado_mes']);   // el pago queda con la fecha real de hoy
 check('Ingreso mensual recurrente = lo que paga al mes con su plan y módulos (Salón)', 39.0, $res['mensual']);
 check_error('Pago sin fecha', 'fecha de inicio', fn() => $panel->registrarPago($nidSalon, ['plan' => 'salon', 'periodo' => 'mensual', 'inicio' => '', 'metodo' => 'efectivo']));
 check_error('Pago sin método', 'cómo pagó', fn() => $panel->registrarPago($nidSalon, ['plan' => 'salon', 'periodo' => 'mensual', 'inicio' => '2026-10-12', 'metodo' => 'bitcoin']));

@@ -33,7 +33,7 @@ final class PanelTukan
                u.nombre AS dueno, u.email AS dueno_email, u.telefono AS dueno_telefono, u.id AS dueno_usuario_id, u.ultimo_ingreso AS dueno_ingreso,
                (SELECT count(*) FROM espacios es WHERE es.negocio_id = n.id AND es.activo) AS espacios,
                (SELECT count(*) FROM usuarios us WHERE us.negocio_id = n.id AND us.activo) AS usuarios,
-               (SELECT count(*) FROM eventos e WHERE e.negocio_id = n.id AND e.creado_en >= now() - interval '30 days') AS eventos_30,
+               (SELECT count(*) FROM eventos e WHERE e.negocio_id = n.id AND e.creado_en >= ?::date - 30) AS eventos_30,
                (SELECT count(*) FROM eventos e WHERE e.negocio_id = n.id) AS eventos_total,
                (SELECT count(*) FROM eventos e WHERE e.negocio_id = n.id AND e.estado IN ('separado','confirmado','realizado')) AS vendidos,
                GREATEST((SELECT max(us.ultimo_ingreso) FROM usuarios us WHERE us.negocio_id = n.id),
@@ -66,7 +66,7 @@ final class PanelTukan
             $params[] = $plan;
         }
         $st = $this->db->prepare($sql . ' ORDER BY n.creado_en DESC, n.id DESC');
-        $st->execute($params);
+        $st->execute([($hoy ?? new DateTimeImmutable('today'))->format('Y-m-d'), ...$params]);   // 1.º: «hoy» para los eventos de 30 días
         $lista = [];
         foreach ($st->fetchAll() as $n) {
             $n['estado_cuenta'] = $this->planes->estadoCuenta($n, $hoy);
@@ -79,7 +79,7 @@ final class PanelTukan
     public function negocio(int $id, ?DateTimeImmutable $hoy = null): ?array
     {
         $st = $this->db->prepare(self::SQL_NEGOCIOS . ' WHERE n.id = ?');
-        $st->execute([$id]);
+        $st->execute([($hoy ?? new DateTimeImmutable('today'))->format('Y-m-d'), $id]);
         $n = $st->fetch();
         if (!$n) return null;
         $n['estado_cuenta'] = $this->planes->estadoCuenta($n, $hoy);

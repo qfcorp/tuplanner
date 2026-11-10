@@ -297,7 +297,8 @@ $porMes = array_column($fin['meses'], null, 'mes');
 $mesPago = substr($d('-40 days'), 0, 7);
 check('finanzas: el pago de hace 40 días sigue en su mes (4 negocios pagaron)', 4 * 690.0, $porMes[$mesPago]['ingresos']);
 $proximo = $hoy->modify('first day of next month')->format('Y-m');
-check('finanzas: el devengado del mes que viene es solo de los 3 vivos', true, abs($porMes[$proximo]['devengado'] - 3 * 690 / 12) < 3.0);
+$diasProximo = (int) (new DateTimeImmutable($proximo . '-01'))->format('t');   // el devengado va por días: un mes de 31 días lleva más que uno de 30
+check('finanzas: el devengado del mes que viene es solo de los 3 vivos', true, abs($porMes[$proximo]['devengado'] - 3 * 690 * $diasProximo / 365) < 1.5);
 check('finanzas: MRR sin él (3 vivos × Quinta $69)', 3 * 69.0, $fin['mrr']);
 check('estado v1: ingreso mensual recurrente sin él', 3 * 69.0, (new TukanCentral($db))->estado($hoy)['extra']['Ingreso mensual recurrente']);
 check('estado v1: eventos y usuarios sin los suyos', [$cuenta("SELECT count(*) FROM usuarios WHERE activo AND negocio_id <> {$A['id']}")],
