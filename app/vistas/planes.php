@@ -29,15 +29,25 @@ $avisoCompleto = function (string $donde) use ($sugerencia, $tarjeta, $u): strin
           . ' + IVA y trae <strong>todos</strong> los módulos y el Asistente IA. Te sugerimos pasarte al Completo.'
         : '<div class="aviso aviso-suave mp-sugerencia" data-sugerencia="cerca">Con tus módulos ' . $pagas . '. <strong>Por ' . dinero($s['diferencia'])
           . ' más tienes el plan Completo</strong> con todos los módulos y el Asistente IA.';
-    // El botón: pagar el Completo con tarjeta · pasarse ya (suscripción pagada) · o el pedido de cambio de plan de siempre
+    // El botón: pagar el Completo con tarjeta · pasarse ya pagando (suscripción pagada) · sin cobro con tarjeta NO cambia: WhatsApp de Tukán
     $sus = $tarjeta['suscripcion'] ?? null;
     if ($tarjeta && !$sus && !empty($tarjeta['opciones'][$s['plan']])) {
         $h .= ' <a class="boton boton-chico" href="' . e(url('planes', ['pagar' => $s['plan']])) . '#pagar-' . e($s['plan']) . '">Pasarme al Completo</a>';
-    } else {
-        $pagada = $sus && in_array($sus['estado'] ?? '', ['activa', 'en_gracia'], true);
-        $h .= ' <form method="post" action="' . e(url('planes')) . '" style="display:inline"' . ($pagada
-                ? ' onsubmit="return confirm(' . e(json_encode('¿Pasarte al plan Completo? Tienes todos los módulos desde ahora y la suscripción con tarjeta cobra el Completo desde el próximo cobro.', JSON_UNESCAPED_UNICODE)) . ')"' : '') . '>'
+    } elseif (!$tarjeta && $u['estado'] === 'prueba') {
+        // Demo sin cobro con tarjeta: sin botón (la demo ya tiene todo encendido; el plan se elige al contratar)
+    } elseif (!$tarjeta) {
+        // Sin cobro con tarjeta disponible: el plan no cambia sin pagar. Se explica y se da el WhatsApp de Tukán (sin pedido de cambio de plan)
+        $h .= '<br><span class="mp-sin-tarjeta">' . e(TuPlanner\PagoPlan::SIN_TARJETA) . '</span> <a class="boton boton-wa boton-chico" href="'
+            . e('https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola, quiero pasarme al plan Completo de TuPlanner (' . $u['negocio'] . ', ' . $u['email'] . ')'))
+            . '" target="_blank" rel="noopener">Escribir por WhatsApp</a>';
+    } elseif ($sus && in_array($sus['estado'] ?? '', ['activa', 'en_gracia'], true)) {
+        // Con suscripción con tarjeta pagada: se pasa ya; el Panel cobra el prorrateo aparte si sube, o el valor nuevo desde el próximo cobro si baja
+        $h .= ' <form method="post" action="' . e(url('planes')) . '" style="display:inline" onsubmit="return confirm('
+            . e(json_encode('¿Pasarte al plan Completo? Tienes todos los módulos desde ahora. Si el Completo cuesta más, hoy se cobra aparte lo proporcional de los días que faltan; si cuesta menos, pagas el valor nuevo desde el próximo cobro.', JSON_UNESCAPED_UNICODE)) . ')">'
             . campo_csrf() . '<input type="hidden" name="accion" value="pasar_completo"><button class="boton boton-chico" type="submit">Pasarme al Completo</button></form>';
+    } else {
+        // Tiene un pago con tarjeta sin terminar: primero lo termina o lo cancela (abajo, en «Pagar con tarjeta»)
+        $h .= ' <a class="boton boton-chico" href="#pagar-tarjeta">Pasarme al Completo</a>';
     }
     return $h . '</div>';
 };

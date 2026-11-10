@@ -226,6 +226,12 @@ check('Encender un módulo sí se puede', 22.99, $mods->mensual($m));
 $msg = $pp()->ajustar($m, $sus);
 check('Sube: le manda «cambiar» al Panel con el valor nuevo del mismo período', ['cambiar', (string) $m, 22.99, 70], [$ultimo()['accion'], $ultimo()['cliente_id'], $ultimo()['subtotal'], $ultimo()['id']]);
 check('… y avisa el valor nuevo y el proporcional con su enlace', 'La suscripción con tarjeta queda en $22,99 + IVA cada mes desde el próximo cobro. Por los días que faltan del período pagado se cobra aparte $2,50 + IVA: https://pagos.prueba.ec/p/prop (el enlace también sale en Mi plan del cliente).', $msg);
+$db->prepare("UPDATE negocios SET modulos_extra = 'paquetes,contratos,portal_cliente,plano,invitados,mobiliario' WHERE id = ?")->execute([$m]);
+check('Al dueño se le dice el prorrateo con IVA y dónde pagarlo', 'La suscripción con tarjeta queda en $27,99 + IVA cada mes desde el próximo cobro. Por los días que faltan se cobra aparte $2,88 con IVA: toca «Pagar ahora» en «Pagar con tarjeta».',
+      $pp()->ajustar($m, ['subtotal' => 22.99] + $sus, '', true));
+$db->prepare("UPDATE negocios SET modulos_extra = 'paquetes,contratos,portal_cliente,plano,invitados' WHERE id = ?")->execute([$m]);
+$todos = $panel['cobros']; foreach ($todos as $i => $c) if (($c['id'] ?? 0) === 70) $todos[$i]['subtotal'] = 22.99; $panel['cobros'] = $todos;
+check('Sin cobro con tarjeta: el mensaje de «Pasarme al Completo»', 'Para pasarte al Completo necesitas pagar con tarjeta. En este momento el pago con tarjeta no está disponible: escríbenos y te ayudamos.', PagoPlan::SIN_TARJETA);
 check('El proporcional sale entre los pagos abiertos de Mi plan', true, in_array('Proporcional módulos', array_column($pp()->vivos($m), 'descripcion'), true));
 // Quitar un módulo contratado: no se permite
 $sus = $pp()->suscripcionPagada($m);

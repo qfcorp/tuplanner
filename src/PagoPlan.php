@@ -212,7 +212,7 @@ final class PagoPlan
      * cambió, se lo dice al Panel («cambiar») con el valor nuevo del mismo período (sin IVA). Devuelve el aviso para mostrar, o
      * null si no hay nada que avisar (sin suscripción o el valor no cambió). $sus = suscripcionPagada() de ANTES del cambio.
      */
-    public function ajustar(int $negocioId, ?array $sus, string $email = ''): ?string
+    public function ajustar(int $negocioId, ?array $sus, string $email = '', bool $paraDueno = false): ?string
     {
         if (!$sus || !isset(self::PERIODOS_TEXTO[$sus['periodo'] ?? ''])) return null;
         $plan = (string) $this->db->query('SELECT plan_codigo FROM negocios WHERE id = ' . $negocioId)->fetchColumn();
@@ -229,14 +229,16 @@ final class PagoPlan
         if (empty($j['ok'])) return 'Suscripción con tarjeta: ' . (string) ($j['error'] ?? 'el Panel no aceptó el cambio.');
         if (empty($j['cambio'])) return null;
         $this->ultimoOk = true;
-        if (!empty($j['baja_al_renovar'])) {
+        if (!empty($j['baja_al_renovar'])) {   // pasó al Completo y el valor baja: rige desde el próximo cobro
             $hasta = substr((string) ($sus['pagado_hasta'] ?? ''), 0, 10);
             return 'Pasaste al plan Completo. Desde el próximo cobro' . (preg_match('/^\d{4}-\d{2}-\d{2}$/', $hasta) ? ' (' . date('d/m/Y', strtotime($hasta)) . ')' : '')
                 . ' la suscripción con tarjeta queda en ' . self::dinero($nuevo) . ' + IVA ' . self::PERIODOS_TEXTO[$sus['periodo']] . '. Lo ya pagado no se devuelve.';
         }
         $m = 'La suscripción con tarjeta queda en ' . self::dinero($nuevo) . ' + IVA ' . self::PERIODOS_TEXTO[$sus['periodo']] . ' desde el próximo cobro.';
         $prop = is_array($j['proporcional'] ?? null) ? $j['proporcional'] : null;
-        if ($prop) {
+        if ($prop && $paraDueno) {   // el dueño lo paga desde su Mi plan («Pagar ahora» en «Pagar con tarjeta»)
+            $m .= ' Por los días que faltan se cobra aparte ' . self::dinero((float) ($prop['total'] ?? 0)) . ' con IVA: toca «Pagar ahora» en «Pagar con tarjeta».';
+        } elseif ($prop) {
             $m .= ' Por los días que faltan del período pagado se cobra aparte ' . self::dinero((float) ($prop['subtotal'] ?? 0)) . ' + IVA'
                 . (!empty($prop['url_pago']) ? ': ' . $prop['url_pago'] : '') . ' (el enlace también sale en Mi plan del cliente).';
         }
@@ -266,6 +268,9 @@ final class PagoPlan
         if ($dif > self::CERCA_DEL_COMPLETO + 0.004) return null;
         return ['tipo' => $dif <= 0.004 ? 'mayor' : 'cerca', 'actual' => $actual, 'completo' => $precioCompleto, 'diferencia' => max(0.0, $dif), 'plan' => $completo];
     }
+
+    /** «Pasarme al Completo» sin cobro con tarjeta disponible: el plan no cambia (corrección de Dimitry, 10 nov 2026). */
+    public const SIN_TARJETA = 'Para pasarte al Completo necesitas pagar con tarjeta. En este momento el pago con tarjeta no está disponible: escríbenos y te ayudamos.';
 
     /** Desde cuántos dólares de diferencia se muestra «Por $Z más tienes el Completo». */
     public const CERCA_DEL_COMPLETO = 5.0;

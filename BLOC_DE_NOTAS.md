@@ -242,3 +242,13 @@ Pedido de Dimitry: demos automáticas de 3 días; el interesado llena todos sus 
 - **«3 días en todo» (Dimitry):** toda demo dura 3 días: la del formulario, la que crea el Panel (si no manda días, toma el ajuste) y la que Tukán crea a mano en Panel Tukán → Nueva demo (ahí dice «La demo dura 3 días»). Sale del ajuste «Días de demo» de Planes y precios. Alargar sigue en la ficha del negocio. Única excepción: la cuenta del revisor de Google Play (`deploy/demo_google.php`), que dura 1 año a propósito.
 - Pruebas: `logica_116_demos_auto.php` (69) y `web_116_demos_auto.sh` (73, con un Panel simulado que revisa la firma). Se ajustaron las pruebas viejas que pedían demo con menos datos o esperaban 7 días.
 - **Falta:** DIMI: actualizar en el servidor (instalador del README) para aplicar la migración 116. Probar con el Panel de verdad cuando esté subido `demo_aviso.php`.
+
+## 10 nov 2026 (18:22) — «Pasarme al Completo»: SIEMPRE pagando (corrección de Dimitry)
+Dimitry: «Yo no pedí eso: debe cobrarse. Debe tener un método de pago válido y pagar el prorrateo.» La versión que cambiaba el plan solo sin cobro con tarjeta nunca se subió en TuPlanner. Nadie pasa al Completo sin pagar.
+- **Con suscripción con tarjeta pagada:** cambia el plan al momento y manda `cambiar` con `pasa_a_completo: true` y el Completo del mismo período. Si el valor sube, el Panel cobra aparte el prorrateo y el dueño ve: «Por los días que faltan se cobra aparte $Y con IVA: toca «Pagar ahora» en «Pagar con tarjeta»». Si baja, rige desde el próximo cobro. Si el Panel no acepta el cambio, el plan se queda como estaba.
+- **Con cobro con tarjeta y sin suscripción:** el botón lleva a «Pagar con tarjeta» con el Completo marcado. El plan cambia solo cuando el pago queda aprobado (`registrar_pago`).
+- **Sin cobro con tarjeta disponible** (Panel apagado, caído o programa sin conectar): el plan NO cambia y no se crea pedido. Sale: «Para pasarte al Completo necesitas pagar con tarjeta. En este momento el pago con tarjeta no está disponible: escríbenos y te ayudamos.» con el botón de WhatsApp de Tukán. En la app de Google Play, nada.
+- **Demo sin cobro con tarjeta:** se ve el aviso sin botón. **Precio acordado:** ni se sugiere ni se cambia. **Bajar del Completo al Básico** sigue bloqueado durante el período pagado.
+- **Tukán** sigue pudiendo cambiar el plan desde el Panel o desde el panel interno; con suscripción pagada se manda `cambiar` como ya estaba.
+- Se quitaron el pedido con nota, el cambio sin pagar, su mensaje («Desde tu próxima renovación pagas…»), su registro y sus pruebas. Pruebas nuevas en `web_114` (sección 12) y `logica_114`.
+- También se actualizó `src/tukan_correo.php` a la versión 2 de la librería común del Panel (con `adjuntos`), copiada tal cual.
