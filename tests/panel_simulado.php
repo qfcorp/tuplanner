@@ -5,7 +5,7 @@ declare(strict_types=1);
  * Panel Tukán Central SIMULADO para probar «Pagar con tarjeta» de Mi plan (php -S 127.0.0.1:PUERTO tests/panel_simulado.php).
  * Imita plux_api.php del Panel (tukan-central/public/plux_api.php y PagosPlux::atenderPrograma): revisa el token v2 de tipo
  * «plux» (firma con TUKAN_CENTRAL_SECRET, programa TUKAN_CENTRAL_ID y «bh» = sha256 del cuerpo) y contesta estado, crear,
- * cancelar y cancelar_plan. No cobra nada: no habla con Plux ni con nadie.
+ * cancelar, cambiar (como PagosPlux «cambiar»: sube con proporcional, 409 no_baja, 409 sin_pagar, igual) y cancelar_plan. No cobra nada: no habla con Plux ni con nadie.
  *  - PANEL_SIM_DIR/config.json: {"activo": true|false, "pruebas": true|false, "caido": true|false} (lo cambian las pruebas).
  *  - PANEL_SIM_DIR/cobros.json: los cobros creados (las pruebas leen y cambian su estado, p. ej. a «activa»).
  *  - PANEL_SIM_DIR/pedidos.log: una línea JSON por cada pedido recibido con firma buena.
@@ -64,6 +64,38 @@ if ($accion === 'cancelar') {
         }
     }
     $json(404, ['ok' => false, 'codigo' => 'no_encontrado', 'error' => 'Esa suscripción no existe.']);
+}
+if ($accion === 'cambiar') {   // como PagosPlux::atenderPrograma «cambiar» + subirValor
+    $i = null;
+    foreach ($cobros as $k => $f) {
+        if ($f['cliente_id'] !== $cid || $f['tipo'] !== 'suscripcion') continue;
+        if ((int) ($b['id'] ?? 0) > 0 ? $f['id'] === (int) $b['id'] : in_array($f['estado'], ['pendiente', 'rechazado', 'activa', 'en_gracia'], true)) $i = $k;
+    }
+    if ($i === null) $json(404, ['ok' => false, 'codigo' => 'no_encontrado', 'error' => 'Esa suscripción no existe.']);
+    $f = $cobros[$i];
+    $nuevo = round((float) ($b['subtotal'] ?? 0), 2);
+    $antes = round((float) $f['subtotal'], 2);
+    if (in_array($f['estado'], ['pendiente', 'rechazado'], true)) $json(409, ['ok' => false, 'codigo' => 'sin_pagar', 'error' => 'Todavía no pagó la primera cuota: cancele ese pago y vuelva a pagar con el valor nuevo.', 'cobro' => $publico($f)]);
+    if (abs($nuevo - $antes) < 0.01) $json(200, ['ok' => true, 'cambio' => false, 'cobro' => $publico($f)]);
+    $hasta = (string) ($f['pagado_hasta'] ?? '');
+    if ($nuevo < $antes) $json(409, ['ok' => false, 'codigo' => 'no_baja', 'error' => 'Los módulos ya contratados no se pueden quitar mientras dure el período pagado' . ($hasta ? ' (hasta el ' . date('d/m/Y', strtotime($hasta)) . ')' : '') . '. La suscripción con tarjeta sigue en $' . number_format((float) $f['total'], 2, ',', '.') . '.', 'cobro' => $publico($f)]);
+    $cobros[$i]['subtotal'] = $nuevo;
+    $cobros[$i]['total'] = round($nuevo * 1.15, 2);
+    $prop = null;
+    if ($hasta !== '' && date('Y-m-d') < $hasta) {
+        $fin = strtotime($hasta); $ini = strtotime($hasta . ' -' . max(1, (int) $f['meses']) . ' months');
+        $propSub = round(($nuevo - $antes) * max(0.0, min(1.0, ($fin - strtotime(date('Y-m-d'))) / max(1, $fin - $ini))), 2);
+        if ($propSub >= 1.0) {
+            $id = count($cobros) + 1;
+            $prop = ['id' => $id, 'cliente_id' => $cid, 'tipo' => 'cobro', 'estado' => 'pendiente', 'descripcion' => 'Proporcional módulos del ' . date('d/m') . ' al ' . date('d/m/Y', $fin),
+                     'plan' => $f['plan'], 'periodo' => null, 'meses' => 1, 'subtotal' => $propSub, 'total' => round($propSub * 1.15, 2),
+                     'url_pago' => 'http://' . ($_SERVER['HTTP_HOST'] ?? '127.0.0.1') . '/pagar/' . $id, 'cobra_sola' => false, 'pagado_hasta' => null, 'cuotas' => 0,
+                     'pruebas' => (bool) $cfg['pruebas'], 'creado' => date('c'), 'cancelar_hasta' => null, 'cancelacion_programada' => null, 'volver' => $f['volver'] ?? null];
+            $cobros[] = $prop;
+        }
+    }
+    $guardar();
+    $json(200, ['ok' => true, 'cambio' => true, 'cambiado_en_plux' => true, 'mensaje' => 'Suscripción cambiada.', 'proporcional' => $prop ? $publico($prop) : null, 'cobro' => $publico($cobros[$i])]);
 }
 if ($accion !== 'crear') $json(400, ['ok' => false, 'codigo' => 'invalido', 'error' => 'Acción no válida (crear, estado, cancelar o cambiar).']);
 $tipo = (string) ($b['tipo'] ?? 'cobro');

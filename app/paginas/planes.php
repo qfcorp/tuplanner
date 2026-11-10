@@ -53,7 +53,9 @@ if (es_post() && in_array($_POST['accion'] ?? '', ['pagar_tarjeta', 'cancelar_ta
             $pagoPlan->cancelar($nid, (int) ($_POST['id'] ?? 0), (string) $u['email']);
             aviso('Listo: ese pago con tarjeta quedó cancelado. Ya puedes elegir otro.');
         } else {
-            $cobro = $pagoPlan->crear($u, (string) ($_POST['plan'] ?? ''), (string) ($_POST['periodo'] ?? ''), ($_POST['forma'] ?? '') !== 'una_vez', url_completa('planes'));
+            // «opcion» = plan|período (el formulario muestra todos los planes con su precio); también sirven «plan» y «periodo» sueltos
+            [$planElegido, $periodoElegido] = isset($_POST['opcion']) ? array_pad(explode('|', (string) $_POST['opcion'], 2), 2, '') : [(string) ($_POST['plan'] ?? ''), (string) ($_POST['periodo'] ?? '')];
+            $cobro = $pagoPlan->crear($u, $planElegido, $periodoElegido, ($_POST['forma'] ?? '') !== 'una_vez', url_completa('planes'));
             header('Location: ' . $cobro['url_pago']);   // la página de pago segura (Plux, por Tukán Pagos)
             exit;
         }
@@ -121,10 +123,14 @@ $listaPlanes = $p->lista();
 $tarjeta = null;
 if ($pagoPlan && $pagoPlan->activo($nid, (string) $u['email'])) {
     $planesPago = $pagoPlan->planes($nid);
-    $planPago = isset($planesPago[(string) ($_GET['plan'] ?? '')]) ? (string) $_GET['plan'] : (string) $u['plan_codigo'];
+    $opcionesPago = $incluyePago = [];
+    foreach (array_keys($planesPago) as $cod) {   // (10 nov 2026) todos los planes con su precio, de entrada
+        $opcionesPago[$cod] = $pagoPlan->opciones($nid, $cod);
+        $incluyePago[$cod] = $mods->estado($nid, $cod);
+    }
     $tarjeta = ['pruebas' => $pagoPlan->pruebas($nid), 'vivos' => $pagoPlan->vivos($nid), 'suscripcion' => $pagoPlan->suscripcion($nid),
-                'planes' => $planesPago, 'plan' => $planPago, 'opciones' => $pagoPlan->opciones($nid, $planPago),
-                'incluye' => $mods->estado($nid, $planPago), 'vuelta' => (string) ($_GET['plux'] ?? '')];
+                'planes' => $planesPago, 'opciones' => array_filter($opcionesPago),
+                'incluye' => $incluyePago, 'vuelta' => (string) ($_GET['plux'] ?? '')];
 }
 vista('planes', compact('cancelacion', 'estadoMod', 'catalogo', 'planesMod', 'precios', 'estadoCuenta', 'pagos', 'pedidos', 'pedidosPendientes', 'uso', 'listaPlanes', 'tarjeta'),
       'Mi plan · TuPlanner');

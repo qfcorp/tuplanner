@@ -19,7 +19,7 @@ $encendidos = count($me['pagados']);
 // Se ve el plan, su estado, los módulos encendidos y se pueden elegir los módulos incluidos en el plan (no cuesta nada más).
 $enApp = en_app_android();
 // ¿Ese plan se puede pagar solo con tarjeta ahora? (Panel prendido, sin suscripción viva)
-$conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] && isset($tarjeta['planes'][$cod]) && $tarjeta['opciones'];
+$conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] && !empty($tarjeta['opciones'][$cod]);
 ?>
 <div class="cabecera">
     <div><h1>Mi plan</h1><p>Tus módulos de TuPlanner para <?= e($u['negocio']) ?><?= $enApp ? '.' : ': lo que tienes, lo que pagas y lo que puedes agregar.' ?></p></div>
@@ -55,7 +55,7 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
 
 <?php if (!empty($tarjeta)): /* Pagar el plan solo, con tarjeta (src/PagoPlan.php). Solo si el Panel lo tiene prendido; nunca en la app de Google Play */
     $tFecha = fn(?string $f) => $f && strtotime(substr($f, 0, 10)) ? date('d/m/Y', strtotime(substr($f, 0, 10))) : '';
-    $tInc = $tarjeta['incluye']; $tPm = $planesMod[$tarjeta['plan']] ?? null; ?>
+    ?>
 <?php if ($tarjeta['vuelta'] === 'aprobado'): ?>
     <p class="aviso aviso-ok" id="pago-recibido">✅ ¡Pago recibido! Tu plan se actualiza en unos segundos (vuelve a abrir esta página). La factura te llega al correo.</p>
 <?php elseif ($tarjeta['vuelta'] !== ''): ?>
@@ -83,24 +83,28 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
         <p class="g-nota" id="ya-suscrito"><?= in_array($tarjeta['suscripcion']['estado'], ['pendiente', 'rechazado'], true)
             ? 'Tienes un pago con tarjeta sin terminar: termínalo con «Pagar ahora» o cancélalo para elegir otro plan u otro período.'
             : 'Ya tienes una suscripción con tarjeta: se cobra sola y no hace falta pagar otra vez. Para dejarla, usa «Cancelar mi plan», al final de esta página.' ?></p>
-    <?php elseif ($tarjeta['opciones']): ?>
-        <?php if (count($tarjeta['planes']) > 1): ?>
-            <p style="margin:0 0 8px">Elige tu plan:
-            <?php foreach ($tarjeta['planes'] as $cod => $nom): ?>
-                <a class="boton boton-chico <?= $cod === $tarjeta['plan'] ? '' : 'boton-claro' ?>" href="<?= e(url('planes', ['plan' => $cod])) ?>#pagar-tarjeta"<?= $cod === $tarjeta['plan'] ? ' aria-current="true"' : '' ?>><?= e($nom) ?></a>
-            <?php endforeach; ?></p>
-        <?php endif; ?>
-        <p style="margin:0 0 4px">Vas a pagar el plan <strong><?= e($tarjeta['planes'][$tarjeta['plan']]) ?></strong><?= $tarjeta['plan'] === $u['plan_codigo'] ? ' (el tuyo)' : '' ?>:
-            <?= $tPm ? ($tPm['todos'] ? 'todos los módulos' . (in_array('asistente_ia', $tPm['modulos'], true) ? ', con el Asistente IA' : '')
-                      : ($tPm['modulos_elegir'] > 0 ? 'la base + ' . (int) $tPm['modulos_elegir'] . ' módulos que tú eliges' : 'la base + ' . count($tPm['modulos']) . ' módulos')) : '' ?>.</p>
-        <p class="suave" style="margin:0 0 10px"><?= $tInc['precio_acordado'] !== null ? 'Precio acordado con Tukán: '
-            : 'Plan ' . dinero($tInc['precio_plan']) . ($tInc['precio_extra'] > 0 ? ' + tus módulos extra ' . dinero($tInc['precio_extra']) : '') . ($tInc['descuento'] > 0 ? ' − módulos quitados ' . dinero($tInc['descuento']) : '') . ' = ' ?><strong><?= dinero($tInc['mensual']) ?> + IVA al mes</strong>.</p>
+    <?php elseif ($tarjeta['opciones']): /* (10 nov 2026, Dimitry: «prefiero que vea los dos precios») todos los planes con su precio, de entrada */ ?>
         <form method="post" action="<?= e(url('planes')) ?>"><?= campo_csrf() ?>
-            <input type="hidden" name="accion" value="pagar_tarjeta"><input type="hidden" name="plan" value="<?= e($tarjeta['plan']) ?>">
-            <?php $i = 0; foreach ($tarjeta['opciones'] as $per => $c): ?>
-                <label style="display:block;margin:6px 0"><input type="radio" name="periodo" value="<?= e($per) ?>"<?= $i++ === 0 ? ' checked' : '' ?> required>
-                    <strong><?= e($nombres[$per] ?? $per) ?></strong>: <?= dinero($c['monto']) ?> + IVA<?= $per !== 'mensual' ? ' <small class="suave">(' . e(mb_strtolower(planes()->textoPeriodo($per))) . ')</small>' : '' ?></label>
+            <input type="hidden" name="accion" value="pagar_tarjeta">
+            <p style="margin:0 0 8px"><strong>Elige tu plan y cada cuánto pagas</strong> (valores sin IVA):</p>
+            <div class="mp-planes">
+            <?php $codDef = isset($tarjeta['opciones'][$u['plan_codigo']]) ? (string) $u['plan_codigo'] : (string) array_key_first($tarjeta['opciones']);
+                  $marcadoDef = $codDef . '|' . array_key_first($tarjeta['opciones'][$codDef]);   // su plan, cada mes
+                  foreach ($tarjeta['opciones'] as $cod => $ops): if (!$ops) continue;
+                $tPm = $planesMod[$cod] ?? null; $tInc = $tarjeta['incluye'][$cod]; $suyo = $cod === $u['plan_codigo']; ?>
+                <fieldset class="mp-plan <?= $suyo ? 'actual' : '' ?>" id="pagar-<?= e($cod) ?>" style="margin:0">
+                    <legend><strong>Plan <?= e($tarjeta['planes'][$cod]) ?></strong><?= $suyo ? ' <small class="suave">(el tuyo)</small>' : '' ?></legend>
+                    <p style="margin:0 0 4px"><?= $tPm ? ($tPm['todos'] ? 'Todos los módulos' . (in_array('asistente_ia', $tPm['modulos'], true) ? ', con el Asistente IA' : '')
+                          : ($tPm['modulos_elegir'] > 0 ? 'La base + ' . (int) $tPm['modulos_elegir'] . ' módulos que tú eliges' : 'La base + ' . count($tPm['modulos']) . ' módulos')) : '' ?>.</p>
+                    <p class="suave" style="margin:0 0 6px"><?= $tInc['precio_acordado'] !== null ? 'Precio acordado con Tukán: '
+                        : 'Plan ' . dinero($tInc['precio_plan']) . ($tInc['precio_extra'] > 0 ? ' + tus módulos extra ' . dinero($tInc['precio_extra']) : '') . ($tInc['descuento'] > 0 ? ' − módulos quitados ' . dinero($tInc['descuento']) : '') . ' = ' ?><strong><?= dinero($tInc['mensual']) ?> + IVA al mes</strong></p>
+                    <?php foreach ($ops as $per => $c): $marcar = $cod . '|' . $per === $marcadoDef; ?>
+                        <label style="display:block;margin:6px 0"><input type="radio" name="opcion" value="<?= e($cod . '|' . $per) ?>"<?= $marcar ? ' checked' : '' ?> required>
+                            <strong><?= e($nombres[$per] ?? $per) ?></strong>: <?= dinero($c['monto']) ?> + IVA<?= $per !== 'mensual' ? ' <small class="suave">(' . e(mb_strtolower(planes()->textoPeriodo($per))) . ')</small>' : '' ?></label>
+                    <?php endforeach; ?>
+                </fieldset>
             <?php endforeach; ?>
+            </div>
             <p style="margin:12px 0 4px"><strong>¿Cómo quieres pagar?</strong></p>
             <label style="display:block;margin:6px 0"><input type="radio" name="forma" value="suscripcion" checked>
                 <strong>Suscripción:</strong> se cobra sola a tu tarjeta cada período que elegiste (ese valor + IVA), hasta que la canceles. Cancelas cuando quieras.</label>
@@ -201,7 +205,7 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
                 <p><?= $pl['max_espacios'] ? 'Hasta ' . (int) $pl['max_espacios'] . ' espacios' : 'Espacios sin límite' ?> · <?= $pl['max_usuarios'] ? 'hasta ' . (int) $pl['max_usuarios'] . ' usuarios' : 'usuarios sin límite' ?></p>
                 <p><?= e($pl['descripcion'] ?? '') ?></p>
                 <?php if ($pl['codigo'] !== $u['plan_codigo'] && $conTarjeta($pl['codigo'])): ?>
-                    <p><a class="boton boton-chico" href="<?= e(url('planes', ['plan' => $pl['codigo']])) ?>#pagar-tarjeta">Elegir este plan y pagar con tarjeta</a></p>
+                    <p><a class="boton boton-chico" href="#pagar-<?= e($pl['codigo']) ?>">Elegir este plan y pagar con tarjeta</a></p>
                 <?php endif; ?>
                 <?php if ($pl['codigo'] !== $u['plan_codigo']): ?>
                     <?php $faltanPlan = array_diff($pm['todos'] ? array_keys($catalogo) : $pm['modulos'], $me['pagados']); ?>

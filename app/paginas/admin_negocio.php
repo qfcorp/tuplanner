@@ -1,5 +1,5 @@
 <?php
-use TuPlanner\{Modulos, PanelTukan, Planes};
+use TuPlanner\{Modulos, PagoPlan, PanelTukan, Planes};
 
 $id = (int) ($_GET['id'] ?? 0);
 $panel = new PanelTukan(db());
@@ -15,6 +15,32 @@ if (!empty($_SESSION['clave_nueva_' . $id])) {   // recién creado desde "Nuevo 
 if (es_post()) {
     verificar_csrf();
     $accion = (string) ($_GET['accion'] ?? ($_POST['accion'] ?? ''));
+    // (10 nov 2026) Cambios de plan o módulos con suscripción con tarjeta pagada (src/PagoPlan.php): no se quitan módulos ni baja
+    // el valor durante el período pagado; si sube, se avisa al Panel («cambiar») para cobrar el valor nuevo y el proporcional.
+    $pagoPlan = new PagoPlan(db());
+    $susTarjeta = null;
+    $cambioConTarjeta = function (callable $hacer) use ($pagoPlan, &$susTarjeta, $id, $negocio): mixed {
+        $susTarjeta = $pagoPlan->suscripcionPagada($id, (string) (superadmin()['email'] ?? ''));
+        $mods = modulos();
+        $mods->olvidar();
+        $antes = $mods->estado($id);
+        db()->beginTransaction();
+        try {
+            $r = $hacer();
+            $mods->olvidar();
+            PagoPlan::revisarBaja($susTarjeta, $antes, $mods->estado($id), $negocio['activo_hasta'] ?? null);
+            db()->commit();
+            return $r;
+        } catch (Throwable $e) {
+            if (db()->inTransaction()) db()->rollBack();
+            $mods->olvidar();
+            throw $e;
+        }
+    };
+    $avisoTarjeta = function () use ($pagoPlan, &$susTarjeta, $id): void {
+        $m = $pagoPlan->ajustar($id, $susTarjeta, (string) (superadmin()['email'] ?? ''));
+        if ($m !== null) aviso($m, str_starts_with($m, 'La suscripción') ? 'ok' : 'error');
+    };
     try {
         switch ($accion) {
             case 'pago':
@@ -32,9 +58,10 @@ if (es_post()) {
                 aviso('Pago anulado.');
                 break;
             case 'plan':
-                $panel->cambiarPlan($id, (string) ($_POST['plan'] ?? ''));
+                $cambioConTarjeta(fn() => $panel->cambiarPlan($id, (string) ($_POST['plan'] ?? '')));
                 registrar_admin('Plan cambiado a ' . $_POST['plan'], $id);
                 aviso('Plan cambiado.');
+                $avisoTarjeta();
                 break;
             case 'estado':
                 $panel->cambiarEstado($id, (string) ($_POST['estado'] ?? ''));
@@ -66,19 +93,23 @@ if (es_post()) {
                 $acordadoTxt = trim((string) ($_POST['precio_acordado'] ?? ''));
                 if ($acordadoTxt !== '' && !is_numeric(str_replace(',', '.', $acordadoTxt))) throw new RuntimeException('Escribe el precio acordado con números (vacío = el calculado).');
                 $acordado = $acordadoTxt === '' ? null : round((float) str_replace(',', '.', $acordadoTxt), 2);
-                $r = $mods->cambiar($id, array_values(array_diff($marcados, $base)), array_values(array_diff($base, $marcados)), $acordado);
+                $r = $cambioConTarjeta(fn() => $mods->cambiar($id, array_values(array_diff($marcados, $base)), array_values(array_diff($base, $marcados)), $acordado));
                 if ($antes['demo']) $mods->elegirDemo($id, !empty($_POST['demo_igual']) ? $mods->estado($id)['pagados'] : null);
                 registrar_admin('Módulos: ' . $r['texto'] . ' · ' . dinero($mods->estado($id)['mensual']) . ' al mes', $id);
                 aviso($r['sin_cambios'] ? 'Sin cambios en los módulos.' : 'Módulos guardados. ' . $r['texto'] . '.');
+                if (!$r['sin_cambios']) $avisoTarjeta();
                 break;
             case 'solicitud_modulos':
                 $sid = (int) ($_POST['solicitud'] ?? 0);
                 $sol = modulos()->solicitud($sid);
                 if (!$sol || (int) $sol['negocio_id'] !== $id) throw new RuntimeException('Ese pedido no es de este negocio.');
                 $resultado = ($_POST['resultado'] ?? '') === 'aprobada' ? 'aprobada' : 'rechazada';
-                $r = modulos()->atender($sid, $resultado, (string) ($_POST['respuesta'] ?? ''), (superadmin()['nombre'] ?? 'Panel Tukán'));
+                $r = $resultado === 'aprobada'
+                    ? $cambioConTarjeta(fn() => modulos()->atender($sid, $resultado, (string) ($_POST['respuesta'] ?? ''), (superadmin()['nombre'] ?? 'Panel Tukán')))
+                    : modulos()->atender($sid, $resultado, (string) ($_POST['respuesta'] ?? ''), (superadmin()['nombre'] ?? 'Panel Tukán'));
                 registrar_admin('Pedido de módulos N.º ' . $sid . ' ' . $resultado . ($r ? ': ' . $r['texto'] : ''), $id);
                 aviso($resultado === 'aprobada' ? 'Pedido aprobado: ' . $r['texto'] . '.' : 'Pedido rechazado.');
+                if ($resultado === 'aprobada') $avisoTarjeta();
                 break;
             case 'clave':
                 $_SESSION['clave_nueva_' . $id] = $panel->nuevaClaveDueno($id);

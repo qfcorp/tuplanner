@@ -75,30 +75,31 @@ panel_modo true
 check "Mi plan abre" "200" "$(get "r=planes")"
 contiene "Sección «Pagar con tarjeta»" "$TMP/pag.html" 'id="pagar-tarjeta"'
 contiene "Aviso de modo de prueba" "$TMP/pag.html" "modo de prueba: no se cobra de verdad"
-contiene "Va a pagar su plan Básico" "$TMP/pag.html" "Vas a pagar el plan <strong>Básico</strong> (el tuyo)"
-contiene "… con lo que incluye" "$TMP/pag.html" "la base + 3 módulos que tú eliges"
+contiene "Su plan Básico, marcado como el suyo" "$TMP/pag.html" '<legend><strong>Plan Básico</strong> <small class="suave">(el tuyo)</small></legend>'
+contiene "… con lo que incluye" "$TMP/pag.html" "La base + 3 módulos que tú eliges"
 contiene "… y la cuenta: plan + módulos extra = \$20,99 + IVA al mes" "$TMP/pag.html" "Plan \$12,99 + tus módulos extra \$8,00 = <strong>\$20,99 + IVA al mes</strong>"
-contiene "Cada mes \$20,99 + IVA" "$TMP/pag.html" "<strong>Cada mes</strong>: \$20,99 + IVA"
+contiene "Cada mes \$20,99 + IVA, marcado por defecto" "$TMP/pag.html" 'value="esencial|mensual" checked required>'
+contiene "… con su precio" "$TMP/pag.html" "<strong>Cada mes</strong>: \$20,99 + IVA"
 contiene "Cada 6 meses \$104,95 + IVA (paga 5, recibe 6)" "$TMP/pag.html" "<strong>Cada 6 meses</strong>: \$104,95 + IVA <small class=\"suave\">(paga 5, recibe 6)</small>"
 contiene "Cada año \$209,90 + IVA (paga 10, recibe 12)" "$TMP/pag.html" "<strong>Cada año</strong>: \$209,90 + IVA <small class=\"suave\">(paga 10, recibe 12 + dominio propio)</small>"
+# (10 nov 2026, Dimitry: «prefiero que vea los dos precios») el Completo con su precio, de entrada, en la misma sección
+contiene "El Completo se ve de entrada en la sección de pago" "$TMP/pag.html" "<legend><strong>Plan Completo</strong></legend>"
+contiene "… con todos los módulos y el Asistente IA" "$TMP/pag.html" "Todos los módulos, con el Asistente IA."
+contiene "… \$25 + IVA al mes" "$TMP/pag.html" 'value="quinta|mensual" required>'
+contiene "… \$125 por 6 meses" "$TMP/pag.html" "<strong>Cada 6 meses</strong>: \$125,00 + IVA"
+contiene "… \$250 al año" "$TMP/pag.html" "<strong>Cada año</strong>: \$250,00 + IVA"
+no_contiene "Ya no hay que tocar el plan para ver su precio" "$TMP/pag.html" "plan=quinta"
 contiene "Suscripción marcada por defecto y dice que se cobra sola" "$TMP/pag.html" 'name="forma" value="suscripcion" checked'
 contiene "… con el texto claro" "$TMP/pag.html" "se cobra sola a tu tarjeta cada período que elegiste (ese valor + IVA)"
 contiene "También puede pagar solo esta vez" "$TMP/pag.html" 'name="forma" value="una_vez"'
 contiene "Botón «Pagar con tarjeta»" "$TMP/pag.html" '<button class="boton" type="submit">Pagar con tarjeta</button>'
-contiene "Puede elegir el otro plan para pagarlo" "$TMP/pag.html" "r=planes&amp;plan=quinta#pagar-tarjeta"
-contiene "… también desde la lista de planes" "$TMP/pag.html" "Elegir este plan y pagar con tarjeta"
-no_contiene "El precio del Completo no sale mientras no lo elija" "$TMP/pag.html" "\$25,00"
+contiene "Desde la lista de planes lleva al Completo de la sección de pago" "$TMP/pag.html" 'href="#pagar-quinta">Elegir este plan y pagar con tarjeta'
 contiene "Sigue «Cancelar mi plan»" "$TMP/pag.html" 'id="cancelar-plan"'
-get "r=planes&plan=quinta" > /dev/null
-contiene "Elige el Completo: va a pagar el Completo" "$TMP/pag.html" "Vas a pagar el plan <strong>Completo</strong>:"
-contiene "… todos los módulos con el Asistente IA" "$TMP/pag.html" "todos los módulos, con el Asistente IA"
-contiene "… a \$25 + IVA al mes, \$125 por 6 meses y \$250 al año" "$TMP/pag.html" "<strong>Cada 6 meses</strong>: \$125,00 + IVA"
-contiene "… (anual)" "$TMP/pag.html" "<strong>Cada año</strong>: \$250,00 + IVA"
-get "r=planes&plan=platino" > /dev/null
-contiene "Un plan que no existe: se queda en el suyo" "$TMP/pag.html" "Vas a pagar el plan <strong>Básico</strong> (el tuyo)"
+r=$(post "r=planes" -d accion=pagar_tarjeta --data-urlencode "opcion=platino|mensual")
+check "Un plan que no existe: no crea nada" "0" "$(ps_crear)"
 
 echo "4. Pagar: lo manda a la página de pago y el Panel recibe el pedido bien armado"
-r=$(post "r=planes" -d accion=pagar_tarjeta -d plan=esencial -d periodo=semestral -d forma=suscripcion)
+r=$(post "r=planes" -d accion=pagar_tarjeta --data-urlencode "opcion=esencial|semestral" -d forma=suscripcion)
 check "Lo lleva a la página de pago que dio el Panel" "302 http://127.0.0.1:$PP/pagar/1" "$r"
 check "Pedido: crear una suscripción" "crear|suscripcion" "$(ps_pedido accion)|$(ps_pedido tipo)"
 check "… del plan Básico cada 6 meses (recibe 6)" "esencial|Básico|semestral|6" "$(ps_pedido plan)|$(ps_pedido plan_nombre)|$(ps_pedido periodo)|$(ps_pedido meses)"
@@ -153,11 +154,11 @@ check "Mi plan abre" "200" "$(get "r=planes")"
 contiene "La demo ve «Pagar con tarjeta»" "$TMP/pag.html" 'id="pagar-tarjeta"'
 contiene "… con su plan de la demo (Completo \$25)" "$TMP/pag.html" "<strong>Cada mes</strong>: \$25,00 + IVA"
 contiene "… y dice que la demo pasa a ser su cuenta" "$TMP/pag.html" "tu demo pasa a ser tu cuenta: nada de lo que cargaste se pierde"
-get "r=planes&plan=esencial" > /dev/null
-contiene "Elige el Básico: \$12,99 + IVA al mes" "$TMP/pag.html" "<strong>Cada mes</strong>: \$12,99 + IVA"
+contiene "La demo ve el Básico de entrada: \$12,99 + IVA al mes" "$TMP/pag.html" "<strong>Cada mes</strong>: \$12,99 + IVA"
 contiene "… \$64,95 por 6 meses" "$TMP/pag.html" "<strong>Cada 6 meses</strong>: \$64,95 + IVA"
 contiene "… \$129,90 por un año" "$TMP/pag.html" "<strong>Cada año</strong>: \$129,90 + IVA"
-r=$(post_desde "r=planes&plan=esencial" "r=planes" -d accion=pagar_tarjeta -d plan=esencial -d periodo=mensual -d forma=una_vez)
+contiene "… y viene marcado su plan de la demo (Completo, cada mes)" "$TMP/pag.html" 'value="quinta|mensual" checked required>'
+r=$(post "r=planes" -d accion=pagar_tarjeta --data-urlencode "opcion=esencial|mensual" -d forma=una_vez)
 check "Paga el Básico un mes, solo esta vez: va a la página de pago" "302 http://127.0.0.1:$PP/pagar/2" "$r"
 check "Pedido: un cobro de una vez del Básico por \$12,99" "cobro|esencial|mensual|1|12.99" "$(ps_pedido tipo)|$(ps_pedido plan)|$(ps_pedido periodo)|$(ps_pedido meses)|$(ps_pedido subtotal)"
 check "Sin RUC: no manda datos de factura" "[]" "$(ps_pedido fiscal)"
@@ -215,6 +216,58 @@ ANTES=$(ps_crear)
 r=$(post "r=planes" -d accion=pagar_tarjeta -d plan=esencial -d periodo=mensual)
 check "En la app el servidor no acepta pagar con tarjeta" "$ANTES" "$(ps_crear)"
 get "r=inicio&app=web" > /dev/null
+
+echo "10. Cambios de módulos en TuPlanner con suscripción con tarjeta pagada (Panel Tukán del programa)"
+ADM="super114$RANDOM@tukan.ec"
+TUPLANNER_DB_NAME=$DB TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=$PGPASSWORD TUPLANNER_ADMIN_NOMBRE="Súper Prueba" TUPLANNER_ADMIN_EMAIL="$ADM" TUPLANNER_ADMIN_CLAVE="ClaveDelPanel123" php bin/crear_admin.php > /dev/null 2>&1
+rm -f "$JAR"
+post "r=admin_entrar" --data-urlencode "email=$ADM" --data-urlencode "clave=ClaveDelPanel123" > /dev/null
+check "Ficha del negocio con suscripción activa abre" "200" "$(get "r=admin_negocio&id=$NB")"
+mods_post() { local n=$1; shift; local a=(); for m in "$@"; do a+=(-d "modulo[$m]=1"); done; post_desde "r=admin_negocio&id=$n" "r=admin_negocio&id=$n&accion=modulos" "${a[@]}" -d precio_acordado= > /dev/null; }
+ps_cambiar() { grep -c '"accion":"cambiar"' "$PSIM/pedidos.log" 2>/dev/null || true; }
+HASTA=$(php -r 'echo date("d/m/Y", strtotime(json_decode((string) file_get_contents($argv[1]), true)[0]["pagado_hasta"]));' "$PSIM/cobros.json")
+mods_post $NB paquetes contratos portal_cliente plano asistente_ia
+check "Guardar sin cambios: no le pide nada al Panel" "0" "$(ps_cambiar)"
+mods_post $NB paquetes contratos portal_cliente plano asistente_ia invitados
+check "Encender Invitados: queda encendido" "1" "$(sql "SELECT count(*) FROM negocios WHERE id=$NB AND modulos_extra LIKE '%invitados%'")"
+check "… y le manda «cambiar» al Panel: mismo período (6 meses), valor nuevo \$129,95 sin IVA" "cambiar|$NB|129.95|1" "$(ps_pedido accion)|$(ps_pedido cliente_id)|$(ps_pedido subtotal)|$(ps_pedido id)"
+get "r=admin_negocio&id=$NB" > /dev/null
+contiene "Aviso: el valor nuevo desde el próximo cobro" "$TMP/pag.html" "La suscripción con tarjeta queda en \$129,95 + IVA cada 6 meses desde el próximo cobro"
+contiene "… y el proporcional aparte con su enlace" "$TMP/pag.html" "Por los días que faltan del período pagado se cobra aparte \$[0-9,]* + IVA: http://127.0.0.1:$PP/pagar/4"
+check "El Panel simulado cambió la suscripción" "129.95" "$(php -r 'echo json_decode((string) file_get_contents($argv[1]), true)[0]["subtotal"];' "$PSIM/cobros.json")"
+mods_post $NB paquetes contratos portal_cliente plano asistente_ia
+check "Quitar Invitados (contratado): NO se quita" "1" "$(sql "SELECT count(*) FROM negocios WHERE id=$NB AND modulos_extra LIKE '%invitados%'")"
+check "… y no se le pide nada al Panel" "1" "$(ps_cambiar)"
+get "r=admin_negocio&id=$NB" > /dev/null
+contiene "… con el motivo y la fecha" "$TMP/pag.html" "Los módulos ya contratados no se pueden quitar mientras dure el período pagado (hasta el $HASTA): Invitados con QR"
+post_desde "r=admin_negocio&id=$NB" "r=admin_negocio&id=$NB&accion=plan" -d plan=quinta > /dev/null
+check "Pasar al Completo aunque pague menos (\$25,99 → \$25): no se permite" "esencial" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NB")"
+get "r=admin_negocio&id=$NB" > /dev/null
+contiene "… y lo explica" "$TMP/pag.html" "no puede bajar mientras dure el período pagado (hasta el $HASTA)"
+entrar "$EB" claveSegura1
+get "r=planes" > /dev/null
+contiene "El dueño ve el proporcional en Mi plan, con «Pagar ahora»" "$TMP/pag.html" "Proporcional módulos del"
+contiene "… enlace del proporcional" "$TMP/pag.html" "href=\"http://127.0.0.1:$PP/pagar/4\">Pagar ahora"
+rm -f "$JAR"; post "r=admin_entrar" --data-urlencode "email=$ADM" --data-urlencode "clave=ClaveDelPanel123" > /dev/null
+# Panel caído: con un pago con Plux registrado aquí que cubre hoy, el cambio se hace igual y avisa
+check "Pago con Plux registrado (como lo manda el Panel)" "200" "$(ps_registrar $NB esencial semestral 104.95)"
+panel_modo true true true
+mods_post $NB paquetes contratos portal_cliente plano asistente_ia invitados mobiliario
+check "Panel caído: encender Mobiliario se hace igual" "1" "$(sql "SELECT count(*) FROM negocios WHERE id=$NB AND modulos_extra LIKE '%mobiliario%'")"
+get "r=admin_negocio&id=$NB" > /dev/null
+contiene "… y avisa que la suscripción se ajustará cuando el Panel responda" "$TMP/pag.html" "se ajustará a \$154,95 + IVA cuando el Panel responda"
+mods_post $NB paquetes contratos portal_cliente plano asistente_ia invitados
+check "Panel caído: quitar Mobiliario tampoco se puede (hay un pago con Plux que cubre hoy)" "1" "$(sql "SELECT count(*) FROM negocios WHERE id=$NB AND modulos_extra LIKE '%mobiliario%'")"
+panel_modo true
+# Sin suscripción con tarjeta: todo como siempre
+registrar esencial "Local Sin Tarjeta $RANDOM"; pagar_plan esencial; NS=$NID
+sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano' WHERE id=$NS" > /dev/null
+rm -f "$JAR"; post "r=admin_entrar" --data-urlencode "email=$ADM" --data-urlencode "clave=ClaveDelPanel123" > /dev/null
+ANTES=$(ps_cambiar)
+mods_post $NS paquetes contratos portal_cliente
+check "Sin suscripción: quitar un módulo sí se puede" "paquetes,contratos,portal_cliente" "$(sql "SELECT modulos_extra FROM negocios WHERE id=$NS")"
+mods_post $NS paquetes contratos portal_cliente invitados
+check "… y encender no le manda nada al Panel" "$ANTES" "$(ps_cambiar)"
 
 BASE=$BASE_DE_SIEMPRE
 kill $PANELSIM $SITIOPAGO 2>/dev/null

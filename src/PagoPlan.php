@@ -22,6 +22,10 @@ require_once __DIR__ . '/TukanCancelarPlan.php';
  *  - Por defecto es suscripción (se cobra sola cada período). También se puede pagar una sola vez.
  *  - Si el Panel no contesta o el cobro con tarjeta está apagado para TuPlanner, «Mi plan» queda como siempre.
  *  - En la app de Google Play no se usa (lo decide la página: en_app_android()).
+ *  - (10 nov 2026, segunda parte, decisión de Dimitry) Si cambian los módulos o el plan DENTRO de TuPlanner (Panel Tukán del
+ *    programa) y el negocio tiene una suscripción con tarjeta ya pagada: si el valor sube se manda «cambiar» al Panel (cobra el
+ *    valor nuevo desde el próximo cobro y el proporcional aparte); quitar módulos contratados o bajar el valor NO se permite
+ *    mientras dure el período pagado (revisarBaja). Los cambios hechos desde el Panel Tukán Central los ajusta el Panel.
  */
 final class PagoPlan
 {
@@ -159,5 +163,77 @@ final class PagoPlan
         unset($this->estados[$negocioId]);
         if ($http === 0 || !is_array($j)) throw new RuntimeException('No se pudo conectar con el sistema de pagos. Intenta en unos minutos.');
         if (empty($j['ok'])) throw new RuntimeException((string) ($j['error'] ?? 'No se pudo cancelar.'));
+    }
+    /**
+     * La suscripción con tarjeta YA PAGADA (activa o en gracia) del negocio, o null. Si el Panel no contesta o tiene apagado el
+     * cobro con tarjeta, mira el último pago con Plux registrado aquí que cubre hoy (para no dejar quitar módulos por error).
+     */
+    public function suscripcionPagada(int $negocioId, string $email = ''): ?array
+    {
+        $e = $this->estado($negocioId, $email);
+        if ($e !== null && !empty($e['activo'])) {
+            foreach ($this->vivos($negocioId) as $c) {
+                if (($c['tipo'] ?? '') === 'suscripcion' && in_array($c['estado'], ['activa', 'en_gracia'], true)) return $c;
+            }
+            return null;
+        }
+        $st = $this->db->prepare("SELECT plan_codigo, periodo, monto, fin FROM suscripciones
+                                   WHERE negocio_id = ? AND metodo_pago = 'plux' AND NOT anulada AND fin >= CURRENT_DATE ORDER BY fin DESC LIMIT 1");
+        $st->execute([$negocioId]);
+        $s = $st->fetch();
+        return $s ? ['tipo' => 'suscripcion', 'estado' => 'activa', 'plan' => $s['plan_codigo'], 'periodo' => $s['periodo'],
+                     'subtotal' => (float) $s['monto'], 'pagado_hasta' => $s['fin'], 'local' => true] : null;
+    }
+
+    /**
+     * ¿Se puede hacer este cambio? Con suscripción con tarjeta pagada, durante el período pagado no se quitan módulos contratados
+     * ni baja el valor (tampoco bajar de plan). $antes / $despues = Modulos::estado() antes y después del cambio. Lanza el motivo.
+     */
+    public static function revisarBaja(?array $sus, array $antes, array $despues, ?string $hastaNegocio = null): void
+    {
+        if (!$sus) return;
+        $hasta = substr((string) (($sus['pagado_hasta'] ?? '') ?: ($hastaNegocio ?? '')), 0, 10);
+        $fecha = preg_match('/^\d{4}-\d{2}-\d{2}$/', $hasta) ? ' (hasta el ' . date('d/m/Y', strtotime($hasta)) . ')' : '';
+        $quitados = array_diff($antes['pagados'], $despues['pagados']);
+        if ($quitados) {
+            throw new RuntimeException('Los módulos ya contratados no se pueden quitar mientras dure el período pagado' . $fecha . ': '
+                . implode(', ', array_map([Modulos::class, 'nombre'], $quitados)) . '. Encender o subir de plan sí se puede.');
+        }
+        if ($despues['mensual'] < $antes['mensual'] - 0.004) {
+            throw new RuntimeException('Con este cambio el valor bajaría de ' . self::dinero($antes['mensual']) . ' a ' . self::dinero($despues['mensual'])
+                . ' al mes: no puede bajar mientras dure el período pagado' . $fecha . ' (tampoco se puede bajar de plan).');
+        }
+    }
+
+    /**
+     * Después de un cambio de módulos o de plan hecho en TuPlanner: si el negocio tiene suscripción con tarjeta pagada y el valor
+     * cambió, se lo dice al Panel («cambiar») con el valor nuevo del mismo período (sin IVA). Devuelve el aviso para mostrar, o
+     * null si no hay nada que avisar (sin suscripción o el valor no cambió). $sus = suscripcionPagada() de ANTES del cambio.
+     */
+    public function ajustar(int $negocioId, ?array $sus, string $email = ''): ?string
+    {
+        if (!$sus || !isset(self::PERIODOS_TEXTO[$sus['periodo'] ?? ''])) return null;
+        $plan = (string) $this->db->query('SELECT plan_codigo FROM negocios WHERE id = ' . $negocioId)->fetchColumn();
+        $nuevo = round((float) (new Planes($this->db))->cotizarNegocio($negocioId, $plan, (string) $sus['periodo'])['monto'], 2);
+        if (abs($nuevo - (float) ($sus['subtotal'] ?? 0)) < 0.005) return null;   // el cambio no mueve el valor
+        $datos = ['accion' => 'cambiar', 'cliente_id' => (string) $negocioId, 'subtotal' => $nuevo];
+        if (!empty($sus['id'])) $datos['id'] = (int) $sus['id'];
+        [$http, $j] = ($this->llamar)($datos, $email);
+        unset($this->estados[$negocioId]);
+        if ($http === 0 || !is_array($j)) return 'El Panel Tukán no respondió: la suscripción con tarjeta se ajustará a ' . self::dinero($nuevo) . ' + IVA cuando el Panel responda (avísale a Tukán).';
+        if (empty($j['ok'])) return 'Suscripción con tarjeta: ' . (string) ($j['error'] ?? 'el Panel no aceptó el cambio.');
+        if (empty($j['cambio'])) return null;
+        $m = 'La suscripción con tarjeta queda en ' . self::dinero($nuevo) . ' + IVA ' . self::PERIODOS_TEXTO[$sus['periodo']] . ' desde el próximo cobro.';
+        $prop = is_array($j['proporcional'] ?? null) ? $j['proporcional'] : null;
+        if ($prop) {
+            $m .= ' Por los días que faltan del período pagado se cobra aparte ' . self::dinero((float) ($prop['subtotal'] ?? 0)) . ' + IVA'
+                . (!empty($prop['url_pago']) ? ': ' . $prop['url_pago'] : '') . ' (el enlace también sale en Mi plan del cliente).';
+        }
+        return $m;
+    }
+
+    private static function dinero(float $v): string
+    {
+        return '$' . number_format($v, 2, ',', '.');
     }
 }

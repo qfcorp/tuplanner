@@ -13,7 +13,7 @@ $hoy = new DateTimeImmutable('today');
 $valor = fn(string $sql) => $db->query($sql)->fetchColumn();
 
 /** Panel simulado: $panel['modo'] = caido | apagado | activo; guarda los pedidos en $panel['pedidos'] y los cobros en $panel['cobros']. */
-$panel = new ArrayObject(['modo' => 'activo', 'pruebas' => true, 'pedidos' => [], 'cobros' => [], 'crear' => null]);
+$panel = new ArrayObject(['modo' => 'activo', 'pruebas' => true, 'pedidos' => [], 'cobros' => [], 'crear' => null, 'cambiar' => null]);
 $llamar = function (array $d, string $email = '') use ($panel): array {
     $panel['pedidos'] = array_merge($panel['pedidos'], [$d + ['_email' => $email]]);
     if ($panel['modo'] === 'caido') return [0, null];
@@ -25,6 +25,22 @@ $llamar = function (array $d, string $email = '') use ($panel): array {
         foreach ($todos as $i => $c) if ($c['id'] === $d['id'] && $c['cliente_id'] === $d['cliente_id']) $todos[$i]['estado'] = 'cancelada';
         $panel['cobros'] = $todos;
         return [200, ['ok' => true, 'programada' => false]];
+    }
+    if ($d['accion'] === 'cambiar') {
+        if ($panel['cambiar'] !== null) return $panel['cambiar'];
+        $todos = $panel['cobros'];
+        foreach ($todos as $i => $c) {
+            if ($c['cliente_id'] !== $d['cliente_id'] || $c['tipo'] !== 'suscripcion' || !in_array($c['estado'], ['activa', 'en_gracia'], true)) continue;
+            if ($d['subtotal'] < $c['subtotal']) return [409, ['ok' => false, 'codigo' => 'no_baja', 'error' => 'Los módulos ya contratados no se pueden quitar mientras dure el período pagado.']];
+            if (abs($d['subtotal'] - $c['subtotal']) < 0.01) return [200, ['ok' => true, 'cambio' => false]];
+            $todos[$i]['subtotal'] = $d['subtotal'];
+            $prop = ['id' => 90 + $i, 'cliente_id' => $c['cliente_id'], 'tipo' => 'cobro', 'estado' => 'pendiente', 'estado_texto' => 'Esperando el pago', 'descripcion' => 'Proporcional módulos',
+                     'subtotal' => 2.5, 'total' => 2.88, 'url_pago' => 'https://pagos.prueba.ec/p/prop'];
+            $todos[] = $prop;
+            $panel['cobros'] = $todos;
+            return [200, ['ok' => true, 'cambio' => true, 'proporcional' => $prop]];
+        }
+        return [404, ['ok' => false, 'codigo' => 'no_encontrado', 'error' => 'Esa suscripción no existe.']];
     }
     if ($panel['crear'] !== null) return $panel['crear'];
     foreach ($mios as $c) if ($d['tipo'] === 'suscripcion' && $c['tipo'] === 'suscripcion' && in_array($c['estado'], PagoPlan::VIVAS, true)) return [409, ['ok' => false, 'codigo' => 'ya_tiene', 'error' => 'Ya tiene una suscripción con tarjeta (Esperando el pago).']];
@@ -178,5 +194,63 @@ $r = $v2('ejecutar', ['operacion_id' => bin2hex(random_bytes(16)), 'accion' => '
 $n = $db->query("SELECT plan_codigo, activo_hasta FROM negocios WHERE id = $b")->fetch();
 check('Después: Completo, y los 6 meses se suman a lo que ya tenía pagado', [200, 'quinta', $hoy->modify('+11 days +6 months -1 day')->format('Y-m-d')], [$r[0], $n['plan_codigo'], $n['activo_hasta']]);
 check('En el Completo paga $25 (sus módulos extra ya vienen en el plan)', 25.0, (new Modulos($db))->mensual($b));
+
+titulo('8. Cambio de módulos con suscripción con tarjeta pagada (segunda parte, decisión de Dimitry)');
+$mods = new Modulos($db);
+[$m] = negocio_prueba($db, 'esencial', 'Local Suscrito');
+$db->prepare("UPDATE negocios SET estado = 'activo', activo_hasta = CURRENT_DATE + 20, modulos_extra = 'paquetes,contratos,portal_cliente,plano' WHERE id = ?")->execute([$m]);
+$mods->olvidar();
+check('Paga $17,99 al mes (Básico + 1 extra)', 17.99, $mods->mensual($m));
+check('Sin suscripción: no hay suscripción pagada', null, $pp()->suscripcionPagada($m));
+$sinSus = count($panel['pedidos']);
+check('Sin suscripción: ajustar no avisa nada', null, $pp()->ajustar($m, null));
+check('… ni le pide nada al Panel', $sinSus, count($panel['pedidos']));
+$todos = $panel['cobros']; $todos[] = ['id' => 70, 'cliente_id' => (string) $m, 'tipo' => 'suscripcion', 'estado' => 'pendiente', 'estado_texto' => 'Esperando el pago', 'descripcion' => 'x', 'plan' => 'esencial',
+                                       'periodo' => 'mensual', 'subtotal' => 17.99, 'total' => 20.69, 'url_pago' => 'https://pagos.prueba.ec/p/70', 'pagado_hasta' => null]; $panel['cobros'] = $todos;
+check('Suscripción sin pagar todavía: no cuenta como pagada (se puede cambiar libre)', null, $pp()->suscripcionPagada($m));
+$todos = $panel['cobros']; $todos[count($todos) - 1]['estado'] = 'activa'; $todos[count($todos) - 1]['pagado_hasta'] = $hoy->modify('+20 days')->format('Y-m-d'); $panel['cobros'] = $todos;
+$sus = $pp()->suscripcionPagada($m);
+check('Suscripción activa: es la pagada', [70, 'mensual'], [$sus['id'], $sus['periodo']]);
+$antes = $mods->estado($m);
+check('Igual (no cambia el valor): no avisa ni le pide nada al Panel', [null, 0], (function () use ($pp, $m, $sus, $panel) { $n = count($panel['pedidos']); $r = $pp()->ajustar($m, $sus); return [$r, count($panel['pedidos']) - $n]; })());
+// Sube: se enciende un módulo más ($5)
+$db->prepare("UPDATE negocios SET modulos_extra = 'paquetes,contratos,portal_cliente,plano,invitados' WHERE id = ?")->execute([$m]);
+$mods->olvidar();
+PagoPlan::revisarBaja($sus, $antes, $mods->estado($m));
+check('Encender un módulo sí se puede', 22.99, $mods->mensual($m));
+$msg = $pp()->ajustar($m, $sus);
+check('Sube: le manda «cambiar» al Panel con el valor nuevo del mismo período', ['cambiar', (string) $m, 22.99, 70], [$ultimo()['accion'], $ultimo()['cliente_id'], $ultimo()['subtotal'], $ultimo()['id']]);
+check('… y avisa el valor nuevo y el proporcional con su enlace', 'La suscripción con tarjeta queda en $22,99 + IVA cada mes desde el próximo cobro. Por los días que faltan del período pagado se cobra aparte $2,50 + IVA: https://pagos.prueba.ec/p/prop (el enlace también sale en Mi plan del cliente).', $msg);
+check('El proporcional sale entre los pagos abiertos de Mi plan', true, in_array('Proporcional módulos', array_column($pp()->vivos($m), 'descripcion'), true));
+// Quitar un módulo contratado: no se permite
+$sus = $pp()->suscripcionPagada($m);
+$antes = $mods->estado($m);
+$db->prepare("UPDATE negocios SET modulos_extra = 'paquetes,contratos,portal_cliente,plano' WHERE id = ?")->execute([$m]);
+$mods->olvidar();
+check_error('Quitar un módulo contratado: no se permite', 'Los módulos ya contratados no se pueden quitar mientras dure el período pagado (hasta el ' . $hoy->modify('+20 days')->format('d/m/Y') . '): Invitados', fn() => PagoPlan::revisarBaja($sus, $antes, $mods->estado($m)));
+$db->prepare("UPDATE negocios SET modulos_extra = 'paquetes,contratos,portal_cliente,plano,invitados' WHERE id = ?")->execute([$m]);
+$mods->olvidar();
+check_error('Bajar el valor (precio acordado menor): no se permite', 'no puede bajar mientras dure el período pagado', fn() => PagoPlan::revisarBaja($sus, $antes, ['mensual' => 15.0] + $mods->estado($m)));
+check_error('Bajar de plan (Completo → Básico): no se permite', 'no se pueden quitar', fn() => PagoPlan::revisarBaja($sus, $mods->estado($m, 'quinta'), $mods->estado($m, 'esencial')));
+PagoPlan::revisarBaja($sus, $mods->estado($m, 'esencial'), $mods->estado($m, 'quinta'));
+check('Subir de plan (Básico → Completo): sí se puede', true, true);
+PagoPlan::revisarBaja(null, $antes, ['mensual' => 1.0, 'pagados' => []]);
+check('Sin suscripción pagada: se puede quitar y bajar como siempre', true, true);
+// Si igual llega una baja al Panel, contesta 409 no_baja y se muestra
+$db->prepare('UPDATE negocios SET precio_acordado = 10 WHERE id = ?')->execute([$m]);
+check('Baja que llega al Panel: 409 no_baja, se muestra su texto', 'Suscripción con tarjeta: Los módulos ya contratados no se pueden quitar mientras dure el período pagado.', $pp()->ajustar($m, $sus));
+$db->prepare('UPDATE negocios SET precio_acordado = NULL WHERE id = ?')->execute([$m]);
+$panel['cambiar'] = [409, ['ok' => false, 'codigo' => 'sin_pagar', 'error' => 'Todavía no pagó la primera cuota: cancele ese pago y vuelva a pagar con el valor nuevo.']];
+$db->prepare("UPDATE negocios SET modulos_extra = 'paquetes,contratos,portal_cliente,plano,invitados,mobiliario' WHERE id = ?")->execute([$m]);
+check('Primera cuota sin pagar (409 sin_pagar): se muestra', 'Suscripción con tarjeta: Todavía no pagó la primera cuota: cancele ese pago y vuelva a pagar con el valor nuevo.', $pp()->ajustar($m, $sus));
+$panel['cambiar'] = null;
+// Panel caído: el cambio igual se hace y se avisa que se ajustará después
+$panel['modo'] = 'caido';
+check('Panel caído: avisa que la suscripción se ajustará cuando el Panel responda', 'El Panel Tukán no respondió: la suscripción con tarjeta se ajustará a $27,99 + IVA cuando el Panel responda (avísale a Tukán).', $pp()->ajustar($m, $sus));
+check('Panel caído sin pagos con Plux registrados aquí: no hay suscripción pagada', null, $pp()->suscripcionPagada($m));
+(new Planes($db))->suscribir($m, 'esencial', 'mensual', $hoy, 'plux', null, 17.99, $hoy);
+$loc = $pp()->suscripcionPagada($m);
+check('Panel caído con un pago con Plux que cubre hoy: igual no deja quitar módulos', [true, 'mensual', 17.99], [$loc['local'], $loc['periodo'], $loc['subtotal']]);
+$panel['modo'] = 'activo';
 
 putenv('TUKAN_CENTRAL_ID'); putenv('TUKAN_CENTRAL_SECRET'); putenv('TUKAN_CENTRAL_URL');
