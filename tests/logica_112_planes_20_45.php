@@ -27,13 +27,13 @@ check('Dos planes: esencial (Básico) y quinta (Completo); el plan del medio ya 
       [array_keys($pl), $pl['esencial']['nombre'], $pl['quinta']['nombre'], $cuenta("SELECT count(*) FROM planes WHERE codigo = 'salon'")]);
 check('Básico: $20, solo la base, 3 módulos a elegir y $5 cada uno más', [20.0, [], 3, 5.0],
       [$pl['esencial']['precio_mensual'], $pl['esencial']['modulos'], $pl['esencial']['modulos_elegir'], $pl['esencial']['precio_modulo_extra']]);
-check('Completo: $45, todos los módulos con el Asistente IA, sin módulos a elegir', [45.0, array_keys(Modulos::CATALOGO), 0, null, '*,asistente_ia'],
+check('Completo: $45, todos los módulos con el Asistente IA (menos la factura electrónica, que va a pedido), sin módulos a elegir', [45.0, array_values(array_diff(array_keys(Modulos::CATALOGO), ['facturacion'])), 0, null, '*,asistente_ia'],
       [$pl['quinta']['precio_mensual'], $pl['quinta']['modulos'], $pl['quinta']['modulos_elegir'], $pl['quinta']['precio_modulo_extra'],
        $valor("SELECT modulos FROM planes WHERE codigo = 'quinta'")]);
 check('Límites: Básico conserva los de Esencial (lugares sin límite, 2 usuarios); Completo sin límites', ['-|2', '-|-'],
       [$valor("SELECT coalesce(max_espacios::text, '-') || '|' || coalesce(max_usuarios::text, '-') FROM planes WHERE codigo = 'esencial'"),
        $valor("SELECT coalesce(max_espacios::text, '-') || '|' || coalesce(max_usuarios::text, '-') FROM planes WHERE codigo = 'quinta'")]);
-check('Asistente IA: $5 en el catálogo y fuera del cupo de los 3', [5.0, ['asistente_ia']], [$mods->catalogo()['asistente_ia']['precio_mensual'], Modulos::FUERA_DEL_CUPO]);
+check('Asistente IA: $5 en el catálogo y fuera del cupo de los 3 (con la factura electrónica)', [5.0, ['asistente_ia', 'facturacion']], [$mods->catalogo()['asistente_ia']['precio_mensual'], Modulos::FUERA_DEL_CUPO]);
 check('La descripción de los planes (la ve el cliente en Mi plan) no tiene precios', [false, false],
       [str_contains((string) $valor("SELECT descripcion FROM planes WHERE codigo = 'esencial'"), '$'), str_contains((string) $valor("SELECT descripcion FROM planes WHERE codigo = 'quinta'"), '$')]);
 check('Marca planes_20_45 puesta', '2026-10-28', $valor("SELECT valor FROM ajustes WHERE clave = 'planes_20_45'"));
@@ -124,7 +124,7 @@ check('Básico con el Asistente IA ($25): tiene el módulo y el mismo tope', [25
 $poner('');
 check('Básico sin el Asistente IA: solo el tope de la Ayuda', Ia::TOPE_AYUDA, $ia->tope($b));
 [$demo] = negocio_prueba($db, 'quinta', 'Demo Completo');
-check('Una demo de Completo tiene todo (también el Asistente IA)', array_keys(Modulos::CATALOGO), $mods->activos($demo));
+check('Una demo de Completo tiene todo (también el Asistente IA; la factura electrónica va a pedido)', array_values(array_diff(array_keys(Modulos::CATALOGO), ['facturacion'])), $mods->activos($demo));
 
 // ---------------------------------------------------------------------------------------------
 titulo('5. Planes y precios (súper usuario): módulos a elegir y precio de cada uno más');
@@ -171,7 +171,7 @@ check('planes: Básico con 3 módulos a elegir y $5 cada uno más; Completo sin'
        isset($pp['quinta']['limites']['Módulos a elegir'])]);
 $m = $pedir('modulos')[1];
 $mp = array_column($m['planes'], null, 'codigo');
-check('modulos: fuera_del_cupo en el catálogo (para el total en vivo del Panel Central) y cada plan con sus módulos a elegir', [['asistente_ia'], 3, 5.0, 0, null],
+check('modulos: fuera_del_cupo en el catálogo (para el total en vivo del Panel Central) y cada plan con sus módulos a elegir', [['asistente_ia', 'facturacion'], 3, 5.0, 0, null],
       [$m['fuera_del_cupo'] ?? null, $mp['esencial']['modulos_elegir'] ?? null, $mp['esencial']['precio_modulo_extra'] ?? null, $mp['quinta']['modulos_elegir'] ?? null,
        array_key_exists('precio_modulo_extra', $mp['quinta'] ?? []) ? $mp['quinta']['precio_modulo_extra'] : 'x']);
 check('… fuera_del_cupo: solo ids que existen en el catálogo', [], array_values(array_diff($m['fuera_del_cupo'] ?? ['x'], array_column($m['modulos'], 'id'))));

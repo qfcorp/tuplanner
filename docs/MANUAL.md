@@ -97,3 +97,31 @@ Paquetes y simulador · Contratos con firma (firma con el dedo, QR de verificaci
   - **Planificación → Presupuesto** → **✨ Leer cotización de proveedor** → sube la foto o el PDF de la proforma (y una nota) → **Leer la cotización** → marca las partidas → **Agregar al presupuesto** (quedan «Pidiendo precios», el cliente le paga directo).
   - Si no se puede leer automáticamente: «En este momento no pudimos procesar … automáticamente; puede hacerlo a mano aquí» con el enlace.
 - Para Tukán: la IA se configura una vez en el servidor (`/etc/tukan-ia.env`, `bash deploy/configurar_ia.sh` del Panel Tukán Central). Sin ese archivo la Ayuda responde con las preguntas guardadas y el manual. Gasto por negocio y mes con tope (4,00 USD con el módulo, incluido o comprado aparte; 0,50 USD sin él; una demo, 0,50 USD en total aunque tenga todos los módulos; Tukán lo cambia desde el Panel con «Tope de IA»). Preguntas guardadas: Panel de TuPlanner → **Preguntas IA**.
+
+## Factura electrónica con TuFactura (módulo aparte, viene apagado)
+*9 nov 2026*
+
+Con este módulo, cada pago confirmado de un evento sale como **factura electrónica autorizada por el SRI** y le llega al cliente por correo.
+
+**Cómo se consigue**
+- **TuFactura cuesta $30 + IVA al año** y este enlace va incluido. En TuPlanner el módulo cuesta $0.
+- Pídelo a Tukán Software. Tukán crea tu cuenta de TuFactura y enciende el módulo desde el Panel Tukán Central.
+- No viene en ningún plan ni en la demo.
+
+**Conectar tu cuenta** (una sola vez, el administrador)
+1. En TuFactura, abre **Configuración → Conexiones** y crea una clave para el punto de emisión que vas a usar. La clave empieza con `tf_`.
+2. En TuPlanner, abre **🧾 Factura electrónica**, pega la clave y toca **Conectar**. La clave se guarda cifrada y no se vuelve a mostrar.
+3. Si quieres, marca **Facturar automático al cobrar**. Revisa también si tus precios ya traen IVA y la tarifa (15 %, 5 % o 0 %).
+
+**Facturar**
+- **A mano:** toca **Facturar**, en **Más → Factura electrónica**.
+- **Sola:** con «automático» encendido, cada cobro sale facturado al momento.
+- La factura va a nombre de la cédula o el RUC del cliente. Si no los tiene, va a consumidor final.
+- El total es exactamente lo que cobraste. Cuando la cuenta del SRI no lo permite, queda 1 centavo menos.
+- El mismo cobro nunca se factura dos veces.
+- El PDF autorizado se baja con un toque.
+
+
+**Si algo falla**
+- Si TuFactura o el SRI no responden, el cobro igual se guarda. La factura queda pendiente: toca **Reintentar las pendientes** o **Revisar**.
+- Si apagas el módulo, las facturas hechas se quedan en TuFactura.

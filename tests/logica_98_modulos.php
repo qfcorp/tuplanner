@@ -26,7 +26,7 @@ titulo('1. Catálogo y dependencias');
 check('21 módulos (16 + 4 del organizador + Asistente IA de $5, migración 112), cada uno con nombre, ícono, descripción, precio, dependencias y grupo', 21, count(array_filter(Modulos::CATALOGO,
     fn($m, $id) => count($m) === 6 && $m[0] !== '' && $m[1] !== '' && mb_strlen($m[2]) > 30 && $m[3] > 0
                    && is_array($m[4]) && isset(Modulos::GRUPOS[$m[5]]), ARRAY_FILTER_USE_BOTH)));
-check('Asistente IA: solo a pedido, fuera de "*", $5 al mes (migración 112)', [['asistente_ia'], false, 5.0],
+check('Asistente IA y factura electrónica: solo a pedido, fuera de "*"; la IA $5 al mes (migración 112)', [['asistente_ia', 'facturacion'], false, 5.0],
       [Modulos::SOLO_A_PEDIDO, in_array('asistente_ia', Modulos::parse('*'), true), Modulos::CATALOGO['asistente_ia'][3]]);
 check('Los 4 del organizador con sus dependencias', [['planificacion'], ['presupuesto'], [], []],
       [Modulos::CATALOGO['presupuesto'][4], Modulos::CATALOGO['comisiones'][4], Modulos::CATALOGO['planificacion'][4], Modulos::CATALOGO['ideas'][4]]);
@@ -50,12 +50,12 @@ $pl = $mods->planes();
 check('Tres planes: Esencial, Planner (salon), Agencia (quinta)', ['esencial', 'salon', 'quinta'], array_keys($pl));
 check('Precios base', [19.0, 39.0, 69.0], array_column($pl, 'precio_mensual'));
 check('Esencial: solo la base', [], $pl['esencial']['modulos']);
-check('Plan más caro: todos ("*") + el Asistente IA incluido (migración 111: "*,asistente_ia")', [true, array_keys(Modulos::CATALOGO), '*,asistente_ia'],
+check('Plan más caro: todos ("*") + el Asistente IA incluido (migración 111: "*,asistente_ia")', [true, array_values(array_diff(array_keys(Modulos::CATALOGO), ['facturacion'])), '*,asistente_ia'],
       [$pl['quinta']['todos'], $pl['quinta']['modulos'], $db->query("SELECT modulos FROM planes WHERE codigo = 'quinta'")->fetchColumn()]);
 $db->exec(file_get_contents(RAIZ . '/db/migraciones/111_asistente_ia_plan.sql'));
 check('La migración 111 se puede correr otra vez (no lo repite)', '*,asistente_ia', $db->query("SELECT modulos FROM planes WHERE codigo = 'quinta'")->fetchColumn());
-check('parse("*,asistente_ia") = todos + el Asistente IA; csvPlan lo vuelve a armar', [array_keys(Modulos::CATALOGO), '*,asistente_ia', '*'],
-      [Modulos::parse('*,asistente_ia'), Modulos::csvPlan(array_keys(Modulos::CATALOGO)), Modulos::csvPlan($todos)]);
+check('parse("*,asistente_ia") = todos + el Asistente IA; csvPlan lo vuelve a armar', [array_values(array_diff(array_keys(Modulos::CATALOGO), ['facturacion'])), '*,asistente_ia', '*'],
+      [Modulos::parse('*,asistente_ia'), Modulos::csvPlan(array_values(array_diff(array_keys(Modulos::CATALOGO), ['facturacion']))), Modulos::csvPlan($todos)]);
 check('Planner = lo que tenía antes (todo menos lo que era solo de Agencia)',
       ['planificacion', 'presupuesto', 'comisiones', 'ideas', 'paquetes', 'contratos', 'portal_cliente', 'cobros_linea', 'cuestionarios', 'proveedores', 'incidencias', 'metas', 'telegram', 'exportar'], $pl['salon']['modulos']);
 check('Planner NO tiene lo que era de Agencia', [], array_values(array_intersect($pl['salon']['modulos'], ['dia_evento', 'invitados', 'plano', 'mobiliario', 'boda_vivo', 'portal_proveedor'])));
@@ -122,7 +122,7 @@ titulo('4. Demo con los módulos elegidos; apagar no borra datos');
 $mods->elegirDemo($nD, ['boda_vivo']);
 check('Demo con módulos elegidos (con sus dependencias)', [['dia_evento', 'boda_vivo'], false], [$mods->activos($nD), $mods->estado($nD)['demo_todos']]);
 $mods->elegirDemo($nD, null);
-check('Volver a "todos" (en el plan más caro, también el Asistente IA incluido)', array_keys(Modulos::CATALOGO), $mods->activos($nD));
+check('Volver a "todos" (en el plan más caro, también el Asistente IA incluido)', array_values(array_diff(array_keys(Modulos::CATALOGO), ['facturacion'])), $mods->activos($nD));
 $cli = (int) $db->query("INSERT INTO clientes (negocio_id, nombre, telefono) VALUES ($nS, 'Cliente Módulos', '0991234567') RETURNING id")->fetchColumn();
 $ev = (int) $db->query("INSERT INTO eventos (negocio_id, codigo, cliente_id, tipo, nombre, fecha, invitados, estado)
                         VALUES ($nS, 'EV-M-1', $cli, 'boda', 'Boda módulos', CURRENT_DATE + 30, 80, 'consulta') RETURNING id")->fetchColumn();
@@ -238,7 +238,7 @@ check('capacidades: acción modulos, operaciones nuevas, tipos nuevos, revisión
       [in_array('modulos', $cap['acciones'], true), in_array('cambiar_modulos', $cap['ejecutar'], true), in_array('guardar_modulos', $cap['ejecutar'], true),
        in_array('cambio_modulos', $cap['tipos_solicitud'], true), in_array('demo_pedida', $cap['tipos_solicitud'], true), $cap['revision'], $cap['registro_abierto']]);
 $m = $pedir('modulos')[1];
-check('modulos: base, 21 módulos con sus campos y 3 planes', [true, 21, ['id', 'nombre', 'icono', 'descripcion', 'precio_mensual', 'depende_de', 'grupo', 'grupo_nombre', 'orden'], 3],
+check('modulos: base, 22 (con la factura electrónica) módulos con sus campos y 3 planes', [true, 22, ['id', 'nombre', 'icono', 'descripcion', 'precio_mensual', 'depende_de', 'grupo', 'grupo_nombre', 'orden'], 3],
       [count($m['base']) > 5, count($m['modulos']), array_keys($m['modulos'][0]), count($m['planes'])]);
 check('modulos: el plan Planner trae sus 14 módulos', 14, count(array_column($m['planes'], null, 'codigo')['salon']['modulos']));
 $c = $pedir('cliente', ['id' => (string) $nS])[1]['cliente'];
@@ -317,7 +317,7 @@ check('… el pedido queda "demo creada" y unido al negocio', ['demo_creada', $n
 check('… otra demo con el mismo pedido → 409', 409, $ej('crear_demo', ['nombre' => 'Quinta Ana', 'contacto_nombre' => 'Ana', 'email' => 'ana2@x.ec', 'telefono' => '0991112222',
       'solicitud_id' => "demo_pedida:$pdA"])[0]);
 $r = $ej('crear_demo', ['nombre' => 'Demo Completa', 'contacto_nombre' => 'Pepe', 'email' => 'pepe@x.ec', 'telefono' => '0991113333']);
-check('crear_demo sin módulos: la demo tiene todos (plan más caro: con el Asistente IA)', [200, 'todos', array_keys(Modulos::CATALOGO)], [$r[0], $r[1]['resultado']['modulos'], (new Modulos($db))->activos((int) $r[1]['resultado']['cliente_id'])]);
+check('crear_demo sin módulos: la demo tiene todos (plan más caro: con el Asistente IA)', [200, 'todos', array_values(array_diff(array_keys(Modulos::CATALOGO), ['facturacion']))], [$r[0], $r[1]['resultado']['modulos'], (new Modulos($db))->activos((int) $r[1]['resultado']['cliente_id'])]);
 check('crear_demo con un módulo que no existe → 422', 422, $ej('crear_demo', ['nombre' => 'Demo Mala', 'contacto_nombre' => 'Pepe', 'email' => 'pepe2@x.ec', 'telefono' => '0991113333', 'modulos' => ['oro']])[0]);
 // finanzas por módulo
 $fz = $pedir('finanzas')[1];

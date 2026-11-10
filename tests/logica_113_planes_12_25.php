@@ -16,7 +16,7 @@ check('Básico $12, 3 módulos a elegir, $5 cada uno más (el nombre no cambia)'
       [$pl['esencial']['nombre'], $pl['esencial']['precio_mensual'], $pl['esencial']['modulos_elegir'], $pl['esencial']['precio_modulo_extra']]);
 check('Completo $25 con todos los módulos y el Asistente IA', ['Completo', 25.0, '*,asistente_ia'], [$pl['quinta']['nombre'], $pl['quinta']['precio_mensual'], $valor("SELECT modulos FROM planes WHERE codigo = 'quinta'")]);
 $cat = $mods->catalogo();
-check('Cada módulo $5 y el Asistente IA $3', [[5.0], 3.0], [array_values(array_unique(array_map(fn($m) => (float) $m['precio_mensual'], array_diff_key($cat, ['asistente_ia' => 1])))), $cat['asistente_ia']['precio_mensual']]);
+check('Cada módulo $5 y el Asistente IA $3 (la factura electrónica $0: TuFactura se cobra aparte)', [[5.0], 3.0], [array_values(array_unique(array_map(fn($m) => (float) $m['precio_mensual'], array_diff_key($cat, ['asistente_ia' => 1, 'facturacion' => 1])))), $cat['asistente_ia']['precio_mensual']]);
 check('IA con uso limitado: tope de $1,50 al mes con el módulo', 1.5, Ia::TOPE_MODULO);
 check('Marca planes_12_25 puesta', '2026-11-06', $valor("SELECT valor FROM ajustes WHERE clave = 'planes_12_25'"));
 

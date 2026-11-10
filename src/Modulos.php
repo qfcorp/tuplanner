@@ -72,6 +72,7 @@ final class Modulos
         'metas' => ['Metas y reportes avanzados', '🎯', 'Metas de ventas del local y por vendedor con su avance en el Inicio, embudo y conversión, rentabilidad por evento y comisiones de vendedores.', 4.0, [], 'gestion'],
         'telegram' => ['Avisos por Telegram', '📲', 'Pagos, firmas, consultas nuevas, cuotas por cobrar y seguimientos del día llegan solos al celular del equipo.', 3.0, [], 'conexiones'],
         'exportar' => ['Exportar a Excel y Google Calendar', '📤', 'Descarga eventos, cobros y reportes para Excel y ve tus eventos en Google Calendar.', 3.0, [], 'conexiones'],
+        'facturacion' => ['Factura electrónica con TuFactura', '🧾', 'Cada pago del evento sale como factura electrónica autorizada por el SRI, a nombre de tu cliente, con un toque o sola al registrarlo, y le llega por correo con el PDF y el XML. Se conecta con tu cuenta de TuFactura (TuFactura se contrata aparte con Tukán Software).', 0.0, [], 'gestion'],
         // Incluido en Completo. En Básico es un extra de $5 al mes que no cuenta entre los 3 módulos a elegir (migración 112).
         'asistente_ia' => ['Asistente IA', '✨', 'Lee fotos de documentos y llena los datos por usted, y responde las dudas al instante. Arma la cotización a partir del mensaje de WhatsApp del cliente.', 5.0, [], 'extras'],
     ];
@@ -81,14 +82,14 @@ final class Modulos
      * Un plan los trae si se nombran después del asterisco: "*,asistente_ia" (Completo, migraciones 111 y 112). En Básico
      * se encienden uno por uno como extra (súper usuario, Panel Tukán Central o pedido aprobado).
      */
-    public const SOLO_A_PEDIDO = ['asistente_ia'];
+    public const SOLO_A_PEDIDO = ['asistente_ia', 'facturacion'];   // facturacion (9 nov 2026): TuFactura se vende aparte
 
     /**
      * Planes de $20 y $45 (migración 112): el plan Básico trae `planes.modulos_elegir` módulos a elección del cliente y cada
      * uno más cuesta `planes.precio_modulo_extra`. Estos módulos NO cuentan entre los que elige: siempre se cobran a su
      * precio del catálogo (Asistente IA $5 al mes).
      */
-    public const FUERA_DEL_CUPO = ['asistente_ia'];
+    public const FUERA_DEL_CUPO = ['asistente_ia', 'facturacion'];
 
     /**
      * Módulo de cada ruta de public/index.php ('' = base: la tienen todos). Toda ruta debe estar aquí (lo revisa una prueba).
@@ -103,7 +104,7 @@ final class Modulos
         'inicio' => '', 'calendario' => '', 'eventos' => '', 'evento' => '', 'evento_nuevo' => '', 'evento_editar' => '',
         'evento_pagos' => '', 'clientes' => '', 'cliente' => '', 'seguimiento' => '', 'cobros' => '', 'mensajes' => '',
         'catalogo' => '', 'espacios' => '', 'reportes' => '', 'configuracion' => '', 'usuarios' => '', 'mi_cuenta' => '',
-        'planes' => '', 'prueba_terminada' => '', 'notificaciones' => '', 'archivo' => '', 'pdf' => '', 'buscar' => '', 'mas' => '',
+        'planes' => '', 'tufactura' => '', 'prueba_terminada' => '', 'notificaciones' => '', 'archivo' => '', 'pdf' => '', 'buscar' => '', 'mas' => '',
         'sitio' => '', 'consulta' => '', 'disponible' => '', 'imagen_publica' => '', 'verificar' => '', 'verificar_oc' => '',
         // Módulos
         'cotizacion' => '', 'cot' => '', 'paquetes' => 'paquetes',

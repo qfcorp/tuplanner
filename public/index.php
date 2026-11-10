@@ -23,7 +23,7 @@ $publicas = [
     'vivo', 'staff', 'ical',                                   // cronograma en vivo, portal del personal, calendario externo
 ];
 // Páginas del sistema (con sesión)
-$privadas = [
+$privadas = ['tufactura', 
     'inicio', 'calendario', 'eventos', 'evento', 'evento_nuevo', 'evento_editar',
     'cotizacion', 'contrato', 'evento_pagos', 'evento_dia', 'invitados',
     'clientes', 'cliente', 'seguimiento', 'cobros', 'mensajes',

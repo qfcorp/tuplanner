@@ -206,6 +206,8 @@ final class Pagos
             if ($comprobante) Fotos::borrar('comprobantes', $comprobante);
             throw $e;
         }
+        if (!class_exists(FacturaTukan::class)) require_once __DIR__ . '/FacturaTukan.php';
+        FacturaTukan::alCobrar($this->db, $negocioId, $id);   // TuFactura (módulo facturacion): factura sola si el negocio lo eligió
         $this->ultimoMensaje = $tipo === 'evento' ? $this->revisarSeparacion($negocioId, $eventoId, $usuario) : null;
         return $id;
     }
@@ -298,6 +300,8 @@ final class Pagos
             if ($propia && $this->db->inTransaction()) $this->db->rollBack();
             throw $e;
         }
+        if (!class_exists(FacturaTukan::class)) require_once __DIR__ . '/FacturaTukan.php';
+        FacturaTukan::alCobrar($this->db, $negocioId, $pagoId);   // TuFactura (módulo facturacion): factura sola si el negocio lo eligió
         return $this->revisarSeparacion($negocioId, (int) $p['evento_id'], $usuario);
     }
 
