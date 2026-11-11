@@ -12,7 +12,7 @@ $waTukan = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola,
 <?php if ($listo): ?>
 <section class="bloque" role="status" id="demo-gracias">
     <h2>¡Recibimos tu pedido!</h2>
-    <p>¡Listo! En unos minutos te llega al correo tu clave, el manual y la guía de primeros pasos. Revisa también la carpeta de spam.</p>
+    <p>¡Listo! Estamos preparando tu demo: toma entre 5 y 10 minutos aproximadamente. Cuando esté lista te llega al correo tu clave, el manual y la guía de primeros pasos. Revisa también la carpeta de spam.</p>
     <p class="suave">Gracias, <?= e(explode(' ', $d['nombre'])[0]) ?>. La demo de <strong><?= e($d['nombre_comercial']) ?></strong> dura <?= (int) $diasDemo ?> días y la clave va a <strong><?= e($d['email']) ?></strong>.</p>
     <div class="acciones"><a class="boton boton-wa" href="<?= e($waTukan) ?>" target="_blank" rel="noopener">¿No te llegó? Escríbenos por WhatsApp</a></div>
 </section>
@@ -27,7 +27,7 @@ $waTukan = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola,
     <?php if ($errores): ?>
         <div class="aviso aviso-error" role="alert"><?php foreach ($errores as $e1): ?><div><?= e($e1) ?></div><?php endforeach; ?></div>
     <?php endif; ?>
-    <p class="suave" style="margin-top:0">Llena <strong>todos</strong> los datos y te armamos la demo con datos de ejemplo. <strong>La demo dura <?= (int) $diasDemo ?> días.</strong></p>
+    <p class="suave" style="margin-top:0">Llena <strong>todos</strong> los datos y te armamos la demo con datos de ejemplo. <strong>La demo dura <?= (int) $diasDemo ?> días.</strong> Preparar tu demo toma entre 5 y 10 minutos aproximadamente.</p>
     <div class="fila-campos">
         <div class="campo">
             <label for="nombre">Tu nombre y apellido</label>
@@ -42,27 +42,20 @@ $waTukan = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola,
     </div>
     <div class="fila-campos">
         <div class="campo">
-            <label for="telefono">Teléfono de contacto</label>
-            <input type="tel" id="telefono" name="telefono" value="<?= e($d['telefono']) ?>" maxlength="20" placeholder="022345678" pattern="\+?[0-9 \-]{7,20}" autocomplete="tel" required<?= $inv('telefono') ?>>
-            <?= $err('telefono') ?>
-        </div>
-        <div class="campo">
-            <label for="celular">Celular</label>
+            <label for="celular">Celular / WhatsApp</label>
             <input type="tel" id="celular" name="celular" value="<?= e($d['celular']) ?>" maxlength="20" placeholder="0991234567" pattern="\+?[0-9 \-]{9,20}" autocomplete="mobile tel" required<?= $inv('celular') ?>>
             <?= $err('celular') ?>
-        </div>
-    </div>
-    <div class="fila-campos">
-        <div class="campo">
-            <label for="direccion">Dirección de tu negocio</label>
-            <input type="text" id="direccion" name="direccion" value="<?= e($d['direccion']) ?>" minlength="5" maxlength="250" autocomplete="street-address" required<?= $inv('direccion') ?>>
-            <?= $err('direccion') ?>
         </div>
         <div class="campo">
             <label for="ciudad">Ciudad</label>
             <input type="text" id="ciudad" name="ciudad" value="<?= e($d['ciudad']) ?>" minlength="2" maxlength="80" placeholder="Quito" autocomplete="address-level2" required<?= $inv('ciudad') ?>>
             <?= $err('ciudad') ?>
         </div>
+    </div>
+    <div class="campo">
+        <label for="direccion">Dirección de tu negocio</label>
+        <input type="text" id="direccion" name="direccion" value="<?= e($d['direccion']) ?>" minlength="5" maxlength="250" autocomplete="street-address" required<?= $inv('direccion') ?>>
+        <?= $err('direccion') ?>
     </div>
     <div class="campo">
         <label for="email">Correo</label>

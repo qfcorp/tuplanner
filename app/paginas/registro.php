@@ -1,7 +1,7 @@
 <?php
 /**
  * "Todo se pide demo": /?r=registro ya no crea una cuenta. Es el formulario para PEDIR UNA DEMO
- * (nombre, nombre comercial, teléfono, celular, dirección, ciudad y correo, todos obligatorios; qué necesita y los módulos que le interesan). Queda como solicitud
+ * (nombre, nombre comercial, celular, dirección, ciudad y correo, todos obligatorios; qué necesita y los módulos que le interesan). Queda como solicitud
  * demo_pedida en el Panel Tukán Central; Tukán crea la demo y le manda los accesos.
  */
 use TuPlanner\{Modulos, PedidosDemo};
@@ -9,7 +9,7 @@ use TuPlanner\{Modulos, PedidosDemo};
 if (usuario()) {
     redirigir('inicio');
 }
-// (10 nov 2026) Demos automáticas de 3 días: los 7 datos son obligatorios (PedidosDemo::CAMPOS), la clave llega al correo y,
+// (10 nov 2026) Demos automáticas de 3 días: los 6 datos son obligatorios (un solo teléfono: el celular) (PedidosDemo::CAMPOS), la clave llega al correo y,
 // apenas se guarda el pedido, se avisa al Panel Tukán Central (demo_aviso.php) para que cree la demo en segundos.
 $errores = [];      // errores generales (arriba del formulario)
 $porCampo = [];     // campo => qué corregir (junto a cada campo)

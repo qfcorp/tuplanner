@@ -1,6 +1,6 @@
 <?php
 /**
- * Demos automáticas de 3 días (10 nov 2026, contrato de las demos automáticas): los 7 datos obligatorios del pedido de demo,
+ * Demos automáticas de 3 días (10 nov 2026, contrato de las demos automáticas): los 6 datos obligatorios del pedido de demo (un solo teléfono: el celular),
  * campo por campo; cómo se guardan; cómo los lee el Panel Tukán Central (solicitud demo_pedida, claves exactas); el aviso al
  * instante al Panel (demo_aviso.php, token v2 de tipo «demo») con un Panel simulado; y los días de demo (3, una sola vez).
  */
@@ -9,26 +9,26 @@ use TuPlanner\{PedidosDemo, Planes, TukanCentral, TukanCentralV2};
 $db = base_limpia();
 $hoy = new DateTimeImmutable('today');
 $valor = fn(string $sql) => $db->query($sql)->fetchColumn();
-$bien = ['nombre' => 'Paula Interesada', 'nombre_comercial' => 'Quinta Las Demos', 'telefono' => '022345678', 'celular' => '0991234567',
+$bien = ['nombre' => 'Paula Interesada', 'nombre_comercial' => 'Quinta Las Demos', 'celular' => '0991234567',
          'direccion' => 'Av. de los Shyris N35-71 y Suecia', 'ciudad' => 'Quito', 'email' => 'paula@interesada.ec'];
 
-titulo('1. Los 7 datos son obligatorios: se rechaza campo por campo');
-check('Las 7 claves del contrato', ['nombre', 'nombre_comercial', 'telefono', 'celular', 'direccion', 'ciudad', 'email'], PedidosDemo::CAMPOS);
+titulo('1. Los 6 datos son obligatorios: se rechaza campo por campo');
+check('Las 6 claves del contrato (sin teléfono fijo)', ['nombre', 'nombre_comercial', 'celular', 'direccion', 'ciudad', 'email'], PedidosDemo::CAMPOS);
+check('Mandar un «telefono» cualquiera (o ninguno) ya no importa: no se valida', [], PedidosDemo::validar(['telefono' => 'abc'] + $bien));
 check('Completo: sin errores', [], PedidosDemo::validar($bien));
 foreach (PedidosDemo::CAMPOS as $campo) {
     check("Sin «{$campo}»: solo ese campo con error", [$campo], array_keys(PedidosDemo::validar([$campo => ''] + $bien)));
 }
-check('Vacío: los 7 con error', PedidosDemo::CAMPOS, array_keys(PedidosDemo::validar([])));
-$malos = ['email' => ['malo', 'a@b', 'sin arroba.ec', '@x.ec'], 'telefono' => ['12345', 'abc1234567', '1234567890123456', '02-23x5678'],
-          'celular' => ['12345678', '0212345678', '+593212345678', '09912345', '099123456789', 'cel0991234567'], 'direccion' => ['Av.'], 'ciudad' => ['Q'], 'nombre' => ['Pa'], 'nombre_comercial' => ['QD']];
+check('Vacío: los 6 con error', PedidosDemo::CAMPOS, array_keys(PedidosDemo::validar([])));
+$malos = ['email' => ['malo', 'a@b', 'sin arroba.ec', '@x.ec'],           'celular' => ['12345678', '0212345678', '+593212345678', '09912345', '099123456789', 'cel0991234567'], 'direccion' => ['Av.'], 'ciudad' => ['Q'], 'nombre' => ['Pa'], 'nombre_comercial' => ['QD']];
 foreach ($malos as $campo => $lista) foreach ($lista as $v) check("«{$campo}» = «{$v}»: rechazado", true, isset(PedidosDemo::validar([$campo => $v] + $bien)[$campo]));
-$buenos = ['telefono' => ['2345678', '02 234-5678', '+59322345678', '0991234567'], 'celular' => ['0991234567', '+593991234567', '+593 99 123 4567', '099-123-4567', '+573001234567'],
+$buenos = ['celular' => ['0991234567', '+593991234567', '+593 99 123 4567', '099-123-4567', '+573001234567'],
            'email' => ['  Paula@Interesada.EC ', 'p.a+demo@sub.dominio.com']];
 foreach ($buenos as $campo => $lista) foreach ($lista as $v) check("«{$campo}» = «{$v}»: aceptado", [], PedidosDemo::validar([$campo => $v] + $bien));
 check('Mensaje claro del correo', 'El correo no es válido. Revísalo: ahí te llega la clave de tu demo.', PedidosDemo::validar(['email' => 'malo'] + $bien)['email']);
-check('Mensaje claro del celular', 'Escribe tu celular: 09XXXXXXXX o +5939XXXXXXXX.', PedidosDemo::validar(['celular' => '123'] + $bien)['celular']);
-$l = PedidosDemo::limpiar(['email' => '  Paula@Interesada.EC ', 'celular' => '+593 99 123-4567', 'telefono' => '(02) 234 5678', 'negocio' => 'Con nombre de antes', 'whatsapp' => '0981112233'] );
-check('Limpia: correo en minúsculas y sin espacios, teléfono solo con números y +', ['paula@interesada.ec', '022345678'], [$l['email'], $l['telefono']]);
+check('Mensaje claro del celular', 'Escribe tu celular o WhatsApp: 09XXXXXXXX o +5939XXXXXXXX.', PedidosDemo::validar(['celular' => '123'] + $bien)['celular']);
+$l = PedidosDemo::limpiar(['email' => '  Paula@Interesada.EC ', 'celular' => '+593 99 123-4567', 'negocio' => 'Con nombre de antes', 'whatsapp' => '0981112233'] );
+check('Limpia: correo en minúsculas y sin espacios, celular solo con números y +', ['paula@interesada.ec', '+593991234567', false], [$l['email'], $l['celular'], array_key_exists('telefono', $l)]);
 check('… y acepta los nombres de antes (negocio, whatsapp) si no vienen los nuevos', ['Con nombre de antes', '+593991234567'], [$l['nombre_comercial'], $l['celular']]);
 
 titulo('2. Guardar el pedido');
@@ -36,10 +36,10 @@ $pd = new PedidosDemo($db);
 check_error('Incompleto no se guarda y dice todo lo que falta', 'Escribe la dirección de tu negocio. Escribe tu ciudad.', fn() => $pd->crear(['direccion' => '', 'ciudad' => ''] + $bien));
 check('… nada guardado', 0, (int) $valor('SELECT count(*) FROM pedidos_demo'));
 $id = $pd->crear(['email' => ' PAULA@Interesada.ec', 'celular' => '+593 99 123 4567', 'necesita' => 'Dos jardines', 'modulos' => ['invitados', 'no_existe']] + $bien, '203.0.113.7');
-check('Guardado con los 7 datos', ['Paula Interesada', 'Quinta Las Demos', '022345678', '+593991234567', 'Av. de los Shyris N35-71 y Suecia', 'Quito', 'paula@interesada.ec', 'nueva', 'invitados'],
+check('Guardado con los 6 datos (la columna telefono queda igual al celular)', ['Paula Interesada', 'Quinta Las Demos', '+593991234567', '+593991234567', 'Av. de los Shyris N35-71 y Suecia', 'Quito', 'paula@interesada.ec', 'nueva', 'invitados'],
       array_values($db->query("SELECT nombre, negocio, telefono, whatsapp, direccion, ciudad, email, estado, modulos FROM pedidos_demo WHERE id = $id")->fetch(PDO::FETCH_ASSOC)));
-check('El mismo correo con el pedido abierto: se actualiza con los datos nuevos', [$id, 'Calle Nueva 123', '072888999'],
-      [$pd->crear(['direccion' => 'Calle Nueva 123', 'telefono' => '072888999'] + $bien), $valor("SELECT direccion FROM pedidos_demo WHERE id = $id"), $valor("SELECT telefono FROM pedidos_demo WHERE id = $id")]);
+check('El mismo correo con el pedido abierto: se actualiza con los datos nuevos', [$id, 'Calle Nueva 123', '0987776655'],
+      [$pd->crear(['direccion' => 'Calle Nueva 123', 'celular' => '0987776655'] + $bien), $valor("SELECT direccion FROM pedidos_demo WHERE id = $id"), $valor("SELECT telefono FROM pedidos_demo WHERE id = $id")]);
 check('… sin repetirlo', 1, (int) $valor('SELECT count(*) FROM pedidos_demo'));
 
 titulo('3. El Panel lo lee por el conector v2: solicitud demo_pedida con las 7 claves exactas');
@@ -56,9 +56,10 @@ $v2 = function (string $accion, array $cuerpo) use ($db, $SECRETO): array {
 $r = $v2('solicitudes', ['por_pagina' => 200]);
 $sol = array_values(array_filter($r[1]['solicitudes'] ?? [], fn($s) => $s['id'] === "demo_pedida:$id"))[0] ?? null;
 check('Sale en «solicitudes» como demo_pedida pendiente', [200, 'demo_pedida', 'pendiente'], [$r[0], $sol['tipo'] ?? null, $sol['estado'] ?? null]);
-check('Detalle con las 7 claves del contrato', ['nombre' => 'Paula Interesada', 'nombre_comercial' => 'Quinta Las Demos', 'telefono' => '072888999', 'celular' => '0991234567',
+check('Detalle con las 6 claves del contrato', ['nombre' => 'Paula Interesada', 'nombre_comercial' => 'Quinta Las Demos', 'celular' => '0987776655',
                                                  'direccion' => 'Calle Nueva 123', 'ciudad' => 'Quito', 'email' => 'paula@interesada.ec'],
       array_intersect_key($sol['detalle'], array_flip(PedidosDemo::CAMPOS)));
+check('… y «telefono» va con el MISMO valor del celular (compatibilidad con el Panel)', '0987776655', $sol['detalle']['telefono']);
 check('… y sigue mandando sus datos propios', [['invitados'], 'Dos jardines', 'Quinta Las Demos'], [$sol['detalle']['modulos'], $sol['detalle']['necesita'], $sol['detalle']['negocio']]);
 $una = $v2('solicitud', ['id' => "demo_pedida:$id"]);
 check('También en «solicitud» (una sola)', [200, 'paula@interesada.ec', 'Calle Nueva 123'], [$una[0], $una[1]['solicitud']['detalle']['email'] ?? null, $una[1]['solicitud']['detalle']['direccion'] ?? null]);

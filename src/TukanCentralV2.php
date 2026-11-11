@@ -981,8 +981,9 @@ final class TukanCentralV2
             'quien' => ['nombre' => $pd['nombre'], 'organizacion' => $pd['negocio'], 'telefono' => $pd['whatsapp'], 'whatsapp' => $wa, 'email' => $pd['email']],
             'resumen' => trim(($pd['ciudad'] ? $pd['ciudad'] . ' · ' : '') . ($mods ? 'Le interesa: ' . implode(', ', array_map([Modulos::class, 'nombre'], $mods)) : 'Sin módulos elegidos')),
             'monto' => null, 'estado' => $estado, 'estado_producto' => (string) $pd['estado'], 'prioridad' => 'alta', 'vence_el' => null,
-            // Contrato de las demos automáticas (10 nov 2026): los 7 datos con estas claves exactas; lo demás, como siempre
-            'detalle' => ['nombre' => $pd['nombre'], 'nombre_comercial' => $pd['negocio'], 'telefono' => $pd['telefono'] ?? null, 'celular' => $pd['whatsapp'],
+            // Contrato de las demos automáticas (10 nov 2026): los datos con estas claves exactas; lo demás, como siempre.
+            // (19:45) Un solo teléfono, el celular: «telefono» va con el MISMO valor por compatibilidad con el Panel.
+            'detalle' => ['nombre' => $pd['nombre'], 'nombre_comercial' => $pd['negocio'], 'telefono' => $pd['whatsapp'], 'celular' => $pd['whatsapp'],
                           'direccion' => $pd['direccion'] ?? null, 'ciudad' => $pd['ciudad'], 'email' => $pd['email'],
                           'negocio' => $pd['negocio'], 'necesita' => $pd['necesita'], 'modulos' => $mods, 'nota' => $pd['nota']],
             'adjuntos' => [], 'acciones_posibles' => [], 'ir' => $pd['negocio_id'] !== null ? '/?r=admin_negocio&id=' . (int) $pd['negocio_id'] : '/?r=admin#pedidos-demo',

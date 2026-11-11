@@ -104,7 +104,7 @@ en Mi plan solo ve el precio de lo que ya paga). Se cambian en Panel Tukán → 
   **no muestran precio** («Precio por cotización»): **Pedir cotización** (en Mi plan, en cada plan y en la pantalla del módulo
   apagado) crea un pedido (solicitud `cambio_modulos`) que llega al Panel Tukán Central, que cotiza, aprueba o rechaza.
   El superusuario de Tukán y el Panel Central sí ven los precios.
-- **Todo se pide demo**: no hay registro abierto ni periodo de prueba. En textos de venta se habla de «meses de regalo». `/?r=registro` es **Solicitar demo** (desde el 10 nov 2026 con 7 datos obligatorios: nombre, nombre comercial, teléfono, celular, dirección, ciudad y correo; demo de 3 días; avisa al instante al Panel con `demo_aviso.php`; `/manual.pdf` y `/primeros_pasos.pdf` son públicos) (antes: nombre, negocio,
+- **Todo se pide demo**: no hay registro abierto ni periodo de prueba. En textos de venta se habla de «meses de regalo». `/?r=registro` es **Solicitar demo** (desde el 10 nov 2026 con 6 datos obligatorios (un solo teléfono, el celular): nombre, nombre comercial, celular o WhatsApp, dirección, ciudad y correo; demo de 3 días; avisa al instante al Panel con `demo_aviso.php`; `/manual.pdf` y `/primeros_pasos.pdf` son públicos) (antes: nombre, negocio,
   ciudad, WhatsApp, correo, qué necesita y módulos que le interesan) y llega como solicitud `demo_pedida` al Panel Central y al Resumen
   del Panel Tukán (**Crear demo**). La demo tiene todos los módulos encendidos (o los que elija Tukán) por los días que Tukán decida.
 

@@ -8,7 +8,7 @@ use RuntimeException;
 
 /**
  * "Todo se pide demo": ya no hay registro abierto con periodo de prueba. Quien quiere conocer TuPlanner llena
- * el formulario de /?r=registro (pedido de demo, con sus 7 datos obligatorios: CAMPOS); Tukán lo ve en el Panel Tukán Central (solicitud demo_pedida) o en
+ * el formulario de /?r=registro (pedido de demo, con sus 6 datos obligatorios: CAMPOS); Tukán lo ve en el Panel Tukán Central (solicitud demo_pedida) o en
  * el panel de Tukán del programa y, si corresponde, crea la demo (crear_demo) con los módulos que le interesan.
  * Estados: nueva → contactada → demo_creada (o descartada).
  */
@@ -19,12 +19,15 @@ final class PedidosDemo
 
     public function __construct(private PDO $db) {}
 
-    /** Los 7 datos obligatorios del pedido (contrato de las demos automáticas, 10 nov 2026), con estas claves exactas. */
-    public const CAMPOS = ['nombre', 'nombre_comercial', 'telefono', 'celular', 'direccion', 'ciudad', 'email'];
+    /**
+     * Los 6 datos obligatorios del pedido (contrato de las demos automáticas, 10 nov 2026), con estas claves exactas.
+     * (19:45, Dimitry: «No hay que poner teléfono fijo; con un teléfono es suficiente») Un solo teléfono: el celular.
+     */
+    public const CAMPOS = ['nombre', 'nombre_comercial', 'celular', 'direccion', 'ciudad', 'email'];
 
     /**
      * Deja los datos listos: acepta también los nombres de antes (negocio = nombre_comercial, whatsapp = celular),
-     * quita espacios, pasa el correo a minúsculas y deja los teléfonos solo con números y +.
+     * quita espacios, pasa el correo a minúsculas y deja el celular solo con números y +.
      */
     public static function limpiar(array $d): array
     {
@@ -32,8 +35,7 @@ final class PedidosDemo
         $tel = fn(string $v) => (string) preg_replace('/[\s\-().]+/', '', $v);
         $mods = $d['modulos'] ?? [];
         return [
-            'nombre' => $t('nombre'), 'nombre_comercial' => $t('nombre_comercial', 'negocio'), 'telefono' => $tel($t('telefono')),
-            'celular' => $tel($t('celular', 'whatsapp')), 'direccion' => $t('direccion'), 'ciudad' => $t('ciudad'),
+            'nombre' => $t('nombre'), 'nombre_comercial' => $t('nombre_comercial', 'negocio'), 'celular' => $tel($t('celular', 'whatsapp')), 'direccion' => $t('direccion'), 'ciudad' => $t('ciudad'),
             'email' => strtolower((string) preg_replace('/\s+/', '', $t('email'))), 'necesita' => $t('necesita'),
             'modulos' => array_values(array_filter(is_array($mods) ? $mods : [], fn($m) => is_string($m) && Modulos::existe($m))),
         ];
@@ -46,10 +48,9 @@ final class PedidosDemo
         $e = [];
         if (mb_strlen($d['nombre']) < 3 || mb_strlen($d['nombre']) > 80) $e['nombre'] = 'Escribe tu nombre y apellido.';
         if (mb_strlen($d['nombre_comercial']) < 3 || mb_strlen($d['nombre_comercial']) > 120) $e['nombre_comercial'] = 'Escribe el nombre de tu negocio de eventos.';
-        if (!preg_match('/^\+?\d{7,15}$/', $d['telefono'])) $e['telefono'] = 'Escribe un teléfono de contacto: solo números (7 a 15), ej. 022345678.';
         if (!preg_match('/^\+?\d{9,15}$/', $d['celular']) || (str_starts_with($d['celular'], '0') && !preg_match('/^09\d{8}$/', $d['celular']))
             || (str_starts_with($d['celular'], '+593') && !preg_match('/^\+5939\d{8}$/', $d['celular']))) {
-            $e['celular'] = 'Escribe tu celular: 09XXXXXXXX o +5939XXXXXXXX.';
+            $e['celular'] = 'Escribe tu celular o WhatsApp: 09XXXXXXXX o +5939XXXXXXXX.';
         }
         if (mb_strlen($d['direccion']) < 5 || mb_strlen($d['direccion']) > 250) $e['direccion'] = 'Escribe la dirección de tu negocio.';
         if (mb_strlen($d['ciudad']) < 2 || mb_strlen($d['ciudad']) > 80) $e['ciudad'] = 'Escribe tu ciudad.';
@@ -59,7 +60,7 @@ final class PedidosDemo
     }
 
     /**
-     * Guarda un pedido. $d: los 7 datos de CAMPOS (todos obligatorios), más necesita y modulos (lista de ids), que son opcionales.
+     * Guarda un pedido. $d: los 6 datos de CAMPOS (todos obligatorios), más necesita y modulos (lista de ids), que son opcionales.
      * Devuelve el id. Si algo falta, lanza el error con todo lo que hay que corregir.
      */
     public function crear(array $d, string $ip = ''): int
@@ -78,11 +79,11 @@ final class PedidosDemo
         $abierto = $st->fetchColumn();
         if ($abierto) {
             $this->db->prepare('UPDATE pedidos_demo SET nombre = ?, negocio = ?, ciudad = ?, whatsapp = ?, telefono = ?, direccion = ?, necesita = COALESCE(?, necesita), modulos = COALESCE(NULLIF(?, \'\'), modulos), actualizado = now() WHERE id = ?')
-                     ->execute([$d['nombre'], $d['nombre_comercial'], $d['ciudad'], $d['celular'], $d['telefono'], $d['direccion'], $d['necesita'] ?: null, Modulos::csv($d['modulos']), $abierto]);
+                     ->execute([$d['nombre'], $d['nombre_comercial'], $d['ciudad'], $d['celular'], $d['celular'], $d['direccion'], $d['necesita'] ?: null, Modulos::csv($d['modulos']), $abierto]);
             return (int) $abierto;
         }
         $st = $this->db->prepare('INSERT INTO pedidos_demo (nombre, negocio, ciudad, whatsapp, telefono, direccion, email, necesita, modulos, ip) VALUES (?,?,?,?,?,?,?,?,?,?) RETURNING id');
-        $st->execute([$d['nombre'], $d['nombre_comercial'], $d['ciudad'], $d['celular'], $d['telefono'], $d['direccion'], $d['email'], $d['necesita'] ?: null, Modulos::csv($d['modulos']), mb_substr($ip, 0, 45) ?: null]);
+        $st->execute([$d['nombre'], $d['nombre_comercial'], $d['ciudad'], $d['celular'], $d['celular'], $d['direccion'], $d['email'], $d['necesita'] ?: null, Modulos::csv($d['modulos']), mb_substr($ip, 0, 45) ?: null]);
         return (int) $st->fetchColumn();
     }
 
