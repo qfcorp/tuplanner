@@ -26,7 +26,7 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#4A1E2A">
+<meta name="theme-color" content="#3678B4">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -39,7 +39,7 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
 <?php endforeach; ?>
 <?php /* Identidad gráfica común Tukán: el kit va AL FINAL (idéntico en todos los programas) y en la línea de abajo, lo único propio: el color */ ?>
 <link rel="stylesheet" href="/assets/tukan-ui.css?v=<?= filemtime(RAIZ . '/public/assets/tukan-ui.css') ?>">
-<style>:root{ --tk-color:#8A3F5C; --tk-color-claro:#F0B3CB; --tk-color-texto:#ffffff; }</style>
+<style>:root{ --tk-color:#3678B4; --tk-color-claro:#629BD0; --tk-color-texto:#ffffff; }</style>
 </head>
 <body class="tk <?= ($u ? 'con-sesion' : 'sin-sesion') . ($enApp ? ' en-app' : '') ?>">
 <header class="tk-arriba no-imprimir">

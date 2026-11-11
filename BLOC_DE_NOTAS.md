@@ -4,7 +4,10 @@
 
 ## 10 nov 2026 — Identidad gráfica común Tukán (decisión de Dimitry: todos los programas iguales, modelo el ERP)
 - TuPlanner usa el **kit común** `public/assets/tukan-ui.css` + `tukan-ui.js` (idénticos en todos los programas; no se editan aquí).
-  Lo único propio es el color: rosa antiguo `#8A3F5C` (línea `<style>` en `app/vistas/_diseno.php`).
+  Lo único propio es el color (línea `<style>` en `app/vistas/_diseno.php`): **azul `#3678B4` con texto blanco**, el de
+  tukansoftware.com (`#3B82C4`) en su tono de pantalla (**decisión de Dimitry 10 nov: color de la web**; antes rosa antiguo
+  `#8A3F5C`). La letra azul sobre el gris usa un tono un poco más oscuro (ver `docs/LINEA_GRAFICA.md`). Portal público, PDF y
+  correos sin cambios.
 - Barra de arriba del color del programa (logo del negocio, nombre, usuario, Salir); menú izquierdo azul noche con TODO a la
   vista, en grupos (Principal, Ventas, Dinero, Operación, Configuración) y con emoji; en el celular se abre con ☰ (ya no hay
   barra de botones abajo; la pantalla «Más» sigue existiendo en `/?r=mas`).

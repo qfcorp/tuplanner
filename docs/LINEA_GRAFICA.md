@@ -12,9 +12,19 @@ cabecera azul noche. **Cada programa solo cambia su color.**
 
 ## Color de TuPlanner (la única línea propia, en `app/vistas/_diseno.php`)
 ```html
-<style>:root{ --tk-color:#8A3F5C; --tk-color-claro:#F0B3CB; --tk-color-texto:#ffffff; }</style>
+<style>:root{ --tk-color:#3678B4; --tk-color-claro:#629BD0; --tk-color-texto:#ffffff; }</style>
 ```
-`#8A3F5C` es el rosa antiguo que TuPlanner ya usaba. Blanco sobre ese color: contraste 7,1:1. `#F0B3CB` sobre azul noche: 10,2:1.
+**Decisión de Dimitry, 10 nov 2026: el color de la web.** Cada programa usa por dentro el mismo color que tiene en
+tukansoftware.com (y en el Panel). TuPlanner es **azul**: en la web `#3B82C4`; aquí `#3678B4`, el «tono de pantalla» (un poco más
+oscuro para que el texto blanco llegue a 4,5:1: da 4,7:1). Antes rosa antiguo `#8A3F5C`. También `<meta name="theme-color">` y
+`theme_color` de `public/manifest.json` (los íconos y la app de Google Play no cambian). `#629BD0` sobre azul noche: más de 6:1.
+- Como letra sobre el gris del kit el `#3678B4` no llega (4,3:1). En el puente (`app.css`): `--tp-color-letra` = el mismo azul más
+  oscuro (`color-mix(… 80%, #000)`, 6:1). Lo usan los enlaces sueltos y **`--verde`** (las piezas de antes que lo usaban como letra:
+  pestañas, «Ver…», montos, años de las metas). `--verde-claro` y `--verde-oscuro` también son tonos del azul.
+- Las piezas de antes con `--verde` de **fondo** (chips activos, contadores, pestañas del día, embudo, paso actual, casillas hechas
+  del plan, barras de gráficos…) están listadas al final del puente («Piezas de antes con fondo del color del programa») con el
+  azul del programa y su texto. Si aparece una pieza nueva con fondo del color, agrégala ahí.
+- El portal público del cliente, los PDF, los correos y los colores que elige cada negocio no cambian.
 
 ## Menú (`app/menu.php`, función `tk_menu()`): una sola definición para el menú y la pantalla «Más»
 | Grupo | Opciones (las de módulos apagados o sin permiso no salen) |

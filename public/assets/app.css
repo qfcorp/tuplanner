@@ -1,4 +1,5 @@
-/* TuPlanner — rosa antiguo y dorado (familia Tukán) */
+/* TuPlanner — portal público, PDF y correos: rosa antiguo y dorado (o el color del negocio). Pantallas del sistema: azul TuPlanner #3678B4
+   (el color de tukansoftware.com, decisión de Dimitry 10 nov 2026) con el kit común Tukán; ver el PUENTE al final de este archivo */
 :root {
     --fondo: #F6F3F2;
     --superficie: #FFFFFF;
@@ -570,7 +571,12 @@ body.admin { background: var(--fondo); }
    ===================================================================================================================== */
 body.tk {
     --fondo: var(--tk-fondo); --superficie: var(--tk-blanco); --tinta: var(--tk-tinta); --tinta-suave: var(--tk-suave); --linea: var(--tk-linea);
-    --verde: var(--tk-color); --rojo: var(--tk-mal); --rojo-claro: #fee2e2; --ok-claro: #dcfce7;
+    --rojo: var(--tk-mal); --rojo-claro: #fee2e2; --ok-claro: #dcfce7;
+    /* Azul TuPlanner #3678B4: da 4,7:1 con blanco, pero como LETRA sobre el gris del kit no llega (4,3:1). Las piezas de antes que usan
+       --verde como letra (enlaces, pestañas, «Ver…», montos) toman un azul un poco más oscuro (6,1:1 sobre gris) y las que lo usan de
+       FONDO se pasan una a una al azul del programa (ver «Piezas de antes con fondo del color del programa», más abajo). */
+    --tp-color-letra: color-mix(in srgb, var(--tk-color) 80%, #000);
+    --verde: var(--tp-color-letra); --verde-claro: color-mix(in srgb, var(--tk-color) 12%, #fff); --verde-oscuro: color-mix(in srgb, var(--tk-color) 50%, #000);
     --radio: var(--tk-radio); --sombra: 0 1px 3px rgba(0,0,0,.04); --fuente: var(--tk-letra);
     font-feature-settings: normal;
 }
@@ -581,7 +587,7 @@ body.tk .tk-contenido :is(h1, h2, h3) { letter-spacing: 0; }
 body.tk .tk-contenido h1 { font-size: 22px; font-weight: 900; }
 body.tk .tk-contenido h2 { font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: .2px; }
 body.tk .tk-contenido h3 { font-size: 14px; font-weight: 800; }
-:where(body.tk .tk-contenido) a:not([class]) { color: var(--tk-color); }   /* enlaces sueltos: del color del programa (los que tienen clase conservan el suyo) */
+:where(body.tk .tk-contenido) a:not([class]) { color: var(--tp-color-letra); }   /* enlaces sueltos: del color del programa, en su tono para letra (los que tienen clase conservan el suyo) */
 body.tk .tk-contenido small, body.tk .suave { color: var(--tk-muy-suave); }
 body.tk :focus-visible { border-radius: 4px; }
 
@@ -743,3 +749,16 @@ body.tk .tk-arriba small { color: inherit; }
 /* Contraste AA que al kit le falta (avisado para corregirlo en el kit): texto gris sobre el fondo gris (4,3:1) y blanco sobre el verde (3,3:1) */
 body.tk { --tk-muy-suave: #55627a; }
 body.tk .tk-boton.ok { background: #15803d; }
+
+/* Piezas de antes con fondo del color del programa: azul #3678B4 con su texto (--tk-color-texto), como la barra y el botón principal.
+   Barras de gráficos, interruptores y casillas hechas, solo el fondo. (Color de la web, 10 nov 2026.) */
+body.tk :is(.boton:not(.tk-boton, .boton-claro, .boton-peligro, .boton-wa), .etq-atendida, .paso-num, .dia:has(input:checked), .marca-sello,
+    .chip-estado.chip-activo, .cb-chips a.activo, .cb-contador, .dia-secciones a.activa, .doc-pasos > li.doc-ahora > span,
+    .g-acceso.principal-acc, .g-periodos a.activo, .g-embudo div, .pt-chip input:checked + span) {
+    background: var(--tk-color); border-color: var(--tk-color); color: var(--tk-color-texto); }
+body.tk :is(.cb-chips a.activo small, .dia:has(input:checked) .dia-sem, .dia:has(input:checked) .dia-mes) { color: inherit; }
+body.tk .dia-secciones a.activa .dia-cuenta { background: rgba(255,255,255,.22); color: inherit; }
+body.tk :is(.g-barra-pista span, .g-col-barra, .interruptor:checked, .pn-hecha .pn-caja, .pv-mov-compra .pv-linea-punto, .pv-mov-factura .pv-linea-punto) { background: var(--tk-color); }
+body.tk .ev-camino li.hecho::before { background: var(--tk-color); border-color: var(--tk-color); }
+body.tk .ev-camino li.hecho::after, body.tk .ev-camino li.actual::after { background: var(--tk-color); }
+body.tk .cal-dia.elegido { background: var(--verde-claro); }

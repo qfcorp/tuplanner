@@ -36,5 +36,8 @@ contiene "Privacidad habla de eventos" "$TMP/pag.html" "organizadores de eventos
 check "Ruta que no existe: 404" "404" "$(get "r=no_existe")"
 check "Menú Más" "200" "$(get "r=mas")"
 contiene "Más lista Catálogo" "$TMP/pag.html" "Catálogo y precios"
+# Color de TuPlanner = el de tukansoftware.com (decisión de Dimitry, 10 nov 2026): azul con texto blanco
+contiene "Color del programa: azul de la web con texto blanco" "$TMP/pag.html" '--tk-color:#3678B4; --tk-color-claro:#629BD0; --tk-color-texto:#ffffff;'
+no_contiene "… ya no el rosa antiguo de antes" "$TMP/pag.html" '--tk-color:#8A3F5C'
 check "Búsqueda rápida responde JSON" "200" "$(get "r=buscar&q=bo")"
 contiene "JSON de búsqueda" "$TMP/pag.html" "resultados"
