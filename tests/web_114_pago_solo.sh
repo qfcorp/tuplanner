@@ -301,7 +301,7 @@ panel_modo false
 get "r=planes" > /dev/null
 contiene "Cobro con tarjeta apagado: la sugerencia igual sale" "$TMP/pag.html" 'data-sugerencia="mayor"'
 no_contiene "… sin el enlace a pagar con tarjeta" "$TMP/pag.html" "pagar=quinta"
-no_contiene "… y sin botón que cambie el plan" "$TMP/pag.html" 'name="accion" value="pasar_completo"'
+contiene "… y como ya paga más que el Completo, puede pasarse sin cobro" "$TMP/pag.html" "Pasarme ahora (no se cobra)</button>"
 get "r=inicio&app=play" > /dev/null
 get "r=planes" > /dev/null
 no_contiene "En la app de Google Play: sin sugerencia" "$TMP/pag.html" "data-sugerencia"
@@ -370,12 +370,49 @@ registrar esencial "Local Minimo $RANDOM"; pagar_plan esencial; NMI=$NID
 sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia,invitados' WHERE id=$NMI" > /dev/null
 get "r=planes" > /dev/null
 contiene "Diferencia menor a \$1: lo dice" "$TMP/pag.html" "La diferencia es menor a \$1: no se cobra."
+contiene "… con el botón «Pasarme ahora (no se cobra)»" "$TMP/pag.html" '<button class="boton" type="submit">Pasarme ahora (no se cobra)</button>'
+no_contiene "… sin «Enviar por WhatsApp» (no hay nada que pagar)" "$TMP/pag.html" "Enviar por WhatsApp"
 CREADOS=$(wc -l < "$PSIM/cobros.json"); NCOB=$(php -r 'echo count(json_decode((string) file_get_contents($argv[1]), true));' "$PSIM/cobros.json")
 r=$(post "r=planes" -d accion=pasar_completo)
 check "El Panel contesta «minimo»: vuelve a Mi plan, sin cobro nuevo" "302 $BASE/?r=planes|$NCOB" "$r|$(php -r 'echo count(json_decode((string) file_get_contents($argv[1]), true));' "$PSIM/cobros.json")"
 check "… y el plan cambia sin cobro, con el mismo vencimiento" "quinta|$(date -d '+30 days' +%F)" "$(sql "SELECT plan_codigo||'|'||activo_hasta FROM negocios WHERE id=$NMI")"
 get "r=planes" > /dev/null
 contiene "… y lo dice" "$TMP/pag.html" "Listo: ya tienes el plan Completo. La diferencia es menor a \$1: no se cobra. Tu vencimiento no cambia."
+# (19:12) Menos de $1 con el cobro con tarjeta APAGADO o el Panel CAÍDO: pasa directo igual, sin preguntarle al Panel
+for modo in "false" "true true true"; do
+  registrar esencial "Local Directo $RANDOM"; pagar_plan esencial; NDI=$NID
+  sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia,invitados' WHERE id=$NDI" > /dev/null
+  panel_modo $modo
+  get "r=planes" > /dev/null
+  contiene "Sin tarjeta ($modo): «La diferencia es menor a \$1: no se cobra»" "$TMP/pag.html" "La diferencia es menor a \$1: no se cobra."
+  contiene "… y el botón «Pasarme ahora (no se cobra)»" "$TMP/pag.html" "Pasarme ahora (no se cobra)</button>"
+  LIN=$(grep -c '"accion":"mejora"' "$PSIM/pedidos.log")
+  post "r=planes" -d accion=pasar_completo > /dev/null
+  check "… pasa DIRECTO al Completo, mismo vencimiento, sin pedirle «mejora» al Panel" "quinta|$(date -d '+30 days' +%F)|$LIN" "$(sql "SELECT plan_codigo||'|'||activo_hasta FROM negocios WHERE id=$NDI")|$(grep -c '"accion":"mejora"' "$PSIM/pedidos.log")"
+  check "… anotado en el registro, sin solicitud ni pago" "1|0|0" "$(sql "SELECT count(*) FROM registro_admin WHERE negocio_id=$NDI AND accion LIKE '%la diferencia era menor a \$1 y no se cobró'")|$(sql "SELECT count(*) FROM modulos_solicitudes WHERE negocio_id=$NDI")|$(sql "SELECT count(*) FROM suscripciones WHERE negocio_id=$NDI")"
+  get "r=planes" > /dev/null
+  contiene "… y lo dice" "$TMP/pag.html" "Listo: ya tienes el plan Completo. La diferencia es menor a \$1: no se cobra. Tu vencimiento no cambia."
+done
+panel_modo false
+registrar esencial "Local Con Valor $RANDOM"; pagar_plan esencial; NCV=$NID
+sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia' WHERE id=$NCV" > /dev/null
+post "r=planes" -d accion=pasar_completo > /dev/null
+check "Con una diferencia de \$4,01 y sin tarjeta: NO pasa directo" "esencial" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NCV")"
+panel_modo true
+# (19:12) La tarea de cada hora también pone el plan cuando el cobro quedó pagado (sin abrir Mi plan)
+r=$(post "r=planes" -d accion=pasar_completo)
+IDH=$(php -r '$c = json_decode((string) file_get_contents($argv[1]), true); echo end($c)["id"];' "$PSIM/cobros.json")
+check "Pidió pagar con tarjeta: queda anotado que espera el pago" "1" "$(sql "SELECT count(*) FROM plan_mejoras_pedidas WHERE negocio_id=$NCV")"
+TAREA="env TUKAN_CENTRAL_URL=http://127.0.0.1:$PP TUPLANNER_DB_NAME=$DB TUPLANNER_DB_USER=tuplanner TUPLANNER_DB_PASS=$PGPASSWORD php bin/tareas.php"
+$TAREA > "$TMP/tarea114.txt" 2>&1
+check "Tarea de cada hora con el cobro sin pagar: no cambia nada" "esencial|1" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NCV")|$(sql "SELECT count(*) FROM plan_mejoras_pedidas WHERE negocio_id=$NCV")"
+ps_estado $IDH pagado
+$TAREA > "$TMP/tarea114.txt" 2>&1
+check "Tarea de cada hora con el cobro pagado: pone el Completo, mismo vencimiento" "quinta|$(date -d '+30 days' +%F)" "$(sql "SELECT plan_codigo||'|'||activo_hasta FROM negocios WHERE id=$NCV")"
+contiene "… y lo dice en su registro" "$TMP/tarea114.txt" "cambios de plan pagados con tarjeta aplicados: 1"
+check "… una sola vez, y deja de esperar" "1|0" "$(sql "SELECT count(*) FROM plan_mejoras WHERE negocio_id=$NCV AND cobro_id=$IDH")|$(sql "SELECT count(*) FROM plan_mejoras_pedidas WHERE negocio_id=$NCV")"
+$TAREA > "$TMP/tarea114.txt" 2>&1
+no_contiene "Otra corrida: nada que aplicar" "$TMP/tarea114.txt" "cambios de plan pagados"
 # Período vencido: no hay prorrateo; paga el Completo entero
 registrar esencial "Local Vencido $RANDOM"; pagar_plan esencial; NVE=$NID
 sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia', activo_hasta=CURRENT_DATE - 1 WHERE id=$NVE" > /dev/null

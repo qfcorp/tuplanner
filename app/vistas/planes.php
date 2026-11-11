@@ -94,13 +94,20 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
         Diferencia: <?= dinero($mejora['subtotal']) ?> + IVA = <strong><?= dinero($mejora['total']) ?></strong>.</p>
     <p class="g-nota">Pagas solo la diferencia por los días que te faltan. Tu fecha de vencimiento no cambia; en la renovación pagas el plan Completo.<?= $mejora['subtotal'] < 1 ? ' <strong>La diferencia es menor a $1: no se cobra.</strong>' : '' ?></p>
     <div class="acciones">
-        <?php if ($mjTarjeta): ?>
+        <?php if ($mejora['subtotal'] < 1): /* (19:12) menos de $1 (o $0): pasa directo, con o sin cobro con tarjeta */ ?>
             <form method="post" action="<?= e(url('planes')) ?>" style="display:inline"><?= campo_csrf() ?><input type="hidden" name="accion" value="pasar_completo">
-                <button class="boton" type="submit"><?= $mejora['subtotal'] < 1 ? 'Pasarme al Completo' : 'Pagar ' . dinero($mejora['total']) . ' con tarjeta' ?></button></form>
+                <button class="boton" type="submit">Pasarme ahora (no se cobra)</button></form>
+        <?php else: ?>
+            <?php if ($mjTarjeta): ?>
+                <form method="post" action="<?= e(url('planes')) ?>" style="display:inline"><?= campo_csrf() ?><input type="hidden" name="accion" value="pasar_completo">
+                    <button class="boton" type="submit">Pagar <?= dinero($mejora['total']) ?> con tarjeta</button></form>
+            <?php endif; ?>
+            <a class="boton boton-wa" href="<?= e('https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode(TuPlanner\PagoPlan::textoWhatsAppMejora($mejora, (string) $u['negocio']))) ?>" target="_blank" rel="noopener">Enviar por WhatsApp</a>
         <?php endif; ?>
-        <a class="boton boton-wa" href="<?= e('https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode(TuPlanner\PagoPlan::textoWhatsAppMejora($mejora, (string) $u['negocio']))) ?>" target="_blank" rel="noopener">Enviar por WhatsApp</a>
     </div>
+    <?php if ($mejora['subtotal'] >= 1): ?>
     <p class="g-nota" style="margin-top:8px"><?= $mjTarjeta ? 'Con tarjeta, tu plan cambia apenas se aprueba el pago. ' : ($mjSus ? 'Tienes un pago con tarjeta sin terminar: termínalo o cancélalo abajo para pagar este cambio con tarjeta. ' : '') ?>Por WhatsApp pagas por transferencia: tu plan cambia cuando Tukán registra tu pago.</p>
+    <?php endif; ?>
 </section>
 <?php endif; ?>
 <?php if ($me['demo']): ?>

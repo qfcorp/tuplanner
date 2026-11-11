@@ -58,6 +58,14 @@ if (es_post() && ($_POST['accion'] ?? '') === 'pasar_completo') {
         if (modulos()->estado($nid)['precio_acordado'] !== null) throw new RuntimeException('Tienes un precio acordado con Tukán: escríbenos por WhatsApp para cambiar de plan.');
         // (10 nov 2026, corrección de Dimitry: «debe cobrarse… un método de pago válido y pagar el prorrateo») Nadie pasa al
         // Completo sin pagar. Sin cobro con tarjeta disponible (Panel apagado, caído o sin conectar) el plan NO cambia y no se crea pedido.
+        // (10 nov 2026, 19:12) Diferencia menor a $1 (también $0) y sin cobro con tarjeta disponible: pasa DIRECTO, sin cobro
+        $mj = $pagoPlan->mejora($nid);
+        if ($mj && $mj['subtotal'] < 1 && !$pagoPlan->activo($nid, (string) $u['email']) && !$pagoPlan->suscripcionPagada($nid)) {
+            $pagoPlan->pasarSinCobro($nid);
+            aviso('Listo: ya tienes el plan Completo. La diferencia es menor a $1: no se cobra. Tu vencimiento no cambia.');
+            header('Location: ' . url('planes'));
+            exit;
+        }
         if (!$pagoPlan->activo($nid, (string) $u['email'])) throw new RuntimeException(PagoPlan::SIN_TARJETA);
         $sus = $pagoPlan->suscripcionPagada($nid, (string) $u['email']);
         if (!$sus) {

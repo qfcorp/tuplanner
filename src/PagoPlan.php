@@ -351,7 +351,40 @@ final class PagoPlan
         if (empty($j['ok'])) throw new RuntimeException((string) ($j['error'] ?? 'No se pudo crear el pago.') . ' Tu plan sigue igual.');
         $cobro = is_array($j['cobro'] ?? null) ? $j['cobro'] : [];
         if (!is_string($cobro['url_pago'] ?? null) || !preg_match('#^https?://#', $cobro['url_pago'])) throw new RuntimeException('El sistema de pagos no devolvió la página de pago. Tu plan sigue igual: intenta otra vez.');
+        // Queda anotado que este negocio espera un pago: la tarea de cada hora revisa si ya quedó pagado (aplicarPendientes)
+        $this->db->prepare('INSERT INTO plan_mejoras_pedidas (negocio_id) VALUES (?) ON CONFLICT (negocio_id) DO UPDATE SET pedida = now()')->execute([$nid]);
         return ['url_pago' => $cobro['url_pago']];
+    }
+
+    /**
+     * (10 nov 2026, 19:12) Si la diferencia es menor a $1 (también $0: en el Básico ya paga igual o más que el Completo), el
+     * cliente pasa DIRECTO al Completo, sin cobro y sin preguntarle al Panel (sirve con el cobro con tarjeta apagado o el Panel
+     * caído). El vencimiento no cambia. Lanza el motivo si no aplica.
+     */
+    public function pasarSinCobro(int $negocioId, ?\DateTimeImmutable $hoy = null): void
+    {
+        $m = $this->mejora($negocioId, $hoy);
+        if (!$m || $m['subtotal'] >= 1) throw new RuntimeException('Este cambio de plan tiene un valor: hay que pagarlo.');
+        $this->ponerPlan($negocioId, $m['plan'], 0, 0.0, 'la diferencia era menor a $1 y no se cobró');
+    }
+
+    /**
+     * Tarea de cada hora (bin/tareas.php): para los negocios que pidieron pagar un cambio de plan con tarjeta, le pregunta al
+     * Panel y pone el plan si el cobro ya está pagado (así no depende de que el dueño abra Mi plan). Los pedidos de más de
+     * 7 días se olvidan. Devuelve cuántos planes puso. Si el Panel no contesta, no pasa nada: se revisa en la hora siguiente.
+     */
+    public function aplicarPendientes(): int
+    {
+        $this->db->exec("DELETE FROM plan_mejoras_pedidas WHERE pedida < now() - interval '7 days'");
+        $n = 0;
+        foreach ($this->db->query('SELECT negocio_id FROM plan_mejoras_pedidas ORDER BY pedida')->fetchAll(PDO::FETCH_COLUMN) as $nid) {
+            try {
+                if ($this->aplicarMejoras((int) $nid) !== null) $n++;
+            } catch (\Throwable) {
+                // un negocio con problemas no detiene a los demás
+            }
+        }
+        return $n;
     }
 
     /**
@@ -369,6 +402,7 @@ final class PagoPlan
             if (empty($planes[$plan]['todos'])) continue;   // solo se sube al Completo
             if ($this->ponerPlan($negocioId, $plan, (int) $c['id'], (float) ($c['subtotal'] ?? 0), 'pagó el prorrateo con tarjeta, cobro N.º ' . (int) $c['id'])) $puesto = (string) $planes[$plan]['nombre'];
         }
+        if ($puesto !== null) $this->db->prepare('DELETE FROM plan_mejoras_pedidas WHERE negocio_id = ?')->execute([$negocioId]);
         return $puesto;
     }
 

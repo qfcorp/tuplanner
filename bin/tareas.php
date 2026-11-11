@@ -8,7 +8,8 @@ declare(strict_types=1);
  * Hace: vence cotizaciones, libera fechas retenidas, avisa cuotas por cobrar (8:00), revisar precio,
  * eventos en 7 días, pasa a "realizado" los eventos que ya pasaron (y avisa devolver la garantía),
  * el reporte del mes (día 1 desde las 7:00), los seguimientos del día por Telegram (8:00) y la papelera del Panel Tukán Central
- * (borra de verdad los negocios con más de 30 días en la papelera y las copias de más de 1 año).
+ * (borra de verdad los negocios con más de 30 días en la papelera y las copias de más de 1 año). También pone el plan Completo
+ * a quien ya pagó con tarjeta el prorrateo de su cambio de plan (PagoPlan::aplicarPendientes).
  * Cada cosa se envía una sola vez aunque el cron corra muchas veces.
  *
  * Para probar con otra fecha:  php bin/tareas.php "2026-11-01 08:00"
@@ -49,4 +50,12 @@ try {
     exit(1);
 }
 echo TuPlanner\Automaticas::resumen($ahora, $r) . "\n";
+// (10 nov 2026) Cambios de plan pagados con tarjeta (prorrateo): si el Panel Tukán Central ya los tiene pagados, se pone el plan.
+// Solo pregunta por los negocios que están esperando un pago; si el Panel no contesta, se revisa en la hora siguiente.
+try {
+    $mejoras = (new TuPlanner\PagoPlan($db))->aplicarPendientes();
+    if ($mejoras > 0) echo $ahora->format('Y-m-d H:i') . " cambios de plan pagados con tarjeta aplicados: $mejoras\n";
+} catch (Throwable $e) {
+    fwrite(STDERR, $ahora->format('Y-m-d H:i') . ' ERROR al revisar cambios de plan: ' . $e->getMessage() . "\n");
+}
 exit($r['errores'] ? 1 : 0);

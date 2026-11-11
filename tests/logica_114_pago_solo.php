@@ -381,4 +381,37 @@ check_error('Demo o vencido no piden prorrateo', 'se paga completo', fn() => $pp
 $db->prepare("UPDATE negocios SET activo_hasta = CURRENT_DATE + 20 WHERE id = ?")->execute([$j]);
 check_error('Cliente al día no puede pagar el Completo entero (se le regalarían los días que faltan)', 'pagas solo la diferencia', fn() => $pp()->crear($uj, 'quinta', 'mensual', true, $VOLVER));
 
+titulo('12. Menos de $1: pasa directo sin preguntarle al Panel; y la tarea de cada hora aplica lo pagado (19:12)');
+[$z] = negocio_prueba($db, 'esencial', 'Local Directo');
+$db->prepare("UPDATE negocios SET estado = 'activo', activo_hasta = '2026-12-20', modulos_extra = 'paquetes,contratos,portal_cliente,plano,asistente_ia,invitados' WHERE id = ?")->execute([$z]);
+$uz = $usuarioDe($z);
+$panel['modo'] = 'caido';
+$antesPed = count($panel['pedidos']);
+check('En el Básico paga $25,99 (más que el Completo): diferencia $0', 0.0, $pp()->mejora($z, $f('2026-12-01'))['subtotal']);
+$pp()->pasarSinCobro($z, $f('2026-12-01'));
+check('Pasa directo al Completo con el Panel caído, mismo vencimiento', ['quinta', '2026-12-20'], [$valor("SELECT plan_codigo FROM negocios WHERE id = $z"), $valor("SELECT activo_hasta FROM negocios WHERE id = $z")]);
+check('… sin preguntarle nada al Panel', $antesPed, count($panel['pedidos']));
+check('… anotado en el registro', 1, (int) $valor("SELECT count(*) FROM registro_admin WHERE negocio_id = $z AND accion LIKE '%la diferencia era menor a $1 y no se cobró'"));
+$db->prepare("UPDATE negocios SET plan_codigo = 'esencial', modulos_extra = 'paquetes,contratos,portal_cliente,plano,asistente_ia' WHERE id = ?")->execute([$z]);
+$pp()->pasarSinCobro($z, $f('2026-12-19'));
+check('Falta 1 día ($0,13): también pasa directo', 'quinta', $valor("SELECT plan_codigo FROM negocios WHERE id = $z"));
+$db->prepare("UPDATE negocios SET plan_codigo = 'esencial' WHERE id = ?")->execute([$z]);
+check_error('Con $1 o más NO pasa directo: hay que pagarlo', 'hay que pagarlo', fn() => $pp()->pasarSinCobro($z, $f('2026-12-01')));
+check_error('Demo o vencido: tampoco', 'hay que pagarlo', fn() => $pp()->pasarSinCobro($z, $f('2027-01-05')));
+check('… sigue en el Básico', 'esencial', $valor("SELECT plan_codigo FROM negocios WHERE id = $z"));
+$panel['modo'] = 'activo';
+$pp()->pedirMejora($uz, $VOLVER, $f('2026-12-01'));
+$idZ = count($panel['cobros']);
+check('Pidió pagar con tarjeta: queda anotado que espera el pago', 1, (int) $valor("SELECT count(*) FROM plan_mejoras_pedidas WHERE negocio_id = $z"));
+check('Tarea de cada hora con el cobro sin pagar: 0 aplicados', [0, 'esencial'], [$pp()->aplicarPendientes(), $valor("SELECT plan_codigo FROM negocios WHERE id = $z")]);
+$panel['modo'] = 'caido';
+check('Tarea de cada hora con el Panel caído: no pasa nada y sigue esperando', [0, 1], [$pp()->aplicarPendientes(), (int) $valor("SELECT count(*) FROM plan_mejoras_pedidas WHERE negocio_id = $z")]);
+$panel['modo'] = 'activo';
+$todos = $panel['cobros']; $todos[$idZ - 1]['estado'] = 'pagado'; $panel['cobros'] = $todos;
+check('Tarea de cada hora con el cobro pagado: pone el Completo', [1, 'quinta', '2026-12-20'], [$pp()->aplicarPendientes(), $valor("SELECT plan_codigo FROM negocios WHERE id = $z"), $valor("SELECT activo_hasta FROM negocios WHERE id = $z")]);
+check('… y deja de esperar; otra corrida no hace nada', [0, 0], [(int) $valor("SELECT count(*) FROM plan_mejoras_pedidas WHERE negocio_id = $z"), $pp()->aplicarPendientes()]);
+$db->prepare("INSERT INTO plan_mejoras_pedidas (negocio_id, pedida) VALUES (?, now() - interval '8 days')")->execute([$j]);
+$pp()->aplicarPendientes();
+check('Un pedido de más de 7 días se olvida', 0, (int) $valor('SELECT count(*) FROM plan_mejoras_pedidas'));
+
 putenv('TUKAN_CENTRAL_ID'); putenv('TUKAN_CENTRAL_SECRET'); putenv('TUKAN_CENTRAL_URL');

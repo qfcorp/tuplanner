@@ -265,3 +265,15 @@ Dimitry: «Si pagó con transferencia igual paga. Si quiere pagar con tarjeta de
 - **Demo o período vencido:** sin prorrateo; pagan el Completo entero en «Pagar con tarjeta». El cliente al día ya no puede pagar el Completo entero (se le regalarían los días que faltan): el servidor lo rechaza.
 - Archivos: `src/PagoPlan.php`, `app/paginas/planes.php`, `app/vistas/planes.php`, `db/migraciones/117_mejora_plan.sql`, `tests/panel_simulado.php` (acción `mejora` y `origen`), `logica_114` (130) y `web_114` (200).
 - **Falta / para saber:** el plan pagado con tarjeta se aplica al abrir Mi plan en la web (el regreso del pago cae ahí); dentro de la app de Google Play no se consulta al Panel. Si Dimitry quiere, se puede aplicar también desde las tareas de cada hora.
+
+## 10 nov 2026 (19:12) — Menos de $1 pasa directo; la tarea de cada hora aplica lo pagado
+- **Menos de $1 (también $0):** el cliente pasa DIRECTO al Completo con el botón «Pasarme ahora (no se cobra)» y el mensaje «La diferencia es menor a $1: no se cobra», aunque el cobro con tarjeta esté apagado o el Panel caído. El programa calcula solo y no le pregunta al Panel (`PagoPlan::pasarSinCobro`). Con el cobro con tarjeta prendido sigue valiendo la respuesta `minimo` del Panel. El vencimiento no cambia y queda en el registro que ve Tukán.
+- **Confirmado por Dimitry:** quien en el Básico ya paga igual o más que el Completo pasa sin cobro.
+- **Tarea de cada hora:** cuando el dueño pide pagar el prorrateo con tarjeta, su negocio queda anotado (`plan_mejoras_pedidas`, migración 118). `bin/tareas.php` le pregunta al Panel solo por esos negocios y pone el plan si el cobro ya está pagado (`PagoPlan::aplicarPendientes`); ya no depende de que abra Mi plan ni de la app. Si el Panel no contesta, se revisa en la hora siguiente; a los 7 días se deja de esperar.
+- Pruebas: `logica_114` (144) y `web_114` (con la tarea de cada hora contra el Panel simulado).
+
+## 10 nov 2026 (19:20) — Precios en Google Play
+- Dimitry fijó: **Básico $15,99 al mes / $76,99 6 meses / $152,99 1 año** y **Completo $28,99 al mes / $144,99 6 meses / $289,99 1 año** (el Completo antes era $29,99 / $147,99 / $294,99).
+- Son los MISMOS productos de suscripción que ya existen: no se crean ni se renombran; solo se cambia el precio en Play Console.
+- En el repo solo estaba en `docs/GOOGLE_PLAY.md` (tabla y nota): ni el código ni las pruebas usan esos precios (el cobro con Google Play sigue apagado).
+- **Falta:** DIMI: cambiar el precio de los 3 productos del Completo en Play Console.
