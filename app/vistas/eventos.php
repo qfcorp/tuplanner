@@ -8,14 +8,14 @@ $chips = ['activos' => 'Activos', 'consulta' => 'Consultas', 'cotizado' => 'Coti
           'confirmado' => 'Confirmados', 'realizado' => 'Realizados', 'vendidos' => 'Vendidos', 'perdido' => 'Perdidos', 'cancelado' => 'Cancelados', '' => 'Todos'];
 $mesesCortos = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <h1>Eventos</h1>
         <p><?= $vistaLista === 'tablero' ? 'Tus ventas en camino, de la consulta a la confirmación' : 'Busca, filtra y abre cualquier evento' ?></p>
     </div>
-    <div class="acciones">
-        <?php if ($puedeCrear && modulo_activo($u, 'asistente_ia')): ?><a class="boton boton-claro" href="<?= e(url('ia_cotizacion')) ?>">✨ Desde un mensaje</a><?php endif; ?>
-        <?php if ($puedeCrear): ?><a class="boton" href="<?= e(url('evento_nuevo')) ?>">Nuevo evento</a><?php endif; ?>
+    <div class="acciones tk-acciones">
+        <?php if ($puedeCrear && modulo_activo($u, 'asistente_ia')): ?><a class="boton tk-boton boton-claro secundario" href="<?= e(url('ia_cotizacion')) ?>">✨ Desde un mensaje</a><?php endif; ?>
+        <?php if ($puedeCrear): ?><a data-ico="mas" class="boton tk-boton" href="<?= e(url('evento_nuevo')) ?>">Nuevo evento</a><?php endif; ?>
     </div>
 </div>
 
@@ -24,16 +24,16 @@ $mesesCortos = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep
     <a href="<?= e(url('eventos', ['vista' => 'tablero'] + array_diff_key($base, ['estado' => 1]))) ?>" class="<?= $vistaLista === 'tablero' ? 'activa' : '' ?>" <?= $vistaLista === 'tablero' ? 'aria-current="page"' : '' ?>>Tablero de ventas</a>
 </nav>
 
-<form method="get" class="bloque ev-filtros" role="search">
+<form method="get" class="bloque tk-tarjeta ev-filtros" role="search">
     <input type="hidden" name="r" value="eventos">
     <input type="hidden" name="vista" value="<?= e($vistaLista) ?>">
     <?php if ($vistaLista === 'lista'): ?><input type="hidden" name="estado" value="<?= e($estado) ?>"><?php endif; ?>
     <div class="ev-filtros-fila">
-        <div class="campo ev-buscar">
+        <div class="campo tk-campo ev-buscar">
             <label for="q">Buscar</label>
             <input type="search" id="q" name="q" value="<?= e($f['buscar']) ?>" placeholder="Nombre, código, cliente o celular">
         </div>
-        <div class="campo">
+        <div class="campo tk-campo">
             <label for="tipo">Tipo</label>
             <select id="tipo" name="tipo">
                 <option value="">Todos</option>
@@ -41,7 +41,7 @@ $mesesCortos = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep
             </select>
         </div>
         <?php if (count($vendedores) > 1): ?>
-        <div class="campo">
+        <div class="campo tk-campo">
             <label for="vendedor">Vendedor</label>
             <select id="vendedor" name="vendedor">
                 <option value="">Todos</option>
@@ -49,17 +49,17 @@ $mesesCortos = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep
             </select>
         </div>
         <?php endif; ?>
-        <div class="campo">
+        <div class="campo tk-campo">
             <label for="desde">Desde</label>
             <input type="date" id="desde" name="desde" value="<?= e($f['desde']) ?>">
         </div>
-        <div class="campo">
+        <div class="campo tk-campo">
             <label for="hasta">Hasta</label>
             <input type="date" id="hasta" name="hasta" value="<?= e($f['hasta']) ?>">
         </div>
         <div class="ev-filtros-botones">
-            <button class="boton" type="submit">Filtrar</button>
-            <?php if ($hayFiltros): ?><a class="boton boton-claro" href="<?= e(url('eventos', ['vista' => $vistaLista] + ($vistaLista === 'lista' ? ['estado' => $estado] : []))) ?>">Limpiar</a><?php endif; ?>
+            <button data-ico="buscar" class="boton tk-boton boton-claro secundario" type="submit">Filtrar</button>
+            <?php if ($hayFiltros): ?><a data-ico="cruz" class="boton tk-boton boton-claro secundario" href="<?= e(url('eventos', ['vista' => $vistaLista] + ($vistaLista === 'lista' ? ['estado' => $estado] : []))) ?>">Limpiar</a><?php endif; ?>
         </div>
     </div>
 </form>
@@ -69,10 +69,10 @@ $mesesCortos = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep
     $total = array_sum(array_column($tablero, 'cantidad'));
     ?>
     <?php if ($total === 0): ?>
-        <section class="bloque vacio">
+        <section class="bloque tk-tarjeta vacio tk-vacio">
             <p><strong>Todavía no hay ventas en camino<?= $hayFiltros ? ' con estos filtros' : '' ?>.</strong></p>
             <p>Cuando un cliente pregunte por una fecha, créale un evento: aparecerá aquí en "Consulta" y lo irás moviendo hasta "Confirmado".</p>
-            <?php if ($puedeCrear): ?><a class="boton" href="<?= e(url('evento_nuevo')) ?>">Crear el primer evento</a><?php endif; ?>
+            <?php if ($puedeCrear): ?><a data-ico="mas" class="boton tk-boton" href="<?= e(url('evento_nuevo')) ?>">Crear el primer evento</a><?php endif; ?>
         </section>
     <?php else: ?>
     <div class="tablero" aria-label="Tablero de ventas por estado">
@@ -126,7 +126,7 @@ $mesesCortos = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep
     </div>
     <?php endif; ?>
 
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <div class="ev-lista-cabeza">
             <p class="suave" style="margin:0">
                 <?= $soloFuturos ? 'De hoy en adelante. ' : '' ?>
@@ -138,14 +138,14 @@ $mesesCortos = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep
             </p>
         </div>
         <?php if (!$lista): ?>
-            <div class="vacio">
+            <div class="vacio tk-vacio">
                 <?php if ($hayFiltros || !in_array($estado, ['activos', ''], true)): ?>
                     <p>No hay eventos con estos filtros.</p>
-                    <a class="boton boton-claro" href="<?= e(url('eventos')) ?>">Ver todos los activos</a>
+                    <a data-ico="ojo" class="boton tk-boton boton-claro secundario" href="<?= e(url('eventos')) ?>">Ver todos los activos</a>
                 <?php else: ?>
                     <p><strong>Todavía no tienes eventos.</strong></p>
                     <p>Crea uno cada vez que alguien pregunte por una fecha. Así nunca se te olvida responder y ves el calendario siempre al día.</p>
-                    <?php if ($puedeCrear): ?><a class="boton" href="<?= e(url('evento_nuevo')) ?>">Crear el primer evento</a><?php endif; ?>
+                    <?php if ($puedeCrear): ?><a data-ico="mas" class="boton tk-boton" href="<?= e(url('evento_nuevo')) ?>">Crear el primer evento</a><?php endif; ?>
                 <?php endif; ?>
             </div>
         <?php else: ?>
@@ -170,7 +170,7 @@ $mesesCortos = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep
                             <small class="monto"><?= dinero($ev['total']) ?></small>
                             <?php if ((float) $ev['pagado'] < (float) $ev['total']): ?><small class="suave">debe <?= dinero((float) $ev['total'] - (float) $ev['pagado']) ?></small><?php endif; ?>
                         <?php endif; ?>
-                        <?php if ($wa): ?><a class="boton boton-wa boton-chico" href="<?= e($wa) ?>" target="_blank" rel="noopener" aria-label="WhatsApp a <?= e($ev['cliente']) ?>">WhatsApp</a><?php endif; ?>
+                        <?php if ($wa): ?><a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($wa) ?>" target="_blank" rel="noopener" aria-label="WhatsApp a <?= e($ev['cliente']) ?>">WhatsApp</a><?php endif; ?>
                     </span>
                 </li>
             <?php endforeach; ?>

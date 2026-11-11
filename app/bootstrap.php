@@ -207,7 +207,7 @@ function usuario(): ?array
     $st = db()->prepare(
         'SELECT u.id, u.nombre, u.email, u.rol, u.negocio_id, u.telefono,
                 n.nombre AS negocio, n.slug, n.plan_codigo, n.estado, n.prueba_hasta, n.activo_hasta, n.color, n.iva_pct,
-                n.pausa_tipo, n.pausa_motivo, pl.nombre AS plan_nombre
+                n.pausa_tipo, n.pausa_motivo, n.logo, pl.nombre AS plan_nombre
            FROM usuarios u JOIN negocios n ON n.id = u.negocio_id JOIN planes pl ON pl.codigo = n.plan_codigo
           WHERE u.id = ? AND u.activo AND n.eliminado_en IS NULL'
     );
@@ -432,3 +432,6 @@ function ip_visitante(): string
 {
     return substr((string) ($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? ''), 0, 45);
 }
+
+// Menú de la identidad gráfica común Tukán (docs/LINEA_GRAFICA.md): tk_menu() lo usan el diseño y la pantalla «Más»
+require_once __DIR__ . '/menu.php';

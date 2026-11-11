@@ -8,7 +8,7 @@ $celda = function (array $r): string {
 };
 ?>
 <?php if (!$previa['filas']): ?>
-    <p class="vacio">Todavía ningún proveedor tiene datos (llegadas, calificaciones o incidencias). Cuando los tengan, aquí verás cómo cambia su puntaje.</p>
+    <p class="vacio tk-vacio">Todavía ningún proveedor tiene datos (llegadas, calificaciones o incidencias). Cuando los tengan, aquí verás cómo cambia su puntaje.</p>
 <?php else: ?>
 <ul class="pv-previa">
     <?php foreach ($previa['filas'] as $f): $d = $f['despues']; ?>

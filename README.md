@@ -118,7 +118,7 @@ App **TuPlanner** (`com.tukansoftware.tuplanner`, repositorio `qfcorp/tukan-apps
 
 ## Ayuda e inteligencia artificial (migraciones 110 y 111)
 Con la librería compartida del Panel Tukán Central **`src/tukan_ia.php`** (copiada SIN cambios de `compartido/`, guía `compartido/LEEME_IA.md`).
-- **Ayuda** (todos los planes y cargos): **Más → Ayuda**, cuadro «¿Qué necesita hacer?» → `tukan_ia_ayuda()`: pregunta frecuente guardada (costo 0) →
+- **Ayuda** (todos los planes y cargos): **Menú → Ayuda**, cuadro «¿Qué necesita hacer?» → `tukan_ia_ayuda()`: pregunta frecuente guardada (costo 0) →
   IA (modelo rápido) con las secciones del manual del cliente (`docs/manual/manual.html` convertido a texto y guardado en caché; si no está, `docs/MANUAL.md`)
   y la respuesta queda como FAQ automática → sin poder gastar, el manual tal cual + el WhatsApp. POST con CSRF, 10 preguntas por minuto por usuario.
   Sin el módulo: máximo **30 respuestas nuevas al mes** por negocio. Nunca dice «límite», «cupo» ni «saldo».

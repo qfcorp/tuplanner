@@ -23,7 +23,7 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
 <?php endif; ?>
 
 <?php if ($verDinero && $resumen): ?>
-<section class="bloque" id="dinero" aria-labelledby="pn-t-dinero">
+<section class="bloque tk-tarjeta" id="dinero" aria-labelledby="pn-t-dinero">
     <h2 id="pn-t-dinero">Dinero del evento</h2>
     <div class="cifras pn-cifras">
         <div class="cifra-tarjeta"><small>Presupuesto del cliente</small><strong><?= $resumen['presupuesto_cliente'] !== null ? dinero($resumen['presupuesto_cliente']) : '—' ?></strong></div>
@@ -56,22 +56,22 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
     <?php endif; ?>
 </section>
 
-<section class="bloque" id="honorarios" aria-labelledby="pn-t-hon">
+<section class="bloque tk-tarjeta" id="honorarios" aria-labelledby="pn-t-hon">
     <h2 id="pn-t-hon">Tus honorarios</h2>
     <?php if ($comercial && $puede): ?>
     <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>" class="pn-en-linea">
         <?= campo_csrf() ?><input type="hidden" name="accion" value="honorario">
-        <div class="campo">
+        <div class="campo tk-campo">
             <label for="pn-modo">¿Cómo cobras en este evento?</label>
             <select id="pn-modo" name="modo">
                 <?php foreach (Planificacion::MODOS_HONORARIO as $k => $t): ?><option value="<?= e($k) ?>" <?= $ev['honorario_modo'] === $k ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?>
             </select>
         </div>
-        <div class="campo">
+        <div class="campo tk-campo">
             <label for="pn-pct">Porcentaje (%)</label>
             <input type="text" inputmode="decimal" id="pn-pct" name="pct" value="<?= e($num((float) $ev['honorario_pct'])) ?>">
         </div>
-        <button class="boton boton-claro" type="submit">Guardar</button>
+        <button data-ico="guardar" class="boton tk-boton boton-claro secundario" type="submit">Guardar</button>
     </form>
     <?php endif; ?>
     <?php if ($ev['honorario_modo'] === 'porcentaje'): ?>
@@ -83,17 +83,17 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
         <?php if ($cotEditables): ?>
         <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>" class="pn-en-linea">
             <?= campo_csrf() ?><input type="hidden" name="accion" value="honorario_cotizacion">
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="pn-hmonto">Honorarios ($, sin IVA)</label>
                 <input type="text" inputmode="decimal" id="pn-hmonto" name="monto" value="<?= e($ev['honorario_modo'] === 'porcentaje' ? $num($sugerido['monto']) : '') ?>" required>
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="pn-hcot">En la cotización</label>
                 <select id="pn-hcot" name="cotizacion_id">
                     <?php foreach ($cotEditables as $c): ?><option value="<?= (int) $c['id'] ?>">N.º <?= (int) $c['numero'] ?> versión <?= (int) $c['version'] ?> (<?= e(mb_strtolower(Cotizaciones::ESTADOS[$c['estado']])) ?>)</option><?php endforeach; ?>
                 </select>
             </div>
-            <button class="boton" type="submit">Poner en la cotización</button>
+            <button data-ico="nota" class="boton tk-boton" type="submit">Poner en la cotización</button>
         </form>
         <p class="suave ayuda-chica">Si la cotización ya tiene una línea de honorarios, se reemplaza por la nueva.</p>
         <?php else: ?>
@@ -102,18 +102,18 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
     <?php endif; ?>
 </section>
 
-<section class="bloque" id="presupuesto" aria-labelledby="pn-t-pres">
+<section class="bloque tk-tarjeta" id="presupuesto" aria-labelledby="pn-t-pres">
     <h2 id="pn-t-pres">Presupuesto por proveedor <small class="suave">(<?= count(array_filter($partidas, fn($p) => $p['estado'] !== 'cancelado')) ?> partidas)</small></h2>
     <?php if (!$partidas): ?>
-        <p class="vacio">Todavía no hay partidas. Anota cada cosa que hay que contratar (lugar, banquete, fotos, flores…) y quién le paga al proveedor.</p>
+        <p class="vacio tk-vacio">Todavía no hay partidas. Anota cada cosa que hay que contratar (lugar, banquete, fotos, flores…) y quién le paga al proveedor.</p>
         <?php if ($comercial && $puede): ?>
         <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>" class="pn-en-linea pn-repartir">
             <?= campo_csrf() ?><input type="hidden" name="accion" value="repartir">
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="pn-pres">Presupuesto total del cliente ($)</label>
                 <input type="text" inputmode="decimal" id="pn-pres" name="presupuesto" value="<?= e($ev['presupuesto_cliente'] !== null ? $num((float) $ev['presupuesto_cliente']) : '') ?>" required placeholder="Ej. 15.000">
             </div>
-            <button class="boton" type="submit">Repartir con los porcentajes típicos</button>
+            <button data-ico="refrescar" class="boton tk-boton" type="submit">Repartir con los porcentajes típicos</button>
         </form>
         <p class="suave ayuda-chica">Arma las partidas típicas de <?= e(mb_strtolower(\TuPlanner\Eventos::TIPOS[$ev['tipo']])) ?> (lugar, banquete, foto y video, decoración…) con un estimado. Después cambias lo que quieras.</p>
         <?php endif; ?>
@@ -156,7 +156,7 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
                                 <?= $pg['origen'] === 'cliente' ? '<small>(lo anotó el cliente)</small>' : '' ?><?= $pg['nota'] ? '<br><small>' . e($pg['nota']) . '</small>' : '' ?></span>
                                 <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>" class="derecha">
                                     <?= campo_csrf() ?><input type="hidden" name="accion" value="pago_borrar"><input type="hidden" name="pago_id" value="<?= (int) $pg['id'] ?>">
-                                    <button class="boton boton-claro boton-chico" type="submit" aria-label="Borrar el pago de <?= e(dinero((float) $pg['monto'])) ?>">Borrar</button>
+                                    <button data-ico="basura" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit" aria-label="Borrar el pago de <?= e(dinero((float) $pg['monto'])) ?>">Borrar</button>
                                 </form></li>
                             <?php endforeach; ?>
                         </ul>
@@ -164,11 +164,11 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
                         <?php if ($p['estado'] !== 'cancelado' && ($p['saldo'] > 0 || $p['valor'] <= 0)): ?>
                         <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>" class="pn-en-linea">
                             <?= campo_csrf() ?><input type="hidden" name="accion" value="pago"><input type="hidden" name="partida_id" value="<?= $pid ?>">
-                            <div class="campo"><label for="pg-m-<?= $pid ?>">Monto ($)</label><input type="text" inputmode="decimal" id="pg-m-<?= $pid ?>" name="monto" value="<?= e($p['saldo'] > 0 ? $num($p['saldo']) : '') ?>" required></div>
-                            <div class="campo"><label for="pg-f-<?= $pid ?>">Fecha</label><input type="date" id="pg-f-<?= $pid ?>" name="fecha" value="<?= e($hoy) ?>" max="<?= e($hoy) ?>" required></div>
-                            <div class="campo"><label for="pg-me-<?= $pid ?>">Forma</label><select id="pg-me-<?= $pid ?>" name="metodo"><?php foreach (Planificacion::METODOS as $k => $t): ?><option value="<?= e($k) ?>"><?= e($t) ?></option><?php endforeach; ?></select></div>
-                            <div class="campo"><label for="pg-n-<?= $pid ?>">Nota <small>(opcional)</small></label><input type="text" id="pg-n-<?= $pid ?>" name="nota" maxlength="200" placeholder="Ej. anticipo 50 %"></div>
-                            <button class="boton boton-claro" type="submit">Anotar pago</button>
+                            <div class="campo tk-campo"><label for="pg-m-<?= $pid ?>">Monto ($)</label><input type="text" inputmode="decimal" id="pg-m-<?= $pid ?>" name="monto" value="<?= e($p['saldo'] > 0 ? $num($p['saldo']) : '') ?>" required></div>
+                            <div class="campo tk-campo"><label for="pg-f-<?= $pid ?>">Fecha</label><input type="date" id="pg-f-<?= $pid ?>" name="fecha" value="<?= e($hoy) ?>" max="<?= e($hoy) ?>" required></div>
+                            <div class="campo tk-campo"><label for="pg-me-<?= $pid ?>">Forma</label><select id="pg-me-<?= $pid ?>" name="metodo"><?php foreach (Planificacion::METODOS as $k => $t): ?><option value="<?= e($k) ?>"><?= e($t) ?></option><?php endforeach; ?></select></div>
+                            <div class="campo tk-campo"><label for="pg-n-<?= $pid ?>">Nota <small>(opcional)</small></label><input type="text" id="pg-n-<?= $pid ?>" name="nota" maxlength="200" placeholder="Ej. anticipo 50 %"></div>
+                            <button data-ico="mas" class="boton tk-boton boton-claro secundario" type="submit">Anotar pago</button>
                         </form>
                         <?php endif; ?>
                     <?php else: ?>
@@ -179,22 +179,22 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
                         <?php if ($p['comision_por_cobrar'] > 0): ?>
                         <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>" class="pn-en-linea">
                             <?= campo_csrf() ?><input type="hidden" name="accion" value="comision"><input type="hidden" name="partida_id" value="<?= $pid ?>">
-                            <div class="campo"><label for="cm-m-<?= $pid ?>">Te pagó ($)</label><input type="text" inputmode="decimal" id="cm-m-<?= $pid ?>" name="monto" value="<?= e($num($p['comision_por_cobrar'])) ?>" required></div>
-                            <div class="campo"><label for="cm-f-<?= $pid ?>">Fecha</label><input type="date" id="cm-f-<?= $pid ?>" name="fecha" value="<?= e($hoy) ?>" required></div>
-                            <button class="boton boton-claro" type="submit">Anotar comisión cobrada</button>
+                            <div class="campo tk-campo"><label for="cm-m-<?= $pid ?>">Te pagó ($)</label><input type="text" inputmode="decimal" id="cm-m-<?= $pid ?>" name="monto" value="<?= e($num($p['comision_por_cobrar'])) ?>" required></div>
+                            <div class="campo tk-campo"><label for="cm-f-<?= $pid ?>">Fecha</label><input type="date" id="cm-f-<?= $pid ?>" name="fecha" value="<?= e($hoy) ?>" required></div>
+                            <button data-ico="mas" class="boton tk-boton boton-claro secundario" type="submit">Anotar comisión cobrada</button>
                         </form>
                         <?php endif; ?>
                         <?php if ((float) $p['comision_cobrada'] > 0): ?>
                         <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>">
                             <?= campo_csrf() ?><input type="hidden" name="accion" value="comision_anular"><input type="hidden" name="partida_id" value="<?= $pid ?>">
-                            <button class="boton boton-claro boton-chico" type="submit">Borrar lo cobrado (si fue un error)</button>
+                            <button data-ico="basura" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Borrar lo cobrado (si fue un error)</button>
                         </form>
                         <?php endif; ?>
                     <?php endif; ?>
                     <?php if ($p['pagado'] <= 0 && (float) $p['comision_cobrada'] <= 0): ?>
                     <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>" class="pn-borrar">
                         <?= campo_csrf() ?><input type="hidden" name="accion" value="partida_borrar"><input type="hidden" name="partida_id" value="<?= $pid ?>">
-                        <button class="boton boton-peligro boton-chico" type="submit">Borrar esta partida</button>
+                        <button data-ico="basura" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit">Borrar esta partida</button>
                     </form>
                     <?php endif; ?>
                 </details>
@@ -205,18 +205,18 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
     <?php endif; ?>
     <?php if ($comercial && $puede): ?>
     <details class="pn-nueva" <?= !$partidas ? '' : '' ?>>
-        <summary class="boton boton-claro">+ Agregar partida</summary>
+        <summary class="boton tk-boton boton-claro secundario">+ Agregar partida</summary>
         <?php $pf = null; $pfId = 'pn'; require RAIZ . '/app/vistas/_pn_partida_form.php'; ?>
     </details>
     <?php if (modulo_activo($u, 'asistente_ia')): ?>
-        <p><a class="boton boton-claro" href="<?= e(url('ia_proveedor', ['id' => $ev['id']])) ?>">✨ Leer cotización de proveedor</a>
+        <p><a class="boton tk-boton boton-claro secundario" href="<?= e(url('ia_proveedor', ['id' => $ev['id']])) ?>">✨ Leer cotización de proveedor</a>
            <small class="suave">Suba la foto o el PDF y le proponemos las partidas.</small></p>
     <?php endif; ?>
     <?php endif; ?>
 </section>
 <?php endif; ?>
 
-<section class="bloque" id="tareas" aria-labelledby="pn-t-tar">
+<section class="bloque tk-tarjeta" id="tareas" aria-labelledby="pn-t-tar">
     <h2 id="pn-t-tar">Lista de tareas <small class="suave"><?= (int) $avance['hechas'] ?> de <?= (int) $avance['total'] ?> hechas</small></h2>
     <?php if ($avance['total']): ?>
         <div class="barra" role="progressbar" aria-valuenow="<?= (int) $avance['pct'] ?>" aria-valuemin="0" aria-valuemax="100" aria-label="Avance de tareas"><span style="width:<?= (int) $avance['pct'] ?>%"></span></div>
@@ -228,11 +228,11 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
     <?php if ($puede): ?>
     <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>" class="pn-lista-tipica">
         <?= campo_csrf() ?><input type="hidden" name="accion" value="lista_tipica">
-        <button class="boton boton-claro boton-chico" type="submit">Cargar la lista típica de <?= e(mb_strtolower(\TuPlanner\Eventos::TIPOS[$ev['tipo']])) ?></button>
+        <button data-ico="adjunto" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Cargar la lista típica de <?= e(mb_strtolower(\TuPlanner\Eventos::TIPOS[$ev['tipo']])) ?></button>
     </form>
     <?php endif; ?>
     <?php if (!$tareas): ?>
-        <p class="vacio">Sin tareas. Carga la lista típica (con fechas contadas desde el día del evento) o agrega las tuyas.</p>
+        <p class="vacio tk-vacio">Sin tareas. Carga la lista típica (con fechas contadas desde el día del evento) o agrega las tuyas.</p>
     <?php endif; ?>
     <?php foreach ($grupos as $titulo => $lista): ?>
         <h3 class="pn-mes"><?= e($titulo) ?></h3>
@@ -255,15 +255,15 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
                         <summary>Cambiar</summary>
                         <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>" class="pn-en-linea">
                             <?= campo_csrf() ?><input type="hidden" name="accion" value="tarea_editar"><input type="hidden" name="tarea_id" value="<?= $tid ?>">
-                            <div class="campo"><label for="t-t-<?= $tid ?>">Tarea</label><input type="text" id="t-t-<?= $tid ?>" name="titulo" value="<?= e($t['titulo']) ?>" maxlength="150" required></div>
-                            <div class="campo"><label for="t-v-<?= $tid ?>">Hasta</label><input type="date" id="t-v-<?= $tid ?>" name="vence" value="<?= e((string) $t['vence']) ?>"></div>
-                            <div class="campo"><label for="t-a-<?= $tid ?>">Para</label><select id="t-a-<?= $tid ?>" name="asignado"><?php foreach (Planificacion::ASIGNADO as $k => $tx): ?><option value="<?= e($k) ?>" <?= $t['asignado'] === $k ? 'selected' : '' ?>><?= e($tx) ?></option><?php endforeach; ?></select></div>
-                            <div class="campo"><label for="t-n-<?= $tid ?>">Nota</label><input type="text" id="t-n-<?= $tid ?>" name="notas" value="<?= e((string) $t['notas']) ?>" maxlength="300"></div>
-                            <button class="boton boton-claro boton-chico" type="submit">Guardar</button>
+                            <div class="campo tk-campo"><label for="t-t-<?= $tid ?>">Tarea</label><input type="text" id="t-t-<?= $tid ?>" name="titulo" value="<?= e($t['titulo']) ?>" maxlength="150" required></div>
+                            <div class="campo tk-campo"><label for="t-v-<?= $tid ?>">Hasta</label><input type="date" id="t-v-<?= $tid ?>" name="vence" value="<?= e((string) $t['vence']) ?>"></div>
+                            <div class="campo tk-campo"><label for="t-a-<?= $tid ?>">Para</label><select id="t-a-<?= $tid ?>" name="asignado"><?php foreach (Planificacion::ASIGNADO as $k => $tx): ?><option value="<?= e($k) ?>" <?= $t['asignado'] === $k ? 'selected' : '' ?>><?= e($tx) ?></option><?php endforeach; ?></select></div>
+                            <div class="campo tk-campo"><label for="t-n-<?= $tid ?>">Nota</label><input type="text" id="t-n-<?= $tid ?>" name="notas" value="<?= e((string) $t['notas']) ?>" maxlength="300"></div>
+                            <button data-ico="guardar" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Guardar</button>
                         </form>
                         <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>">
                             <?= campo_csrf() ?><input type="hidden" name="accion" value="tarea_borrar"><input type="hidden" name="tarea_id" value="<?= $tid ?>">
-                            <button class="boton boton-peligro boton-chico" type="submit">Borrar tarea</button>
+                            <button data-ico="basura" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit">Borrar tarea</button>
                         </form>
                     </details>
                     <?php endif; ?>
@@ -275,10 +275,10 @@ $activo = !in_array($ev['estado'], ['perdido', 'cancelado'], true);
     <?php if ($puede): ?>
     <form method="post" action="<?= e(url('evento_plan', ['id' => $ev['id']])) ?>" class="pn-en-linea pn-nueva-tarea">
         <?= campo_csrf() ?><input type="hidden" name="accion" value="tarea">
-        <div class="campo"><label for="pn-tt">Nueva tarea</label><input type="text" id="pn-tt" name="titulo" maxlength="150" required placeholder="Ej. Prueba de menú con los novios"></div>
-        <div class="campo"><label for="pn-tv">Hasta</label><input type="date" id="pn-tv" name="vence"></div>
-        <div class="campo"><label for="pn-ta">Para</label><select id="pn-ta" name="asignado"><?php foreach (Planificacion::ASIGNADO as $k => $tx): ?><option value="<?= e($k) ?>"><?= e($tx) ?></option><?php endforeach; ?></select></div>
-        <button class="boton" type="submit">Agregar</button>
+        <div class="campo tk-campo"><label for="pn-tt">Nueva tarea</label><input type="text" id="pn-tt" name="titulo" maxlength="150" required placeholder="Ej. Prueba de menú con los novios"></div>
+        <div class="campo tk-campo"><label for="pn-tv">Hasta</label><input type="date" id="pn-tv" name="vence"></div>
+        <div class="campo tk-campo"><label for="pn-ta">Para</label><select id="pn-ta" name="asignado"><?php foreach (Planificacion::ASIGNADO as $k => $tx): ?><option value="<?= e($k) ?>"><?= e($tx) ?></option><?php endforeach; ?></select></div>
+        <button data-ico="mas" class="boton tk-boton" type="submit">Agregar</button>
     </form>
     <?php endif; ?>
 </section>

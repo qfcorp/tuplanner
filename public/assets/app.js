@@ -145,3 +145,32 @@ if ('serviceWorker' in navigator && document.body.classList.contains('con-sesion
     });
     window.addEventListener('appinstalled', () => { caja.hidden = true; });
 })();
+
+// Identidad gráfica común Tukán: en el celular las tablas se ven como tarjetas (kit: .tk-tabla.tarjetas + data-titulo).
+// A las tablas de antes (class="tabla tk-tabla") se les pone aquí el título de cada columna; no toca las que tienen campos para escribir.
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('table.tk-tabla').forEach(t => {
+        if (!t.classList.contains('tarjetas')) {
+            if (t.hasAttribute('data-tabla-fija') || t.querySelector('input:not([type=hidden]), select, textarea')) return;
+            const titulos = Array.from(t.querySelectorAll('thead th')).map(th => th.textContent.trim());
+            if (!titulos.length) return;
+            t.querySelectorAll('tbody tr, tfoot tr').forEach(tr => {
+                let i = 0;
+                Array.from(tr.children).forEach(td => {
+                    const ancho = td.colSpan || 1;
+                    if (ancho === 1 && titulos[i] && !td.hasAttribute('data-titulo')) td.setAttribute('data-titulo', titulos[i]);
+                    i += ancho;
+                });
+            });
+            t.classList.add('tarjetas');
+        }
+        // En el celular cada celda es «título: valor»: el valor va en una sola caja para que no se parta en pedazos
+        t.querySelectorAll('td[data-titulo]').forEach(td => {
+            if (td.querySelector(':scope > .te-celda')) return;
+            const caja = document.createElement('span');
+            caja.className = 'te-celda';
+            while (td.firstChild) caja.appendChild(td.firstChild);
+            td.appendChild(caja);
+        });
+    });
+});

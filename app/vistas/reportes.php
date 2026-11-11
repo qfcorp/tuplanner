@@ -35,8 +35,8 @@ $barras = function (array $filas, string $clase = '') use ($pct): string {
     return $h . '</div>';
 };
 $tablaConversion = function (array $grupo, string $titulo): string {
-    if (!$grupo) return '<p class="vacio">Sin datos en este periodo.</p>';
-    $h = '<div class="tabla-scroll"><table class="tabla" style="min-width:420px"><caption class="sr-only">' . e($titulo) . '</caption>'
+    if (!$grupo) return '<p class="vacio tk-vacio">Sin datos en este periodo.</p>';
+    $h = '<div class="tabla-scroll"><table class="tabla tk-tabla" style="min-width:420px"><caption class="sr-only">' . e($titulo) . '</caption>'
        . '<thead><tr><th>' . e($titulo) . '</th><th class="num">Consultas</th><th class="num">Vendidos</th><th class="num">Perdidos</th><th class="num">Conversión</th></tr></thead><tbody>';
     foreach ($grupo as $nombre => $g) {
         $h .= '<tr><td>' . e($nombre) . '</td><td class="num">' . $g['consultas'] . '</td><td class="num">' . $g['vendidos'] . '</td><td class="num">' . $g['perdidos']
@@ -46,7 +46,7 @@ $tablaConversion = function (array $grupo, string $titulo): string {
 };
 $t = $conversion['total'];
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div><h1>Reportes</h1><p><?= e($per['nombre']) ?> · del <?= e((new DateTimeImmutable($per['desde']))->format('d/m/Y')) ?> al <?= e((new DateTimeImmutable($per['hasta']))->format('d/m/Y')) ?></p></div>
 </div>
 
@@ -56,11 +56,11 @@ $t = $conversion['total'];
            <?= $per['clave'] === $k ? 'aria-current="true"' : '' ?>><?= e($txt) ?></a>
     <?php endforeach; ?>
 </nav>
-<form method="get" class="bloque g-rango" id="g-rango" <?= $per['clave'] === 'rango' ? '' : 'hidden' ?>>
+<form method="get" class="bloque tk-tarjeta g-rango" id="g-rango" <?= $per['clave'] === 'rango' ? '' : 'hidden' ?>>
     <input type="hidden" name="r" value="reportes"><input type="hidden" name="p" value="rango">
-    <div class="campo"><label for="desde">Desde</label><input type="date" id="desde" name="desde" value="<?= e($per['desde']) ?>" required></div>
-    <div class="campo"><label for="hasta">Hasta</label><input type="date" id="hasta" name="hasta" value="<?= e($per['hasta']) ?>" required></div>
-    <button class="boton" type="submit">Ver</button>
+    <div class="campo tk-campo"><label for="desde">Desde</label><input type="date" id="desde" name="desde" value="<?= e($per['desde']) ?>" required></div>
+    <div class="campo tk-campo"><label for="hasta">Hasta</label><input type="date" id="hasta" name="hasta" value="<?= e($per['hasta']) ?>" required></div>
+    <button data-ico="ojo" class="boton tk-boton" type="submit">Ver</button>
 </form>
 
 <nav class="g-indice" aria-label="Ir a">
@@ -81,7 +81,7 @@ $t = $conversion['total'];
     <div class="g-cifra"><strong><?= $ocupacion['pct_sabados'] ?> %</strong><span>Sábados vendidos (próximos 12 meses)</span></div>
 </div>
 
-<section class="bloque" id="ventas">
+<section class="bloque tk-tarjeta" id="ventas">
     <h2>Ventas</h2>
     <p class="g-nota">Un evento se cuenta como vendido el día que se separó (pagó la reserva) o se confirmó.</p>
     <?= $columnas(array_map(fn($m) => $m['valor'], $ventas['por_mes']), 'Ventas por mes') ?>
@@ -98,7 +98,7 @@ $t = $conversion['total'];
     </div>
     <?php if ($ventas['lista']): ?>
     <details style="margin-top:12px"><summary>Ver los <?= $ventas['cantidad'] ?> eventos vendidos</summary>
-        <div class="tabla-scroll"><table class="tabla">
+        <div class="tabla-scroll"><table class="tabla tk-tabla">
             <thead><tr><th>Vendido</th><th>Evento</th><th>Fecha del evento</th><th>Vendedor</th><th class="num">Valor</th></tr></thead>
             <tbody><?php foreach ($ventas['lista'] as $v): ?>
                 <tr><td><?= e((new DateTimeImmutable($v['fecha_venta']))->format('d/m/Y')) ?></td>
@@ -113,21 +113,21 @@ $t = $conversion['total'];
 <?php if ($avanzado) require RAIZ . '/app/vistas/_metas_reporte.php'; /* metas y año anterior (módulo metas) */ ?>
 
 <div class="rejilla rejilla-2">
-    <section class="bloque" id="cobros">
+    <section class="bloque tk-tarjeta" id="cobros">
         <h2>Cobrado por mes</h2>
         <p class="g-nota">Pagos de eventos confirmados (sin contar garantías).</p>
         <?= $columnas($cobrado['por_mes'], 'Cobrado por mes') ?>
         <?php if ($cobrado['por_metodo']): ?>
             <h3 style="margin-top:14px">Cómo te pagaron (<?= $cobrado['pagos'] ?> pagos)</h3>
             <?= $barras(array_map(fn($m) => [Pagos::METODOS[$m['metodo']] ?? $m['metodo'], (float) $m['total'], dinero($m['total'])], $cobrado['por_metodo']), 'oro') ?>
-        <?php else: ?><p class="vacio">No hubo cobros en este periodo.</p><?php endif; ?>
+        <?php else: ?><p class="vacio tk-vacio">No hubo cobros en este periodo.</p><?php endif; ?>
         <div class="g-pie-tabla"><?= $descargar('pagos', 'Descargar pagos para Excel') ?></div>
     </section>
 
-    <section class="bloque" id="por-cobrar">
+    <section class="bloque tk-tarjeta" id="por-cobrar">
         <h2>Por cobrar</h2>
         <p class="g-nota">Lo que falta pagar de los eventos vendidos (a hoy).</p>
-        <?php if (!$porCobrar['lista']): ?><p class="vacio">Nadie te debe. 👏</p><?php else: ?>
+        <?php if (!$porCobrar['lista']): ?><p class="vacio tk-vacio">Nadie te debe. 👏</p><?php else: ?>
             <div class="ficha-datos"><dt>Total por cobrar</dt><dd><?= dinero($porCobrar['saldo']) ?></dd>
                 <dt>Ya vencido</dt><dd class="<?= $porCobrar['vencido'] > 0 ? 'g-vencida' : '' ?>"><?= dinero($porCobrar['vencido']) ?></dd></div>
             <ul class="filas">
@@ -143,7 +143,7 @@ $t = $conversion['total'];
     </section>
 </div>
 
-<section class="bloque" id="ocupacion">
+<section class="bloque tk-tarjeta" id="ocupacion">
     <h2>Ocupación de los próximos 12 meses</h2>
     <p class="g-nota">Fechas vendidas (separadas o confirmadas) desde hoy hasta el <?= e((new DateTimeImmutable($ocupacion['hasta']))->format('d/m/Y')) ?>.
         Los sábados son los días que más se venden.</p>
@@ -154,8 +154,8 @@ $t = $conversion['total'];
         </div>
         <div>
             <h3>Por lugar</h3>
-            <?php if (!$ocupacion['espacios']): ?><p class="vacio">No tienes lugares activos.</p><?php else: ?>
-                <div class="tabla-scroll"><table class="tabla" style="min-width:300px">
+            <?php if (!$ocupacion['espacios']): ?><p class="vacio tk-vacio">No tienes lugares activos.</p><?php else: ?>
+                <div class="tabla-scroll"><table class="tabla tk-tabla" style="min-width:300px">
                     <thead><tr><th>Lugar</th><th class="num">Fechas</th><th class="num">Sábados</th><th class="num">% sábados</th></tr></thead>
                     <tbody><?php foreach ($ocupacion['espacios'] as $es): ?>
                         <tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:<?= e($es['color']) ?>;margin-right:6px" aria-hidden="true"></span><?= e($es['nombre']) ?></td>
@@ -170,10 +170,10 @@ $t = $conversion['total'];
 </section>
 
 <?php if ($avanzado): ?>
-<section class="bloque" id="conversion">
+<section class="bloque tk-tarjeta" id="conversion">
     <h2>Embudo de ventas y conversión</h2>
     <p class="g-nota">De las consultas que llegaron en el periodo, cuántas se vendieron. Sirve para saber qué red social y qué tipo de evento te traen clientes de verdad.</p>
-    <?php if (!$t['consultas']): ?><p class="vacio">No llegaron consultas en este periodo.</p><?php else: ?>
+    <?php if (!$t['consultas']): ?><p class="vacio tk-vacio">No llegaron consultas en este periodo.</p><?php else: ?>
         <div class="g-embudo" aria-label="Embudo">
             <?php $maxE = max(1, max($conversion['llegaron'])); foreach ($conversion['llegaron'] as $paso => $cant): ?>
                 <div style="width:<?= max(30, (int) round($cant * 100 / $maxE)) ?>%"><?= e($paso) ?>: <?= (int) $cant ?></div>
@@ -186,7 +186,7 @@ $t = $conversion['total'];
             <div><h3>Por tipo de evento</h3><?= $tablaConversion($conversion['por_tipo'], 'Tipo') ?></div>
             <div><h3>Por vendedor</h3><?= $tablaConversion($conversion['por_vendedor'], 'Vendedor') ?></div>
             <div><h3>Por qué se pierden</h3>
-                <?php if (!$conversion['motivos']): ?><p class="vacio">No se perdió ninguna consulta. 🎉</p>
+                <?php if (!$conversion['motivos']): ?><p class="vacio tk-vacio">No se perdió ninguna consulta. 🎉</p>
                 <?php else: ?><?= $barras(array_map(fn($m) => [$m['motivo'], $m['cantidad'], (string) $m['cantidad']], array_slice($conversion['motivos'], 0, 8)), 'gris') ?><?php endif; ?>
             </div>
         </div>
@@ -194,12 +194,12 @@ $t = $conversion['total'];
     <div class="g-pie-tabla"><?= $descargar('clientes', 'Descargar clientes para Excel') ?></div>
 </section>
 
-<section class="bloque" id="rentabilidad">
+<section class="bloque tk-tarjeta" id="rentabilidad">
     <h2>Ganancia por evento</h2>
     <p class="g-nota">De los eventos que se hacen en el periodo: lo cobrado sin IVA, menos los gastos y las compras a proveedores del evento, y lo pagado al personal.
         Si todavía no registraste gastos ni compras, usamos el costo estimado de la cotización (marcado con *).</p>
-    <?php if (!$rentabilidad['lista']): ?><p class="vacio">No hay eventos vendidos en este periodo.</p><?php else: $tr = $rentabilidad['total']; ?>
-        <div class="tabla-scroll"><table class="tabla">
+    <?php if (!$rentabilidad['lista']): ?><p class="vacio tk-vacio">No hay eventos vendidos en este periodo.</p><?php else: $tr = $rentabilidad['total']; ?>
+        <div class="tabla-scroll"><table class="tabla tk-tabla">
             <thead><tr><th>Evento</th><th class="num">Sin IVA</th><th class="num">Gastos y compras</th><th class="num">Personal</th><th class="num">Ganancia</th><th class="num">Margen</th></tr></thead>
             <tbody>
             <?php foreach ($rentabilidad['lista'] as $r): ?>
@@ -222,14 +222,14 @@ $t = $conversion['total'];
     <div class="g-pie-tabla"><?= $descargar('gastos', 'Descargar gastos para Excel') ?></div>
 </section>
 
-<section class="bloque" id="comisiones">
+<section class="bloque tk-tarjeta" id="comisiones">
     <h2>Comisión de vendedores</h2>
     <?php if ($comisiones['pct'] <= 0): ?>
-        <p class="vacio">No tienes comisión configurada.<?php if (es_admin_total($u)): ?> <a href="<?= e(url('configuracion', ['tab' => 'reglas'])) ?>">Ponerla en Configuración → Reglas</a><?php endif; ?></p>
+        <p class="vacio tk-vacio">No tienes comisión configurada.<?php if (es_admin_total($u)): ?> <a href="<?= e(url('configuracion', ['tab' => 'reglas'])) ?>">Ponerla en Configuración → Reglas</a><?php endif; ?></p>
     <?php else: ?>
         <p class="g-nota"><?= e(rtrim(rtrim(number_format($comisiones['pct'], 2, ',', ''), '0'), ',')) ?> % sobre lo vendido sin IVA en el periodo (por fecha de venta). El dueño no lleva comisión.</p>
-        <?php if (!$comisiones['lista']): ?><p class="vacio">No hubo ventas en este periodo.</p><?php else: ?>
-            <div class="tabla-scroll"><table class="tabla" style="min-width:420px">
+        <?php if (!$comisiones['lista']): ?><p class="vacio tk-vacio">No hubo ventas en este periodo.</p><?php else: ?>
+            <div class="tabla-scroll"><table class="tabla tk-tabla" style="min-width:420px">
                 <thead><tr><th>Vendedor</th><th class="num">Eventos</th><th class="num">Vendido sin IVA</th><th class="num">Comisión</th></tr></thead>
                 <tbody><?php foreach ($comisiones['lista'] as $c): ?>
                     <tr><td><?= e($c['vendedor']) ?></td><td class="num"><?= $c['eventos'] ?></td><td class="num"><?= dinero($c['sin_iva']) ?></td>
@@ -245,7 +245,7 @@ $t = $conversion['total'];
 <?php if ($satisfaccion) require RAIZ . '/app/vistas/_reporte_satisfaccion.php'; // encuesta de satisfacción (070, módulo cuestionarios) ?>
 
 <?php if ($exportar): ?>
-<section class="bloque" id="descargas">
+<section class="bloque tk-tarjeta" id="descargas">
     <h2>Descargar para Excel</h2>
     <p class="g-nota">Archivos del periodo elegido. Se abren directo en Excel o Google Sheets, con tildes y columnas en su lugar.</p>
     <div class="lista-mas">

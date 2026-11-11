@@ -37,7 +37,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
 <div class="ev-col">
 
     <!-- Estado -->
-    <section class="bloque ev-bloque-estado" aria-labelledby="t-estado">
+    <section class="bloque tk-tarjeta ev-bloque-estado" aria-labelledby="t-estado">
         <h2 id="t-estado">Estado: <span class="ev-estado ev-<?= e($ev['estado']) ?>"><?= e(Eventos::ESTADOS[$ev['estado']]) ?></span></h2>
         <p class="suave"><?= e(Eventos::ESTADOS_AYUDA[$ev['estado']]) ?></p>
         <ol class="ev-camino" aria-label="Camino del evento">
@@ -65,7 +65,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                     <select id="dias-retener" name="dias">
                         <?php foreach ([3, 5, 7, 10, 15, 30] as $n): ?><option value="<?= $n ?>" <?= $n === $diasRetencion ? 'selected' : '' ?>><?= $n ?> días más</option><?php endforeach; ?>
                     </select>
-                    <button class="boton boton-claro boton-chico" type="submit">Retener</button>
+                    <button data-ico="candado" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Retener</button>
                 </form>
                 <?php endif; ?>
             </div>
@@ -84,18 +84,18 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                     <form method="post" action="<?= e(url('evento', ['id' => $ev['id'], 'accion' => 'estado'])) ?>">
                         <?= campo_csrf() ?>
                         <input type="hidden" name="estado" value="<?= e($p) ?>">
-                        <button class="boton <?= in_array($p, ['cotizado', 'separado', 'confirmado', 'realizado'], true) && $p !== 'cotizado' ? '' : 'boton-claro' ?> boton-chico" type="submit"
+                        <button class="boton tk-boton <?= in_array($p, ['cotizado', 'separado', 'confirmado', 'realizado'], true) && $p !== 'cotizado' ? '' : 'boton-claro secundario' ?> boton-chico chico" type="submit"
                             <?= $confirmar ? 'data-confirmar="' . e($confirmar) . '"' : '' ?>><?= e($txt) ?></button>
                         <small class="suave"><?= e($ayuda) ?></small>
                     </form>
                 <?php endforeach; ?>
                 <?php foreach ($conMotivo as $p): ?>
                     <details class="ev-motivo">
-                        <summary class="boton boton-peligro boton-chico"><?= $p === 'perdido' ? 'Marcar como perdido' : 'Cancelar evento' ?></summary>
+                        <summary class="boton tk-boton boton-peligro peligro boton-chico chico"><?= $p === 'perdido' ? 'Marcar como perdido' : 'Cancelar evento' ?></summary>
                         <form method="post" action="<?= e(url('evento', ['id' => $ev['id'], 'accion' => 'estado'])) ?>">
                             <?= campo_csrf() ?>
                             <input type="hidden" name="estado" value="<?= e($p) ?>">
-                            <div class="campo">
+                            <div class="campo tk-campo">
                                 <label for="motivo-<?= e($p) ?>">¿Por qué? <small>(obligatorio: sirve para saber por qué se pierden ventas)</small></label>
                                 <input type="text" id="motivo-<?= e($p) ?>" name="motivo" required minlength="3" maxlength="200"
                                        list="motivos-<?= e($p) ?>" placeholder="<?= $p === 'perdido' ? 'Ej. Precio alto, eligió otro local' : 'Ej. Cambio de planes de los novios' ?>">
@@ -107,7 +107,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                                     <?php endforeach; ?>
                                 </datalist>
                             </div>
-                            <button class="boton boton-peligro boton-chico" type="submit"
+                            <button class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit"
                                     data-confirmar="<?= $p === 'perdido' ? '¿Marcar como perdido? La fecha queda libre para otros clientes.' : '¿Cancelar el evento? La fecha y el lugar quedan libres. Los pagos registrados no se borran.' ?>">
                                 <?= $p === 'perdido' ? 'Confirmar: perdido' : 'Confirmar cancelación' ?></button>
                         </form>
@@ -120,13 +120,13 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
     </section>
 
     <?php if ($choques['bloqueados'] || $choques['otros']): ?>
-    <section class="bloque ev-choques" aria-labelledby="t-choques">
+    <section class="bloque tk-tarjeta ev-choques" aria-labelledby="t-choques">
         <h2 id="t-choques">Otros eventos a la misma hora</h2>
         <ul class="filas">
             <?php foreach (array_merge($choques['bloqueados'], $choques['otros']) as $c): ?>
                 <li>
                     <span><?= e(Ventas::textoChoque($c)) ?></span>
-                    <?php if ($c['id']): ?><a class="boton boton-claro boton-chico derecha" href="<?= e(url('evento', ['id' => $c['id']])) ?>">Ver</a><?php endif; ?>
+                    <?php if ($c['id']): ?><a data-ico="ojo" class="boton tk-boton boton-claro secundario boton-chico chico derecha" href="<?= e(url('evento', ['id' => $c['id']])) ?>">Ver</a><?php endif; ?>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -139,10 +139,10 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
     <?php endif; ?>
 
     <!-- Datos del evento -->
-    <section class="bloque" aria-labelledby="t-datos">
+    <section class="bloque tk-tarjeta" aria-labelledby="t-datos">
         <div class="bloque-cabeza">
             <h2 id="t-datos">Datos del evento</h2>
-            <?php if ($puedeVender): ?><a class="boton boton-claro boton-chico" href="<?= e(url('evento_editar', ['id' => $ev['id']])) ?>">Editar</a><?php endif; ?>
+            <?php if ($puedeVender): ?><a data-ico="editar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('evento_editar', ['id' => $ev['id']])) ?>">Editar</a><?php endif; ?>
         </div>
         <dl class="ficha-datos">
             <dt>Tipo</dt><dd><?= e(Eventos::TIPOS[$ev['tipo']]) ?></dd>
@@ -162,10 +162,10 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
     </section>
 
     <!-- Cliente -->
-    <section class="bloque" aria-labelledby="t-cliente">
+    <section class="bloque tk-tarjeta" aria-labelledby="t-cliente">
         <div class="bloque-cabeza">
             <h2 id="t-cliente">Cliente</h2>
-            <?php if ($u['rol'] !== 'coordinador'): ?><a class="boton boton-claro boton-chico" href="<?= e(url('cliente', ['id' => $cliente['id']])) ?>">Ver ficha</a><?php endif; ?>
+            <?php if ($u['rol'] !== 'coordinador'): ?><a data-ico="ojo" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('cliente', ['id' => $cliente['id']])) ?>">Ver ficha</a><?php endif; ?>
         </div>
         <p class="principal-linea" style="margin-bottom:4px"><?= e($cliente['nombre']) ?></p>
         <dl class="ficha-datos">
@@ -174,27 +174,27 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
             <?php if ($cliente['identificacion']): ?><dt><?= strlen($cliente['identificacion']) === 13 ? 'RUC' : 'Cédula' ?></dt><dd><?= e($cliente['identificacion']) ?></dd><?php endif; ?>
         </dl>
         <?php if ($waCliente): ?>
-            <a class="boton boton-wa" href="<?= e($waCliente) ?>" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+            <a class="boton tk-boton boton-wa ok" href="<?= e($waCliente) ?>" target="_blank" rel="noopener">Escribir por WhatsApp</a>
         <?php else: ?>
             <p class="suave ayuda-chica">Sin celular registrado. <?= $u['rol'] !== 'coordinador' ? 'Agrégalo en la ficha para escribirle por WhatsApp con un toque.' : '' ?></p>
         <?php endif; ?>
     </section>
 
     <!-- Detalles para el día -->
-    <section class="bloque" id="detalles" aria-labelledby="t-detalles">
+    <section class="bloque tk-tarjeta" id="detalles" aria-labelledby="t-detalles">
         <h2 id="t-detalles">Menú y detalles del cliente</h2>
         <?php if ($puedeVender): ?>
             <form method="post" action="<?= e(url('evento', ['id' => $ev['id'], 'accion' => 'detalles'])) ?>">
                 <?= campo_csrf() ?>
-                <div class="campo">
+                <div class="campo tk-campo">
                     <label for="menu_elegido">Menú elegido</label>
                     <textarea id="menu_elegido" name="menu_elegido" rows="3" placeholder="Entrada, plato fuerte, postre, opciones vegetarianas…"><?= e($ev['menu_elegido']) ?></textarea>
                 </div>
-                <div class="campo">
+                <div class="campo tk-campo">
                     <label for="detalles_cliente">Lo que pidió el cliente</label>
                     <textarea id="detalles_cliente" name="detalles_cliente" rows="3" placeholder="Colores, música, alergias, horarios especiales…"><?= e($ev['detalles_cliente']) ?></textarea>
                 </div>
-                <button class="boton boton-claro boton-chico" type="submit">Guardar detalles</button>
+                <button data-ico="guardar" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Guardar detalles</button>
             </form>
         <?php else: ?>
             <h3>Menú elegido</h3>
@@ -205,13 +205,13 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
     </section>
 
     <!-- Tareas -->
-    <section class="bloque" id="tareas" aria-labelledby="t-tareas">
+    <section class="bloque tk-tarjeta" id="tareas" aria-labelledby="t-tareas">
         <h2 id="t-tareas">Tareas <small class="suave"><?= count($tareasHechas) ?> de <?= count($tareas) ?> hechas</small></h2>
         <?php if ($tareas): ?>
             <div class="barra" aria-hidden="true"><span style="width:<?= count($tareas) ? (int) floor(count($tareasHechas) * 100 / count($tareas)) : 0 ?>%"></span></div>
         <?php endif; ?>
         <?php if (!$tareas): ?>
-            <p class="vacio">Sin tareas. Agrega lo que hay que hacer antes del evento (degustación, música, invitados…).</p>
+            <p class="vacio tk-vacio">Sin tareas. Agrega lo que hay que hacer antes del evento (degustación, música, invitados…).</p>
         <?php else: ?>
         <ul class="filas ev-tareas">
             <?php $todasTareas = array_merge($tareasPend, $tareasHechas);
@@ -219,7 +219,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                 if ($i === 6): ?>
         </ul>
         <details class="ev-mas-tareas">
-            <summary class="boton boton-claro boton-chico">Ver <?= count($todasTareas) - 6 ?> tareas más</summary>
+            <summary data-ico="abajo" class="boton tk-boton boton-claro secundario boton-chico chico">Ver <?= count($todasTareas) - 6 ?> tareas más</summary>
         <ul class="filas ev-tareas">
                 <?php endif;
                 $vencida = !$t['hecha'] && $t['vence'] && $t['vence'] < $hoyTxt; ?>
@@ -233,7 +233,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                         <?= campo_csrf() ?>
                         <input type="hidden" name="tarea_id" value="<?= (int) $t['id'] ?>">
                         <input type="hidden" name="hecha" value="<?= $t['hecha'] ? '0' : '1' ?>">
-                        <button class="boton <?= $t['hecha'] ? 'boton-claro' : '' ?> boton-chico" type="submit"
+                        <button class="boton tk-boton <?= $t['hecha'] ? 'boton-claro secundario' : '' ?> boton-chico chico" type="submit"
                                 aria-label="<?= $t['hecha'] ? 'Volver a pendiente' : 'Marcar como hecha' ?>: <?= e($t['titulo']) ?>"><?= $t['hecha'] ? 'Deshacer' : 'Hecha' ?></button>
                     </form>
                     <?php elseif ($t['hecha']): ?><span class="derecha libre">✓</span><?php endif; ?>
@@ -245,15 +245,15 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
         <?php if ($puedeVender): ?>
         <form method="post" action="<?= e(url('evento', ['id' => $ev['id'], 'accion' => 'tarea'])) ?>" class="form-en-linea">
             <?= campo_csrf() ?>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="tarea-titulo">Nueva tarea</label>
                 <input type="text" id="tarea-titulo" name="titulo" maxlength="150" required placeholder="Ej. Prueba de menú con los novios">
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="tarea-vence">Hasta</label>
                 <input type="date" id="tarea-vence" name="vence" max="<?= e($ev['fecha']) ?>">
             </div>
-            <button class="boton boton-claro" type="submit">Agregar</button>
+            <button data-ico="mas" class="boton tk-boton boton-claro secundario" type="submit">Agregar</button>
         </form>
         <?php endif; ?>
     </section>
@@ -262,10 +262,10 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
 <div class="ev-col">
     <?php if ($verDinero): ?>
     <!-- Dinero -->
-    <section class="bloque" aria-labelledby="t-dinero">
+    <section class="bloque tk-tarjeta" aria-labelledby="t-dinero">
         <div class="bloque-cabeza">
             <h2 id="t-dinero">Dinero</h2>
-            <a class="boton boton-claro boton-chico" href="<?= e(url('evento_pagos', ['id' => $ev['id']])) ?>">Ver pagos</a>
+            <a data-ico="ojo" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('evento_pagos', ['id' => $ev['id']])) ?>">Ver pagos</a>
         </div>
         <?php if ($dinero['total'] <= 0): ?>
             <p class="suave">El valor del evento se pone cuando el cliente acepta la cotización.</p>
@@ -290,7 +290,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
     </section>
 
     <!-- Cotización y contrato -->
-        <section class="bloque" aria-labelledby="t-docs">
+        <section class="bloque tk-tarjeta" aria-labelledby="t-docs">
         <h2 id="t-docs">Cotización y contrato</h2>
         <ul class="filas">
             <li>
@@ -303,7 +303,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                         <small class="suave" style="display:block">Todavía no hay cotización.</small>
                     <?php endif; ?>
                 </span>
-                <a class="boton <?= $cotizacion ? 'boton-claro' : '' ?> boton-chico derecha" href="<?= e(url('cotizacion', ['id' => $ev['id']])) ?>"><?= $cotizacion ? 'Abrir' : 'Hacer cotización' ?></a>
+                <a data-ico="nota" class="boton tk-boton <?= $cotizacion ? 'boton-claro secundario' : '' ?> boton-chico chico derecha" href="<?= e(url('cotizacion', ['id' => $ev['id']])) ?>"><?= $cotizacion ? 'Abrir' : 'Hacer cotización' ?></a>
             </li>
             <?php if (modulo_activo($u, 'contratos')): ?>
             <li>
@@ -316,7 +316,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                         <small class="suave" style="display:block">Todavía no hay contrato.</small>
                     <?php endif; ?>
                 </span>
-                <a class="boton boton-claro boton-chico derecha" href="<?= e(url('contrato', ['id' => $ev['id']])) ?>"><?= $contrato ? 'Abrir' : 'Preparar' ?></a>
+                <a data-ico="nota" class="boton tk-boton boton-claro secundario boton-chico chico derecha" href="<?= e(url('contrato', ['id' => $ev['id']])) ?>"><?= $contrato ? 'Abrir' : 'Preparar' ?></a>
             </li>
             <?php endif; ?>
         </ul>
@@ -324,7 +324,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
 
     <!-- Portal del cliente (módulo portal_cliente) -->
     <?php if (modulo_activo($u, 'portal_cliente')): ?>
-    <section class="bloque" aria-labelledby="t-portal">
+    <section class="bloque tk-tarjeta" aria-labelledby="t-portal">
         <h2 id="t-portal">Portal del cliente</h2>
         <?php 
             $portal = url_completa('portal', ['t' => $ev['token_cliente']]);
@@ -334,16 +334,16 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
             <div class="enlace-copiar">
                 <input type="text" readonly value="<?= e($portal) ?>" aria-label="Enlace del portal del cliente" onclick="this.select()">
             </div>
-            <div class="acciones">
-                <button class="boton boton-claro boton-chico" type="button" data-copiar="<?= e($portal) ?>">Copiar enlace</button>
-                <?php if ($waPortal): ?><a class="boton boton-wa boton-chico" href="<?= e($waPortal) ?>" target="_blank" rel="noopener">Enviar por WhatsApp</a><?php endif; ?>
+            <div class="acciones tk-acciones">
+                <button data-ico="copiar" class="boton tk-boton boton-claro secundario boton-chico chico" type="button" data-copiar="<?= e($portal) ?>">Copiar enlace</button>
+                <?php if ($waPortal): ?><a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($waPortal) ?>" target="_blank" rel="noopener">Enviar por WhatsApp</a><?php endif; ?>
             </div>
     </section>
     <?php endif; ?>
     <?php endif; ?>
 
     <!-- Coordinador -->
-    <section class="bloque" aria-labelledby="t-coord">
+    <section class="bloque tk-tarjeta" aria-labelledby="t-coord">
         <h2 id="t-coord">Coordinador del día</h2>
         <?php if ($puedeVender): ?>
             <form method="post" action="<?= e(url('evento', ['id' => $ev['id'], 'accion' => 'coordinador'])) ?>" class="fila-en-linea">
@@ -355,7 +355,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                         <option value="<?= (int) $p['id'] ?>" <?= (int) $ev['coordinador_id'] === (int) $p['id'] ? 'selected' : '' ?>><?= e($p['nombre']) ?><?= $p['rol'] === 'coordinador' ? ' (coordinador)' : '' ?></option>
                     <?php endforeach; ?>
                 </select>
-                <button class="boton boton-claro boton-chico" type="submit">Asignar</button>
+                <button data-ico="check" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Asignar</button>
             </form>
             <p class="suave ayuda-chica">Le llega un aviso. El coordinador ve el evento y el día del evento, pero no el dinero.</p>
         <?php else: ?>
@@ -364,33 +364,33 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
     </section>
 
     <!-- Seguimiento -->
-    <section class="bloque" id="seguimiento" aria-labelledby="t-seg">
+    <section class="bloque tk-tarjeta" id="seguimiento" aria-labelledby="t-seg">
         <h2 id="t-seg">Seguimiento</h2>
         <?php if ($puedeVender): ?>
         <form method="post" action="<?= e(url('evento', ['id' => $ev['id'], 'accion' => 'actividad'])) ?>" class="form-seguimiento">
             <?= campo_csrf() ?>
             <div class="fila-campos">
-                <div class="campo">
+                <div class="campo tk-campo">
                     <label for="act-tipo">Qué fue</label>
                     <select id="act-tipo" name="tipo">
                         <?php foreach (Ventas::TIPOS_SEGUIMIENTO as $k => $t): ?><option value="<?= e($k) ?>"><?= e($t) ?></option><?php endforeach; ?>
                     </select>
                 </div>
-                <div class="campo">
+                <div class="campo tk-campo">
                     <label for="act-prog">Agendar para <small>(vacío = ya se hizo)</small></label>
                     <input type="datetime-local" id="act-prog" name="programada">
                 </div>
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="act-texto">Nota</label>
                 <textarea id="act-texto" name="texto" rows="2" required placeholder="Ej. Llamar para confirmar la visita del sábado"></textarea>
             </div>
-            <button class="boton boton-claro boton-chico" type="submit">Guardar</button>
+            <button data-ico="guardar" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Guardar</button>
         </form>
         <?php endif; ?>
 
         <?php if (!$actividades): ?>
-            <p class="vacio">Sin seguimiento todavía. Anota cada llamada, mensaje o visita para no perder el hilo.</p>
+            <p class="vacio tk-vacio">Sin seguimiento todavía. Anota cada llamada, mensaje o visita para no perder el hilo.</p>
         <?php else: ?>
         <ul class="filas ev-actividades">
             <?php foreach (array_merge($actPend, $actHechas) as $a):
@@ -407,7 +407,7 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
                     <form method="post" action="<?= e(url('evento', ['id' => $ev['id'], 'accion' => 'actividad_marcar'])) ?>" class="derecha">
                         <?= campo_csrf() ?>
                         <input type="hidden" name="actividad_id" value="<?= (int) $a['id'] ?>">
-                        <button class="boton boton-chico" type="submit">Hecho</button>
+                        <button data-ico="check" class="boton tk-boton boton-chico chico" type="submit">Hecho</button>
                     </form>
                     <?php endif; ?>
                 </li>
@@ -417,20 +417,20 @@ $fmtCuando = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . '
     </section>
 
     <?php if ($puedeVender): ?>
-    <section class="bloque" aria-labelledby="t-dup">
+    <section class="bloque tk-tarjeta" aria-labelledby="t-dup">
         <h2 id="t-dup">Copiar a otra fecha</h2>
         <p class="suave">Para el mismo cliente (por ejemplo, la fiesta de la empresa cada año). Se crea como consulta, con los mismos lugares y horario.</p>
         <form method="post" action="<?= e(url('evento', ['id' => $ev['id'], 'accion' => 'duplicar'])) ?>" class="fila-en-linea">
             <?= campo_csrf() ?>
             <label class="sr-only" for="dup-fecha">Nueva fecha</label>
             <input type="date" id="dup-fecha" name="fecha" min="<?= e($hoyTxt) ?>" required>
-            <button class="boton boton-claro boton-chico" type="submit">Copiar</button>
+            <button data-ico="copiar" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Copiar</button>
         </form>
     </section>
     <?php endif; ?>
 
     <!-- Historial -->
-    <section class="bloque" aria-labelledby="t-hist">
+    <section class="bloque tk-tarjeta" aria-labelledby="t-hist">
         <details>
             <summary><h2 id="t-hist" style="display:inline">Historial de cambios</h2> <small class="suave">(<?= count($historial) ?>)</small></summary>
             <?php if (!$historial): ?>

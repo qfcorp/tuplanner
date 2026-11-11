@@ -5,13 +5,13 @@
  */
 use TuPlanner\Anexos;
 ?>
-<section class="bloque" id="anexo">
+<section class="bloque tk-tarjeta" id="anexo">
     <div class="doc-version-cabeza">
         <h2>Anexo por extras <span class="doc-estado doc-estado-enviada">Tipo anexo</span></h2>
         <?php if ($editarAnexo === null): ?>
-        <div class="acciones">
-            <a class="boton boton-claro boton-chico" href="<?= e(url('contrato', ['previa' => 'anexo'])) ?>#anexo">Vista previa</a>
-            <a class="boton boton-claro boton-chico" href="<?= e(url('contrato', ['plantilla' => 'anexo'])) ?>#anexo">Editar</a>
+        <div class="acciones tk-acciones">
+            <a data-ico="ojo" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('contrato', ['previa' => 'anexo'])) ?>#anexo">Vista previa</a>
+            <a data-ico="editar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('contrato', ['plantilla' => 'anexo'])) ?>#anexo">Editar</a>
         </div>
         <?php endif; ?>
     </div>
@@ -21,12 +21,12 @@ use TuPlanner\Anexos;
     <div class="doc-plantilla-editor">
         <form method="post" action="<?= e(url('contrato', ['accion' => 'guardar_anexo'])) ?>">
             <?= campo_csrf() ?>
-            <div class="campo"><label for="atexto">Texto del anexo</label>
+            <div class="campo tk-campo"><label for="atexto">Texto del anexo</label>
                 <textarea id="atexto" name="texto" rows="24" required class="doc-texto-contrato-edit" data-doc-plantilla-texto><?= e($editarAnexo) ?></textarea>
                 <small>Deja una línea en blanco entre cláusulas. Las líneas que empiezan con • salen como lista.</small></div>
-            <div class="acciones">
-                <button class="boton" type="submit">Guardar anexo</button>
-                <a class="boton boton-claro" href="<?= e(url('contrato')) ?>#anexo">Cancelar</a>
+            <div class="acciones tk-acciones">
+                <button data-ico="guardar" class="boton tk-boton" type="submit">Guardar anexo</button>
+                <a data-ico="cruz" class="boton tk-boton boton-claro secundario" href="<?= e(url('contrato')) ?>#anexo">Cancelar</a>
             </div>
         </form>
         <aside class="doc-variables">
@@ -45,7 +45,7 @@ use TuPlanner\Anexos;
         <div class="texto-contrato"><?= e($textoPreviaAnexo) ?></div>
         <form method="post" action="<?= e(url('contrato', ['accion' => 'restaurar_anexo'])) ?>" style="margin-top:10px">
             <?= campo_csrf() ?>
-            <button class="boton boton-claro boton-chico" type="submit" data-confirmar="¿Volver al texto de fábrica del anexo? Se pierden tus cambios.">Restaurar el texto de fábrica</button>
+            <button data-ico="refrescar" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit" data-confirmar="¿Volver al texto de fábrica del anexo? Se pierden tus cambios.">Restaurar el texto de fábrica</button>
         </form>
     <?php endif; ?>
 </section>

@@ -27,27 +27,27 @@ $filaCuota = function (array $c) use ($u, $puede, $metodosRapidos): void {
         <div class="cb-cobro-lado">
             <span class="monto"><?= dinero($c['saldo']) ?></span>
             <div class="cb-cobro-botones">
-                <?php if ($wa): ?><a class="boton boton-wa boton-chico" href="<?= e($wa) ?>" target="_blank" rel="noopener" title="Recordar por WhatsApp">WhatsApp</a><?php endif; ?>
-                <a class="boton boton-claro boton-chico" href="<?= e(url('evento_pagos', ['id' => $c['evento_id']])) ?>">Ver evento</a>
-                <?php if ($puede): ?><button type="button" class="boton boton-claro boton-chico" data-cb-abrir="<?= e($fid) ?>" aria-expanded="false" aria-controls="<?= e($fid) ?>">Registrar pago</button><?php endif; ?>
+                <?php if ($wa): ?><a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($wa) ?>" target="_blank" rel="noopener" title="Recordar por WhatsApp">WhatsApp</a><?php endif; ?>
+                <a data-ico="ojo" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('evento_pagos', ['id' => $c['evento_id']])) ?>">Ver evento</a>
+                <?php if ($puede): ?><button data-ico="tarjeta" type="button" class="boton tk-boton boton-claro secundario boton-chico chico" data-cb-abrir="<?= e($fid) ?>" aria-expanded="false" aria-controls="<?= e($fid) ?>">Registrar pago</button><?php endif; ?>
             </div>
         </div>
         <?php if ($puede): ?>
         <form method="post" action="<?= e(url('cobros', ['accion' => 'pago'])) ?>" class="cb-pago-rapido" id="<?= e($fid) ?>" hidden>
             <?= campo_csrf() ?><input type="hidden" name="evento_id" value="<?= (int) $c['evento_id'] ?>">
-            <div class="campo"><label for="<?= e($fid) ?>m">Valor ($)</label><input type="text" inputmode="decimal" id="<?= e($fid) ?>m" name="monto" value="<?= e(number_format((float) $c['saldo'], 2, ',', '')) ?>" required></div>
-            <div class="campo"><label for="<?= e($fid) ?>f">Forma de pago</label><select id="<?= e($fid) ?>f" name="metodo"><?php foreach ($metodosRapidos as $k): ?><option value="<?= e($k) ?>"><?= e(Pagos::METODOS[$k]) ?></option><?php endforeach; ?></select></div>
-            <div class="campo"><label for="<?= e($fid) ?>r">Referencia <small>(opcional)</small></label><input type="text" id="<?= e($fid) ?>r" name="referencia" maxlength="120"></div>
-            <button class="boton boton-chico" type="submit">Guardar pago</button>
+            <div class="campo tk-campo"><label for="<?= e($fid) ?>m">Valor ($)</label><input type="text" inputmode="decimal" id="<?= e($fid) ?>m" name="monto" value="<?= e(number_format((float) $c['saldo'], 2, ',', '')) ?>" required></div>
+            <div class="campo tk-campo"><label for="<?= e($fid) ?>f">Forma de pago</label><select id="<?= e($fid) ?>f" name="metodo"><?php foreach ($metodosRapidos as $k): ?><option value="<?= e($k) ?>"><?= e(Pagos::METODOS[$k]) ?></option><?php endforeach; ?></select></div>
+            <div class="campo tk-campo"><label for="<?= e($fid) ?>r">Referencia <small>(opcional)</small></label><input type="text" id="<?= e($fid) ?>r" name="referencia" maxlength="120"></div>
+            <button data-ico="guardar" class="boton tk-boton boton-chico chico" type="submit">Guardar pago</button>
         </form>
         <?php endif; ?>
     </li>
     <?php
 };
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div><h1>Cobros</h1><p>Lo que te deben, lo que ya cobraste y a quién recordarle hoy.</p></div>
-    <a class="boton boton-wa" href="<?= e(url('mensajes')) ?>">Mensajes de hoy<?= $mensajesHoy ? " ($mensajesHoy)" : '' ?></a>
+    <a class="boton tk-boton boton-wa ok" href="<?= e(url('mensajes')) ?>">Mensajes de hoy<?= $mensajesHoy ? " ($mensajesHoy)" : '' ?></a>
 </div>
 
 <section class="cifras cb-cifras" aria-label="Resumen de cobros">
@@ -62,7 +62,7 @@ $filaCuota = function (array $c) use ($u, $puede, $metodosRapidos): void {
 <?php endif; ?>
 
 <?php if ($t['por_revisar']): ?>
-<section class="bloque cb-por-revisar">
+<section class="bloque tk-tarjeta cb-por-revisar">
     <h2>Comprobantes por revisar (<?= count($t['por_revisar']) ?>)</h2>
     <p class="suave">Revisa en tu banco que el dinero llegó antes de confirmar.</p>
     <ul class="filas">
@@ -76,8 +76,8 @@ $filaCuota = function (array $c) use ($u, $puede, $metodosRapidos): void {
                 <?php if ($puede): ?>
                 <div class="cb-cobro-botones">
                     <form method="post" action="<?= e(url('cobros', ['accion' => 'confirmar'])) ?>"><?= campo_csrf() ?><input type="hidden" name="pago_id" value="<?= (int) $p['id'] ?>">
-                        <button class="boton boton-chico" type="submit">Confirmar</button></form>
-                    <a class="boton boton-claro boton-chico" href="<?= e(url('evento_pagos', ['id' => $p['evento_id']])) ?>#revisar">Revisar</a>
+                        <button data-ico="check" class="boton tk-boton boton-chico chico" type="submit">Confirmar</button></form>
+                    <a data-ico="ojo" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('evento_pagos', ['id' => $p['evento_id']])) ?>#revisar">Revisar</a>
                 </div>
                 <?php endif; ?></div>
         </li>
@@ -86,16 +86,16 @@ $filaCuota = function (array $c) use ($u, $puede, $metodosRapidos): void {
 </section>
 <?php endif; ?>
 
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <h2>Cuotas vencidas<?= $t['vencidas'] ? ' (' . count($t['vencidas']) . ')' : '' ?></h2>
     <?php if ($t['vencidas']): ?>
         <ul class="lista cb-cobros"><?php foreach ($t['vencidas'] as $c) $filaCuota($c); ?></ul>
     <?php else: ?>
-        <p class="vacio">¡Nadie está atrasado! No hay cuotas vencidas.</p>
+        <p class="vacio tk-vacio">¡Nadie está atrasado! No hay cuotas vencidas.</p>
     <?php endif; ?>
 </section>
 
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <div class="cb-titulo-filtro">
         <h2>Por vencer</h2>
         <nav class="cb-chips" aria-label="Días">
@@ -107,11 +107,11 @@ $filaCuota = function (array $c) use ($u, $puede, $metodosRapidos): void {
     <?php if ($porVencer): ?>
         <ul class="lista cb-cobros"><?php foreach ($porVencer as $c) $filaCuota($c); ?></ul>
     <?php else: ?>
-        <p class="vacio">No hay cuotas que venzan en los próximos <?= $filtro ?> días.</p>
+        <p class="vacio tk-vacio">No hay cuotas que venzan en los próximos <?= $filtro ?> días.</p>
     <?php endif; ?>
 </section>
 
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <h2>Garantías por devolver</h2>
     <?php if ($t['garantias']): ?>
     <p class="suave">Eventos que ya pasaron y cuya garantía sigue en manos del negocio. Devuélvela o registra lo retenido por daños.</p>
@@ -122,13 +122,13 @@ $filaCuota = function (array $c) use ($u, $puede, $metodosRapidos): void {
                 <small class="suave"><?= e($g['codigo']) ?> · <?= e($g['evento']) ?> · fue el <?= e(fecha_corta($g['fecha'])) ?><?= $g['dias'] > 0 ? ' (hace ' . $g['dias'] . ($g['dias'] === 1 ? ' día)' : ' días)') : '' ?></small></div>
             <div class="derecha"><span class="monto"><?= dinero($g['saldo']) ?></span>
                 <div class="cb-cobro-botones">
-                    <?php if ($wa): ?><a class="boton boton-wa boton-chico" href="<?= e($wa) ?>" target="_blank" rel="noopener">WhatsApp</a><?php endif; ?>
-                    <a class="boton boton-claro boton-chico" href="<?= e(url('evento_pagos', ['id' => $g['id']])) ?>#garantia">Devolver</a>
+                    <?php if ($wa): ?><a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($wa) ?>" target="_blank" rel="noopener">WhatsApp</a><?php endif; ?>
+                    <a data-ico="restaurar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('evento_pagos', ['id' => $g['id']])) ?>#garantia">Devolver</a>
                 </div></div>
         </li>
         <?php endforeach; ?>
     </ul>
     <?php else: ?>
-        <p class="vacio">No tienes garantías pendientes de devolver.</p>
+        <p class="vacio tk-vacio">No tienes garantías pendientes de devolver.</p>
     <?php endif; ?>
 </section>

@@ -43,7 +43,7 @@
 <h2 id="borrar-cuenta">Tus derechos y cómo borrar tu cuenta o tus datos</h2>
 <p>Según la Ley Orgánica de Protección de Datos Personales del Ecuador, puedes pedir ver, corregir o borrar tus datos.</p>
 <ul>
-<li><b>Dueño de un negocio:</b> escribe desde el correo de la cuenta a <a href="mailto:info@tukansoftware.com?subject=Borrar%20mi%20cuenta%20de%20TuPlanner">info@tukansoftware.com</a> con el asunto "Borrar mi cuenta de TuPlanner". Lo hacemos en un máximo de 15 días. También puedes pedirlo desde el sistema o la app: <b>Más → Mi cuenta → Borrar mi cuenta</b>. Se borran la cuenta, los usuarios y todos los datos del negocio, salvo lo que la ley obligue a guardar.</li>
+<li><b>Dueño de un negocio:</b> escribe desde el correo de la cuenta a <a href="mailto:info@tukansoftware.com?subject=Borrar%20mi%20cuenta%20de%20TuPlanner">info@tukansoftware.com</a> con el asunto "Borrar mi cuenta de TuPlanner". Lo hacemos en un máximo de 15 días. También puedes pedirlo desde el sistema o la app: <b>Mi cuenta → Borrar mi cuenta</b>. Se borran la cuenta, los usuarios y todos los datos del negocio, salvo lo que la ley obligue a guardar.</li>
 <li><b>Cliente o invitado de un negocio:</b> pide al negocio que borre tus datos, o escríbenos al mismo correo indicando el negocio y tu teléfono.</li>
 <li><b>Personal o miembro del equipo:</b> pide al dueño que te desactive, o escríbenos.</li>
 </ul>

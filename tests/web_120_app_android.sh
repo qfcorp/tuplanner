@@ -46,7 +46,7 @@ contiene "En la web: Pedir cotización" "$TMP/pag.html" "Pedir cotización"
 contiene "En la web: WhatsApp de ventas" "$TMP/pag.html" "wa.me/"
 app_play
 check "En la app, Mi plan abre" "200" "$(get "r=planes")"
-contiene "La página sabe que es la app" "$TMP/pag.html" 'class="con-sesion en-app"'
+contiene "La página sabe que es la app" "$TMP/pag.html" 'class="tk con-sesion en-app"'
 contiene "Muestra el plan" "$TMP/pag.html" "Plan <strong>Básico</strong>"
 contiene "Muestra los módulos a su elección" "$TMP/pag.html" "3 módulos a tu elección"
 contiene "Puede elegir los módulos incluidos en su plan" "$TMP/pag.html" "Elegir este módulo"

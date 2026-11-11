@@ -30,7 +30,7 @@ $formCrear = function (string $titulo, bool $hayAnterior) use ($paquetes, $ev): 
                 <span><strong>En blanco</strong><small>Solo con el alquiler del lugar; tú agregas lo demás.</small></span></label>
         </div>
         <?php if ($paquetes): ?>
-        <div class="campo doc-crear-paq" data-si="paquete" style="margin-top:12px">
+        <div class="campo tk-campo doc-crear-paq" data-si="paquete" style="margin-top:12px">
             <label for="crear-paq-<?= $hayAnterior ? 'v' : 'p' ?>">Paquete</label>
             <select id="crear-paq-<?= $hayAnterior ? 'v' : 'p' ?>" name="paquete_id">
                 <?php foreach ($paquetes as $p): ?>
@@ -40,7 +40,7 @@ $formCrear = function (string $titulo, bool $hayAnterior) use ($paquetes, $ev): 
             <small>★ = paquete para <?= e(mb_strtolower(Eventos::TIPOS[$ev['tipo']] ?? 'este tipo de evento')) ?>.</small>
         </div>
         <?php endif; ?>
-        <button class="boton" type="submit" style="margin-top:12px"><?= $hayAnterior ? 'Crear nueva versión' : 'Crear cotización' ?></button>
+        <button data-ico="guardar" class="boton tk-boton" type="submit" style="margin-top:12px"><?= $hayAnterior ? 'Crear nueva versión' : 'Crear cotización' ?></button>
     </form>
     <?php return ob_get_clean();
 };
@@ -69,9 +69,9 @@ $lineaHtml = function (string $k, array $l) use ($cats, $unis, $dueno, $editable
             <span class="doc-linea-total monto" data-doc-total-l><?= dinero($l['total'] ?? 0) ?></span>
         </div>
         <div class="doc-linea-botones">
-            <button type="submit" name="mover" value="<?= e($k) ?>:arriba" class="boton boton-claro boton-chico" aria-label="Subir" title="Subir" data-doc-subir formnovalidate>↑</button>
-            <button type="submit" name="mover" value="<?= e($k) ?>:abajo" class="boton boton-claro boton-chico" aria-label="Bajar" title="Bajar" data-doc-bajar formnovalidate>↓</button>
-            <button type="submit" name="quitar" value="<?= e($k) ?>" class="boton boton-peligro boton-chico" aria-label="Quitar" title="Quitar" data-doc-quitar formnovalidate>✕</button>
+            <button type="submit" name="mover" value="<?= e($k) ?>:arriba" class="boton tk-boton boton-claro secundario boton-chico chico" aria-label="Subir" title="Subir" data-doc-subir formnovalidate>↑</button>
+            <button type="submit" name="mover" value="<?= e($k) ?>:abajo" class="boton tk-boton boton-claro secundario boton-chico chico" aria-label="Bajar" title="Bajar" data-doc-bajar formnovalidate>↓</button>
+            <button type="submit" name="quitar" value="<?= e($k) ?>" class="boton tk-boton boton-peligro peligro boton-chico chico" aria-label="Quitar" title="Quitar" data-doc-quitar formnovalidate>✕</button>
         </div>
     </div>
     <?php return ob_get_clean();
@@ -87,7 +87,7 @@ $pasoActual = !$actual ? 1 : (in_array($actual['estado'], ['borrador'], true) ? 
 </ol>
 
 <?php if (!$actual): ?>
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <h2>Este evento todavía no tiene cotización</h2>
     <p class="suave">Arma la cotización en un minuto con un paquete y ajústala a lo que pidió el cliente. Después se la mandas por WhatsApp con un enlace para que la vea y la acepte desde su celular.</p>
     <?php if ($puede): ?>
@@ -97,7 +97,7 @@ $pasoActual = !$actual ? 1 : (in_array($actual['estado'], ['borrador'], true) ? 
             <?= $formCrear('¿Cómo quieres empezar?', false) ?>
         <?php endif; ?>
     <?php else: ?>
-        <p class="vacio">Tu usuario solo puede mirar. Pide al dueño o a un vendedor que prepare la cotización.</p>
+        <p class="vacio tk-vacio">Tu usuario solo puede mirar. Pide al dueño o a un vendedor que prepare la cotización.</p>
     <?php endif; ?>
 </section>
 <?php return; endif; ?>
@@ -113,10 +113,10 @@ $estadoTxt = $estados[$actual['estado']] ?? $actual['estado'];
         <p class="suave">Hecha el <?= e(fecha_corta($actual['fecha'])) ?> · válida hasta el <?= e(fecha_corta($actual['valida_hasta'])) ?>
             <?php if ($actual['estado'] === 'aceptada'): ?> · aceptada por <strong><?= e($actual['aceptada_por']) ?></strong> el <?= e(date('d/m/Y H:i', strtotime((string) $actual['aceptada_en']))) ?><?php endif; ?></p>
     </div>
-    <div class="acciones">
-        <a class="boton boton-claro boton-chico" href="<?= e(url('pdf', ['tipo' => 'cotizacion', 'id' => $actual['id']])) ?>" target="_blank" rel="noopener">Ver PDF</a>
+    <div class="acciones tk-acciones">
+        <a data-ico="descargar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('pdf', ['tipo' => 'cotizacion', 'id' => $actual['id']])) ?>" target="_blank" rel="noopener">Ver PDF</a>
         <?php if (count($versiones) > 1): ?>
-            <a class="boton boton-claro boton-chico" href="<?= e(url('cotizacion', ['id' => $ev['id'], 'c' => $actual['id'], 'comparar' => 1])) ?>#comparar">Comparar versiones</a>
+            <a data-ico="ojo" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('cotizacion', ['id' => $ev['id'], 'c' => $actual['id'], 'comparar' => 1])) ?>#comparar">Comparar versiones</a>
         <?php endif; ?>
     </div>
 </div>
@@ -139,17 +139,17 @@ $estadoTxt = $estados[$actual['estado']] ?? $actual['estado'];
     <?= campo_csrf() ?>
     <input type="hidden" name="cotizacion_id" value="<?= (int) $actual['id'] ?>">
 
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <div class="fila-campos doc-cabecera-cot">
-            <div class="campo"><label for="cinv">Invitados</label>
+            <div class="campo tk-campo"><label for="cinv">Invitados</label>
                 <input type="number" id="cinv" name="invitados" min="1" max="5000" value="<?= (int) $actual['invitados'] ?>" required data-doc-invitados>
                 <small>Las líneas "por persona" se recalculan solas.</small></div>
-            <div class="campo"><label for="cval">Válida hasta</label>
+            <div class="campo tk-campo"><label for="cval">Válida hasta</label>
                 <input type="date" id="cval" name="valida_hasta" value="<?= e($actual['valida_hasta']) ?>" required></div>
         </div>
     </section>
 
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2>Qué incluye</h2>
         <div class="doc-lineas" data-doc-lineas>
             <?php foreach ($actual['items'] as $i) echo $lineaHtml('i' . (int) $i['id'], $i); ?>
@@ -181,7 +181,7 @@ $estadoTxt = $estados[$actual['estado']] ?? $actual['estado'];
                             </optgroup>
                         <?php endforeach; ?>
                     </select>
-                    <button class="boton boton-claro" type="submit" name="despues" value="producto">Agregar</button>
+                    <button data-ico="mas" class="boton tk-boton boton-claro secundario" type="submit" name="despues" value="producto">Agregar</button>
                 </div>
             </div>
             <?php if ($paquetes): ?>
@@ -191,7 +191,7 @@ $estadoTxt = $estados[$actual['estado']] ?? $actual['estado'];
                     <select name="paquete_agregar" aria-label="Paquete">
                         <?php foreach ($paquetes as $p): ?><option value="<?= (int) $p['id'] ?>"><?= e($p['nombre']) ?></option><?php endforeach; ?>
                     </select>
-                    <button class="boton boton-claro" type="submit" name="despues" value="paquete">Agregar paquete</button>
+                    <button data-ico="mas" class="boton tk-boton boton-claro secundario" type="submit" name="despues" value="paquete">Agregar paquete</button>
                 </div>
             </details>
             <?php endif; ?>
@@ -199,16 +199,16 @@ $estadoTxt = $estados[$actual['estado']] ?? $actual['estado'];
     </section>
 
     <div class="rejilla rejilla-2 doc-editor-pie">
-        <section class="bloque">
-            <div class="campo"><label for="cdes">Descuento <small>($, antes del IVA)</small></label>
+        <section class="bloque tk-tarjeta">
+            <div class="campo tk-campo"><label for="cdes">Descuento <small>($, antes del IVA)</small></label>
                 <input type="text" inputmode="decimal" id="cdes" name="descuento" value="<?= e($dec($actual['descuento'])) ?>" data-doc-descuento></div>
-            <div class="campo"><label for="cnot">Notas para el cliente</label>
+            <div class="campo tk-campo"><label for="cnot">Notas para el cliente</label>
                 <textarea id="cnot" name="notas" rows="3" maxlength="2000" placeholder="Ej.: Incluye degustación para 4 personas."><?= e($actual['notas']) ?></textarea></div>
-            <div class="campo"><label for="ccon">Condiciones</label>
+            <div class="campo tk-campo"><label for="ccon">Condiciones</label>
                 <textarea id="ccon" name="condiciones" rows="5" maxlength="4000"><?= e($actual['condiciones']) ?></textarea>
                 <small>Las condiciones de siempre se cambian en Configuración.</small></div>
         </section>
-        <section class="bloque doc-totales-vivo" aria-live="polite">
+        <section class="bloque tk-tarjeta doc-totales-vivo" aria-live="polite">
             <h2>Totales</h2>
             <dl class="doc-totales">
                 <dt>Subtotal</dt><dd data-doc-t="subtotal"><?= dinero($actual['subtotal']) ?></dd>
@@ -226,17 +226,17 @@ $estadoTxt = $estados[$actual['estado']] ?? $actual['estado'];
             </dl>
             <p class="doc-sin-guardar" data-doc-sin-guardar hidden>Tienes cambios sin guardar.</p>
             <div class="doc-botones-editor">
-                <button class="boton boton-ancho" type="submit" name="despues" value="">Guardar</button>
+                <button data-ico="guardar" class="boton tk-boton boton-ancho" type="submit" name="despues" value="">Guardar</button>
                 <?php if ($actual['estado'] === 'borrador'): ?>
-                    <button class="boton boton-wa boton-ancho" type="submit" name="despues" value="whatsapp">Guardar y enviar por WhatsApp</button>
-                    <button class="boton boton-claro boton-ancho" type="submit" name="despues" value="enviar">Guardar y marcar como enviada</button>
+                    <button class="boton tk-boton boton-wa ok boton-ancho" type="submit" name="despues" value="whatsapp">Guardar y enviar por WhatsApp</button>
+                    <button data-ico="guardar" class="boton tk-boton boton-claro secundario boton-ancho" type="submit" name="despues" value="enviar">Guardar y marcar como enviada</button>
                 <?php endif; ?>
             </div>
         </section>
     </div>
 </form>
 <?php else: ?>
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <h2>Qué incluye</h2>
     <?php $c = $actual; $verCostos = $dueno; require RAIZ . '/app/vistas/cotizacion_detalle.php'; ?>
     <?php if (trim((string) $actual['notas']) !== ''): ?><h3>Notas</h3><p class="doc-texto"><?= nl2br(e($actual['notas'])) ?></p><?php endif; ?>
@@ -245,54 +245,54 @@ $estadoTxt = $estados[$actual['estado']] ?? $actual['estado'];
 <?php endif; ?>
 
 <?php if ($puede && in_array($actual['estado'], ['borrador', 'enviada'], true)): ?>
-<section class="bloque doc-enlace-cliente">
+<section class="bloque tk-tarjeta doc-enlace-cliente">
     <h2>Enlace para el cliente</h2>
     <p class="suave">El cliente abre este enlace en su celular: ve la cotización con tu logo, la descarga en PDF y la acepta con su nombre.
         <?= $actual['estado'] === 'borrador' ? '<strong>Al mandarlo, márcala como enviada.</strong>' : '' ?></p>
     <div class="doc-enlace">
         <input type="text" readonly value="<?= e($enlace) ?>" aria-label="Enlace de la cotización" onclick="this.select()">
-        <button type="button" class="boton boton-claro" data-copiar="<?= e($enlace) ?>">Copiar enlace</button>
+        <button data-ico="copiar" type="button" class="boton tk-boton boton-claro secundario" data-copiar="<?= e($enlace) ?>">Copiar enlace</button>
         <?php if ($wa): ?>
-            <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+            <a class="boton tk-boton boton-wa ok" href="<?= e($wa) ?>" target="_blank" rel="noopener">Enviar por WhatsApp</a>
         <?php else: ?>
             <small>El cliente no tiene celular guardado. <a href="<?= e(url('evento_editar', ['id' => $ev['id']])) ?>">Agregarlo</a></small>
         <?php endif; ?>
-        <a class="boton boton-claro" href="<?= e($enlace) ?>" target="_blank" rel="noopener">Ver como el cliente</a>
+        <a data-ico="ojo" class="boton tk-boton boton-claro secundario" href="<?= e($enlace) ?>" target="_blank" rel="noopener">Ver como el cliente</a>
     </div>
 </section>
 
 <div class="rejilla rejilla-2">
-    <details class="bloque doc-desplegar">
+    <details class="bloque tk-tarjeta doc-desplegar">
         <summary><strong>El cliente aceptó</strong> <small>— por teléfono, en persona o por WhatsApp</small></summary>
         <form method="post" action="<?= e(url('cotizacion', ['id' => $ev['id'], 'accion' => 'aceptar'])) ?>">
             <?= campo_csrf() ?><input type="hidden" name="cotizacion_id" value="<?= (int) $actual['id'] ?>">
             <p class="suave">Se guarda como aceptada, el valor pasa al evento (<?= dinero($actual['total']) ?>) y se arma el plan de pagos. Las otras versiones quedan reemplazadas.</p>
-            <div class="campo"><label for="anom">Nombre de quien acepta</label>
+            <div class="campo tk-campo"><label for="anom">Nombre de quien acepta</label>
                 <input type="text" id="anom" name="nombre" required maxlength="150" value="<?= e($ev['cliente']) ?>"></div>
             <label class="opcion" style="margin-bottom:12px"><input type="checkbox" name="confirmo" value="1" required>
                 <span><strong>Confirmo que el cliente aceptó esta cotización</strong></span></label>
-            <button class="boton" type="submit">Aceptar en nombre del cliente</button>
+            <button data-ico="check" class="boton tk-boton" type="submit">Aceptar en nombre del cliente</button>
         </form>
     </details>
-    <details class="bloque doc-desplegar">
+    <details class="bloque tk-tarjeta doc-desplegar">
         <summary><strong>El cliente no la aceptó</strong></summary>
         <form method="post" action="<?= e(url('cotizacion', ['id' => $ev['id'], 'accion' => 'rechazar'])) ?>">
             <?= campo_csrf() ?><input type="hidden" name="cotizacion_id" value="<?= (int) $actual['id'] ?>">
-            <div class="campo"><label for="rmot">¿Por qué? <small>(opcional, te sirve para vender mejor)</small></label>
+            <div class="campo tk-campo"><label for="rmot">¿Por qué? <small>(opcional, te sirve para vender mejor)</small></label>
                 <input type="text" id="rmot" name="motivo" maxlength="200" placeholder="Ej.: Le pareció caro, eligió otro local"></div>
-            <button class="boton boton-peligro" type="submit" data-confirmar="¿Marcar esta cotización como rechazada? El cliente ya no podrá aceptarla desde su enlace.">Marcar como rechazada</button>
+            <button data-ico="check" class="boton tk-boton boton-peligro peligro" type="submit" data-confirmar="¿Marcar esta cotización como rechazada? El cliente ya no podrá aceptarla desde su enlace.">Marcar como rechazada</button>
         </form>
     </details>
 </div>
 <?php endif; ?>
 
 <?php if ($puede && !in_array($ev['estado'], ['perdido', 'cancelado', 'realizado'], true) && $actual['estado'] !== 'aceptada'): ?>
-<details class="bloque doc-desplegar" <?= in_array($actual['estado'], ['rechazada', 'vencida', 'reemplazada'], true) ? 'open' : '' ?>>
+<details class="bloque tk-tarjeta doc-desplegar" <?= in_array($actual['estado'], ['rechazada', 'vencida', 'reemplazada'], true) ? 'open' : '' ?>>
     <summary><strong>Nueva versión</strong> <small>— si el cliente pide cambios. La actual queda reemplazada y su enlace se lo avisa.</small></summary>
     <?= $formCrear('Nueva versión de la cotización', true) ?>
 </details>
 <?php elseif ($puede && $actual['estado'] === 'aceptada'): ?>
-<details class="bloque doc-desplegar">
+<details class="bloque tk-tarjeta doc-desplegar">
     <summary><strong>¿El cliente pidió cambios después de aceptar?</strong></summary>
     <p class="suave">Crea una nueva versión, envíala y, cuando la acepte, el valor del evento y el plan de pagos se actualizan solos. Si ya hay contrato, prepara uno nuevo.</p>
     <?= $formCrear('Nueva versión de la cotización', true) ?>
@@ -300,10 +300,10 @@ $estadoTxt = $estados[$actual['estado']] ?? $actual['estado'];
 <?php endif; ?>
 
 <?php if ($comparar && $todas): ?>
-<section class="bloque" id="comparar">
+<section class="bloque tk-tarjeta" id="comparar">
     <h2>Comparar versiones</h2>
     <div class="tabla-scroll">
-        <table class="tabla doc-comparar">
+        <table class="tabla tk-tabla doc-comparar">
             <thead><tr><th></th><?php foreach ($todas as $v): ?><th class="num<?= (int) $v['id'] === (int) $actual['id'] ? ' doc-col-actual' : '' ?>">Versión <?= (int) $v['version'] ?><br><small><?= e(fecha_corta($v['fecha'], false)) ?> · <?= e($estados[$v['estado']] ?? '') ?></small></th><?php endforeach; ?></tr></thead>
             <tbody>
             <?php foreach (['invitados' => 'Invitados', 'lineas' => 'Productos', 'subtotal' => 'Subtotal', 'descuento' => 'Descuento', 'iva' => 'IVA', 'total' => 'Total', 'por_persona' => 'Por persona'] + ($dueno ? ['ganancia' => 'Ganancia'] : []) as $k => $t): ?>
@@ -321,7 +321,7 @@ $estadoTxt = $estados[$actual['estado']] ?? $actual['estado'];
 </section>
 <?php endif; ?>
 
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <h2>Versiones</h2>
     <ul class="filas">
         <?php foreach ($versiones as $v): ?>

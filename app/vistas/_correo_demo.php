@@ -9,7 +9,7 @@ $cd = $correoDemo;
     <?php elseif (($cd['estado'] ?? null) === 'usado'): ?>
         <p class="aviso aviso-alerta" role="status">Este correo ya se envió. La contraseña se muestra una sola vez: si hace falta otra, usa <strong>Nueva contraseña del dueño</strong> en la ficha del negocio.</p>
     <?php elseif (!$cd['listo']): ?>
-        <p><button class="boton" type="button" disabled>Configure el correo de Tukán</button></p>
+        <p><button data-ico="ajustes" class="boton" type="button" disabled>Configure el correo de Tukán</button></p>
         <p class="suave">En el servidor, una sola vez:</p>
         <pre class="ia-mono"><?= e(\TuPlanner\CorreoDemo::COMANDO) ?></pre>
     <?php else: ?>
@@ -19,7 +19,7 @@ $cd = $correoDemo;
             <div class="campo"><label for="correo-para">Correo del cliente</label>
                 <input id="correo-para" name="para" type="email" required maxlength="254" autocomplete="off" value="<?= e($cd['para']) ?>">
                 <small>Le llega «Su demo de TuPlanner está lista» con sus datos de entrada, desde info@tukansoftware.com.</small></div>
-            <button class="boton" type="submit">Enviar por correo</button>
+            <button data-ico="enviar" class="boton" type="submit">Enviar por correo</button>
         </form>
     <?php endif; ?>
 </div>

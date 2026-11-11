@@ -20,13 +20,13 @@ $nombresCal = [5 => 'Excelente', 4 => 'Muy bueno', 3 => 'Bueno', 2 => 'Regular',
         <p class="pv-cumple-llegada"><span class="pv-chip <?= $puP && $puP['estado'] === 'a_tiempo' ? 'pv-chip-verde' : ($puP ? 'pv-chip-rojo' : 'pv-chip-suave') ?>">Llegó <?= e(substr((string) $p['llegada_real'], 11, 5)) ?><?= $puP ? ' · ' . e(mb_strtolower($puP['texto'])) : '' ?></span>
             <?php if ($p['llegada_origen'] === 'proveedor'): ?><small class="suave">(lo marcó el proveedor)</small><?php endif; ?>
             <?php if ($editable): ?><form method="post" class="dia-en-linea"><?= campo_csrf() ?><?= $accion('prov_sin_llegada') ?><input type="hidden" name="prov_id" value="<?= (int) $p['id'] ?>">
-                <button class="boton-enlace" type="submit" data-confirmar="¿Borrar la hora de llegada?">Borrar</button></form><?php endif; ?></p>
+                <button data-ico="basura" class="boton-enlace" type="submit" data-confirmar="¿Borrar la hora de llegada?">Borrar</button></form><?php endif; ?></p>
     <?php elseif ($diaLlego && $editable && $p['cumplimiento'] !== 'no_llego'): ?>
         <form method="post" class="pv-llegada-form"><?= campo_csrf() ?><?= $accion('prov_llegada') ?><input type="hidden" name="prov_id" value="<?= (int) $p['id'] ?>">
-            <button class="boton boton-chico" type="submit" name="ahora" value="1">Llegó ahora</button>
+            <button data-ico="check" class="boton tk-boton boton-chico chico" type="submit" name="ahora" value="1">Llegó ahora</button>
             <label class="sr-only" for="hr<?= (int) $p['id'] ?>">Hora en que llegó</label>
             <input type="time" id="hr<?= (int) $p['id'] ?>" name="hora_real" class="pv-hora-real">
-            <button class="boton boton-claro boton-chico" type="submit">Llegó a esa hora</button>
+            <button data-ico="check" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Llegó a esa hora</button>
         </form>
     <?php endif; ?>
     <?php if ($diaLlego): ?>
@@ -39,15 +39,15 @@ $nombresCal = [5 => 'Excelente', 4 => 'Muy bueno', 3 => 'Bueno', 2 => 'Regular',
         <details class="dia-editar"><summary><?= $p['cumplimiento'] || $p['calificacion'] ? 'Cambiar evaluación' : '¿Cómo cumplió? Evaluar' ?></summary>
             <form method="post" class="dia-form-bloque"><?= campo_csrf() ?><?= $accion('prov_evaluar') ?><input type="hidden" name="prov_id" value="<?= (int) $p['id'] ?>">
                 <div class="fila-campos">
-                    <div class="campo"><label for="cu<?= (int) $p['id'] ?>">¿Cumplió?</label>
+                    <div class="campo tk-campo"><label for="cu<?= (int) $p['id'] ?>">¿Cumplió?</label>
                         <select id="cu<?= (int) $p['id'] ?>" name="cumplimiento"><option value="">—</option>
                             <?php foreach (ProveedoresFicha::CUMPLIMIENTO as $k => $t): ?><option value="<?= e($k) ?>" <?= $p['cumplimiento'] === $k ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?></select></div>
-                    <div class="campo"><label for="ca<?= (int) $p['id'] ?>">Calificación</label>
+                    <div class="campo tk-campo"><label for="ca<?= (int) $p['id'] ?>">Calificación</label>
                         <select id="ca<?= (int) $p['id'] ?>" name="calificacion"><option value="">—</option>
                             <?php foreach ($nombresCal as $k => $t): ?><option value="<?= $k ?>" <?= (int) $p['calificacion'] === $k ? 'selected' : '' ?>><?= str_repeat('★', $k) ?> <?= e($t) ?></option><?php endforeach; ?></select></div>
                 </div>
-                <div class="campo"><label for="cm<?= (int) $p['id'] ?>">Comentario <small>(opcional)</small></label><input type="text" id="cm<?= (int) $p['id'] ?>" name="comentario" value="<?= e($p['comentario']) ?>" maxlength="500" placeholder="Buena música, llegó un poco tarde"></div>
-                <button class="boton boton-chico" type="submit">Guardar evaluación</button>
+                <div class="campo tk-campo"><label for="cm<?= (int) $p['id'] ?>">Comentario <small>(opcional)</small></label><input type="text" id="cm<?= (int) $p['id'] ?>" name="comentario" value="<?= e($p['comentario']) ?>" maxlength="500" placeholder="Buena música, llegó un poco tarde"></div>
+                <button data-ico="guardar" class="boton tk-boton boton-chico chico" type="submit">Guardar evaluación</button>
             </form>
         </details>
         <?php endif; ?>

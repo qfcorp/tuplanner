@@ -10,20 +10,20 @@ $cuando = function (?string $f) use ($hoy): string {
     return match (true) { $d === 0 => 'vence hoy', $d === 1 => 'vence mañana', $d < 0 => 'venció hace ' . -$d . (-$d === 1 ? ' día' : ' días'), default => "vence en $d días" };
 };
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <h1>Por pagar</h1>
         <p>Lo que les debes a tus proveedores<?= $evento ? ' por ' . e($evento['nombre']) : '' ?>.</p>
     </div>
-    <div class="acciones">
-        <a class="boton boton-claro" href="<?= e(url('por_pagar', array_filter(['csv' => 1, 'evento' => $eventoId]))) ?>">Descargar para Excel</a>
-        <a class="boton boton-claro" href="<?= e(url('compras')) ?>">Compras</a>
+    <div class="acciones tk-acciones">
+        <a data-ico="descargar" class="boton tk-boton boton-claro secundario" href="<?= e(url('por_pagar', array_filter(['csv' => 1, 'evento' => $eventoId]))) ?>">Descargar para Excel</a>
+        <a data-ico="recibo" class="boton tk-boton boton-claro secundario" href="<?= e(url('compras')) ?>">Compras</a>
     </div>
 </div>
 
 <form method="get" class="pv-filtros pv-filtro-uno">
     <input type="hidden" name="r" value="por_pagar">
-    <div class="campo"><label for="ppev">Ver solo un evento</label>
+    <div class="campo tk-campo"><label for="ppev">Ver solo un evento</label>
         <select id="ppev" name="evento" data-autoenviar><option value="0">Todos (también compras generales)</option>
             <?php foreach ($eventosCompras as $x): ?><option value="<?= (int) $x['id'] ?>" <?= $eventoId === (int) $x['id'] ? 'selected' : '' ?>><?= e(fecha_corta($x['fecha'])) ?> · <?= e($x['nombre']) ?></option><?php endforeach; ?>
         </select></div>
@@ -41,11 +41,11 @@ $cuando = function (?string $f) use ($hoy): string {
 <?php endforeach; ?>
 
 <?php if (!$pp['compras']): ?>
-    <section class="bloque"><div class="vacio"><p><strong>No les debes nada a tus proveedores.</strong> 🎉</p>
+    <section class="bloque tk-tarjeta"><div class="vacio tk-vacio"><p><strong>No les debes nada a tus proveedores.</strong> 🎉</p>
         <p>Cuando registres una compra en <a href="<?= e(url('compras')) ?>">Compras</a>, aquí verás lo que falta pagar y cuándo vence.</p></div></section>
 <?php else: ?>
 <div class="rejilla rejilla-2">
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2>Próximos pagos</h2>
         <ul class="filas pv-filas">
             <?php foreach (array_slice($pp['compras'], 0, 40) as $c): ?>
@@ -60,7 +60,7 @@ $cuando = function (?string $f) use ($hoy): string {
         </ul>
     </section>
     <div>
-        <section class="bloque">
+        <section class="bloque tk-tarjeta">
             <h2>Antigüedad de saldos</h2>
             <ul class="pv-tramos">
                 <?php foreach (Compras::TRAMOS as $k => $t): $v = $pp['tramos'][$k]; ?>
@@ -70,7 +70,7 @@ $cuando = function (?string $f) use ($hoy): string {
                 <?php endforeach; ?>
             </ul>
         </section>
-        <section class="bloque">
+        <section class="bloque tk-tarjeta">
             <h2>Por proveedor</h2>
             <ul class="filas">
                 <?php foreach ($pp['por_proveedor'] as $p):
@@ -89,7 +89,7 @@ $cuando = function (?string $f) use ($hoy): string {
 <?php endif; ?>
 
 <?php if ($pp['cheques']): ?>
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <h2>Cheques posfechados por cobrar</h2>
     <p class="suave">Ten la plata en la cuenta para el día en que el proveedor puede cobrarlos.</p>
     <ul class="filas">

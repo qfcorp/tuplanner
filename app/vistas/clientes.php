@@ -2,7 +2,7 @@
 use TuPlanner\{Eventos, WhatsApp};
 /** @var array $clientes @var string $q */
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <h1>Clientes</h1>
         <p><?= $total ?> <?= $total === 1 ? 'cliente' : 'clientes' ?>. Se agregan solos al crear eventos o al llegar consultas de tu página.</p>
@@ -10,29 +10,29 @@ use TuPlanner\{Eventos, WhatsApp};
 </div>
 
 <?php if ($puedeCrear): ?>
-<details class="bloque" <?= $abrirNuevo ? 'open' : '' ?>>
-    <summary class="boton">Nuevo cliente</summary>
+<details class="bloque tk-tarjeta" <?= $abrirNuevo ? 'open' : '' ?>>
+    <summary data-ico="mas" class="boton tk-boton">Nuevo cliente</summary>
     <form method="post" action="<?= e(url('clientes')) ?>" style="margin-top:14px" novalidate>
         <?= campo_csrf() ?>
         <?php if ($error): ?><p class="aviso aviso-error" role="alert"><?= e($error) ?></p><?php endif; ?>
         <div class="rejilla-form">
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="nombre">Nombre</label>
                 <input type="text" id="nombre" name="nombre" value="<?= e($d['nombre']) ?>" required maxlength="150">
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="telefono">Celular</label>
                 <input type="tel" id="telefono" name="telefono" value="<?= e($d['telefono']) ?>" placeholder="0991234567">
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="identificacion">Cédula o RUC <small>(opcional)</small></label>
                 <input type="text" id="identificacion" name="identificacion" value="<?= e($d['identificacion']) ?>" inputmode="numeric" maxlength="13">
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="email">Correo <small>(opcional)</small></label>
                 <input type="email" id="email" name="email" value="<?= e($d['email']) ?>">
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="origen">¿Cómo nos conoció?</label>
                 <select id="origen" name="origen">
                     <option value="">— Elegir —</option>
@@ -40,30 +40,30 @@ use TuPlanner\{Eventos, WhatsApp};
                 </select>
             </div>
         </div>
-        <button class="boton" type="submit">Guardar cliente</button>
+        <button data-ico="guardar" class="boton tk-boton" type="submit">Guardar cliente</button>
     </form>
 </details>
 <?php endif; ?>
 
-<form method="get" class="bloque" role="search">
+<form method="get" class="bloque tk-tarjeta" role="search">
     <input type="hidden" name="r" value="clientes">
     <label class="sr-only" for="q">Buscar cliente</label>
     <div class="fila-en-linea">
         <input type="search" id="q" name="q" value="<?= e($q) ?>" placeholder="Buscar por nombre, celular, cédula o correo">
-        <button class="boton boton-claro" type="submit">Buscar</button>
+        <button data-ico="buscar" class="boton tk-boton boton-claro secundario" type="submit">Buscar</button>
     </div>
 </form>
 
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <?php if (!$clientes): ?>
-        <div class="vacio">
+        <div class="vacio tk-vacio">
             <?php if ($q !== ''): ?>
                 <p>Nadie coincide con "<?= e($q) ?>".</p>
-                <a class="boton boton-claro" href="<?= e(url('clientes')) ?>">Ver todos</a>
+                <a data-ico="ojo" class="boton tk-boton boton-claro secundario" href="<?= e(url('clientes')) ?>">Ver todos</a>
             <?php else: ?>
                 <p><strong>Todavía no tienes clientes.</strong></p>
                 <p>Se crean solos cuando registras un evento o cuando alguien te escribe desde tu página.</p>
-                <?php if ($puedeCrear): ?><a class="boton" href="<?= e(url('evento_nuevo')) ?>">Registrar un evento</a><?php endif; ?>
+                <?php if ($puedeCrear): ?><a data-ico="check" class="boton tk-boton" href="<?= e(url('evento_nuevo')) ?>">Registrar un evento</a><?php endif; ?>
             <?php endif; ?>
         </div>
     <?php else: ?>
@@ -81,7 +81,7 @@ use TuPlanner\{Eventos, WhatsApp};
                         </span>
                     </a>
                     <?php if ($wa): ?>
-                        <a class="boton boton-wa boton-chico" href="<?= e($wa) ?>" target="_blank" rel="noopener" aria-label="WhatsApp a <?= e($c['nombre']) ?>">WhatsApp</a>
+                        <a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($wa) ?>" target="_blank" rel="noopener" aria-label="WhatsApp a <?= e($c['nombre']) ?>">WhatsApp</a>
                     <?php endif; ?>
                 </li>
             <?php endforeach; ?>

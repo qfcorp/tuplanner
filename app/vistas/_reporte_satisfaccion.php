@@ -9,11 +9,11 @@ $sat = (new Encuestas(db()))->reporte((int) $u['negocio_id'], $per['desde'], $pe
 $npsClase = $sat['nps'] === null ? '' : ($sat['nps'] >= 50 ? 'pt-nps-bien' : ($sat['nps'] >= 0 ? 'pt-nps-medio' : 'pt-nps-mal'));
 $estrellas = fn(?float $v) => $v === null ? '—' : number_format($v, 1, ',', '') . ' ★';
 ?>
-<section class="bloque" id="satisfaccion">
+<section class="bloque tk-tarjeta" id="satisfaccion">
     <h2>Satisfacción de los clientes</h2>
     <p class="g-nota">Encuesta que recibe el cliente después de su evento. NPS = % que nos recomendaría con 9 o 10 − % que puso 6 o menos (va de −100 a 100; más de 50 es excelente).</p>
     <?php if (!$sat['respuestas']): ?>
-        <p class="vacio">Todavía no hay encuestas de eventos de este periodo. La encuesta sale en "Mensajes por WhatsApp" el día después de cada evento.</p>
+        <p class="vacio tk-vacio">Todavía no hay encuestas de eventos de este periodo. La encuesta sale en "Mensajes por WhatsApp" el día después de cada evento.</p>
     <?php else: ?>
     <div class="g-cifras pt-sat-cifras">
         <div class="g-cifra <?= $npsClase ?>"><strong><?= (int) $sat['nps'] ?></strong><span>NPS · <?= (int) $sat['respuestas'] ?> <?= $sat['respuestas'] === 1 ? 'encuesta' : 'encuestas' ?></span></div>
@@ -33,7 +33,7 @@ $estrellas = fn(?float $v) => $v === null ? '—' : number_format($v, 1, ',', ''
 
     <?php if (count($sat['por_mes']) > 1): ?>
     <h3>Por mes del evento</h3>
-    <div class="tabla-scroll"><table class="tabla" style="min-width:300px">
+    <div class="tabla-scroll"><table class="tabla tk-tabla" style="min-width:300px">
         <thead><tr><th>Mes</th><th class="num">Encuestas</th><th class="num">NPS</th></tr></thead>
         <tbody><?php foreach ($sat['por_mes'] as $mes => $m): ?>
             <tr><td><?= e(ucfirst(Reportes::nombreMes($mes))) ?></td><td class="num"><?= (int) $m['respuestas'] ?></td><td class="num"><?= (int) $m['nps'] ?></td></tr>
@@ -52,7 +52,7 @@ $estrellas = fn(?float $v) => $v === null ? '—' : number_format($v, 1, ',', ''
         </li>
         <?php endforeach; ?>
     </ul>
-    <?php if (count($sat['comentarios']) > 8): ?><button type="button" class="boton boton-claro boton-chico" data-pt-ver-mas=".pt-sat-mas">Ver los <?= count($sat['comentarios']) ?> comentarios</button><?php endif; ?>
+    <?php if (count($sat['comentarios']) > 8): ?><button data-ico="ojo" type="button" class="boton tk-boton boton-claro secundario boton-chico chico" data-pt-ver-mas=".pt-sat-mas">Ver los <?= count($sat['comentarios']) ?> comentarios</button><?php endif; ?>
     <?php endif; ?>
     <?php endif; ?>
 </section>

@@ -86,12 +86,12 @@ contiene "Cada año \$209,90 + IVA (paga 10, recibe 12)" "$TMP/pag.html" "Cada a
 no_contiene "El Completo no sale para pagarlo entero (se le regalarían los días que faltan)" "$TMP/pag.html" 'value="quinta|mensual"'
 contiene "Bloque «Pasar al Completo» con el cálculo a la vista" "$TMP/pag.html" "<strong>Pasar al Completo:</strong> te faltan 30 días (hasta el $(date -d '+30 days' +%d/%m/%Y))."
 contiene "… diferencia \$4,01 + IVA = \$4,61" "$TMP/pag.html" "Diferencia: \$4,01 + IVA = <strong>\$4,61</strong>."
-contiene "… botón «Pagar \$4,61 con tarjeta»" "$TMP/pag.html" '<button class="boton" type="submit">Pagar \$4,61 con tarjeta</button>'
+contiene "… botón «Pagar \$4,61 con tarjeta»" "$TMP/pag.html" '<button data-ico="tarjeta" class="boton tk-boton" type="submit">Pagar \$4,61 con tarjeta</button>'
 contiene "… y «Enviar por WhatsApp»" "$TMP/pag.html" 'rel="noopener">Enviar por WhatsApp</a>'
 contiene "Suscripción marcada por defecto y dice que se cobra sola" "$TMP/pag.html" 'name="forma" value="suscripcion" checked'
 contiene "… con el texto claro" "$TMP/pag.html" "se cobra sola a tu tarjeta cada período que elegiste (ese valor + IVA)"
 contiene "También puede pagar solo esta vez" "$TMP/pag.html" 'name="forma" value="una_vez"'
-contiene "Botón «Pagar con tarjeta»" "$TMP/pag.html" '<button class="boton" type="submit">Pagar con tarjeta</button>'
+contiene "Botón «Pagar con tarjeta»" "$TMP/pag.html" '<button data-ico="tarjeta" class="boton tk-boton" type="submit">Pagar con tarjeta</button>'
 contiene "Desde la lista de planes lleva a «Pasar al Completo»" "$TMP/pag.html" 'href="#pasar-completo">Pasar a este plan'
 contiene "Sigue «Cancelar mi plan»" "$TMP/pag.html" 'id="cancelar-plan"'
 r=$(post "r=planes" -d accion=pagar_tarjeta --data-urlencode "opcion=platino|mensual")
@@ -261,7 +261,7 @@ entrar "$EB" claveSegura1
 get "r=planes" > /dev/null
 contiene "Mi plan: aviso «te sugerimos el Completo» arriba" "$TMP/pag.html" '<div class="aviso aviso-alerta mp-sugerencia" data-sugerencia="mayor"><strong>Con tus módulos pagas \$30,99 + IVA al mes.</strong> El plan Completo cuesta \$25,00 + IVA y trae <strong>todos</strong> los módulos y el Asistente IA. Te sugerimos pasarte al Completo.'
 check "… también en la sección de pagar con tarjeta (2 veces en la página)" "2" "$(grep -o 'data-sugerencia="mayor"' "$TMP/pag.html" | wc -l)"
-contiene "… con suscripción pagada el botón se pasa al Completo ya" "$TMP/pag.html" 'name="accion" value="pasar_completo"><button class="boton boton-chico" type="submit">Pasarme al Completo</button>'
+contiene "… con suscripción pagada el botón se pasa al Completo ya" "$TMP/pag.html" 'name="accion" value="pasar_completo"><button data-ico="flecha" class="boton tk-boton boton-chico chico" type="submit">Pasarme al Completo</button>'
 post "r=planes" -d accion=pasar_completo > /dev/null
 check "«Pasarme al Completo»: ya tiene el Completo" "quinta" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NB")"
 check "… el Panel recibe «cambiar» con pasa_a_completo y el Completo de 6 meses (\$125)" "cambiar|1|125" "$(ps_pedido accion)|$(ps_pedido pasa_a_completo)|$(ps_pedido subtotal)"
@@ -338,7 +338,7 @@ contiene "… pero tiene el cálculo y «Enviar por WhatsApp»" "$TMP/pag.html" 
 BASE=$BASE_12; entrar "$(sql "SELECT email FROM usuarios WHERE negocio_id=$NK AND rol='dueno'")" claveSegura1
 panel_modo true
 get "r=planes" > /dev/null
-contiene "Con cobro con tarjeta: botón «Pagar \$4,61 con tarjeta»" "$TMP/pag.html" '<button class="boton" type="submit">Pagar \$4,61 con tarjeta</button>'
+contiene "Con cobro con tarjeta: botón «Pagar \$4,61 con tarjeta»" "$TMP/pag.html" '<button data-ico="tarjeta" class="boton tk-boton" type="submit">Pagar \$4,61 con tarjeta</button>'
 r=$(post "r=planes" -d accion=pasar_completo)
 IDM=$(php -r '$c = json_decode((string) file_get_contents($argv[1]), true); echo end($c)["id"];' "$PSIM/cobros.json")
 check "Lo lleva a pagar el prorrateo" "302 http://127.0.0.1:$PP/pagar/$IDM" "$r"
@@ -370,7 +370,7 @@ registrar esencial "Local Minimo $RANDOM"; pagar_plan esencial; NMI=$NID
 sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia,invitados' WHERE id=$NMI" > /dev/null
 get "r=planes" > /dev/null
 contiene "Diferencia menor a \$1: lo dice" "$TMP/pag.html" "La diferencia es menor a \$1: no se cobra."
-contiene "… con el botón «Pasarme ahora (no se cobra)»" "$TMP/pag.html" '<button class="boton" type="submit">Pasarme ahora (no se cobra)</button>'
+contiene "… con el botón «Pasarme ahora (no se cobra)»" "$TMP/pag.html" '<button data-ico="flecha" class="boton tk-boton" type="submit">Pasarme ahora (no se cobra)</button>'
 no_contiene "… sin «Enviar por WhatsApp» (no hay nada que pagar)" "$TMP/pag.html" "Enviar por WhatsApp"
 CREADOS=$(wc -l < "$PSIM/cobros.json"); NCOB=$(php -r 'echo count(json_decode((string) file_get_contents($argv[1]), true));' "$PSIM/cobros.json")
 r=$(post "r=planes" -d accion=pasar_completo)

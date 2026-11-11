@@ -23,12 +23,12 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
     </div>
     <?php if (!$p['activo']): ?><span class="etq etq-cancelada">Inactivo</span><?php endif; ?>
 </div>
-<div class="acciones pv-barra">
-    <?php if ($wa): ?><a class="boton boton-wa boton-chico" href="<?= e($wa) ?>" target="_blank" rel="noopener">WhatsApp</a><?php endif; ?>
-    <?php if ($comercial): ?><a class="boton boton-chico" href="<?= e(url('compras', ['nueva' => 1, 'proveedor' => $pid])) ?>#nueva">Nueva compra</a><?php endif; ?>
-    <?php if ($verDinero): ?><a class="boton boton-claro boton-chico" href="<?= e(url('pdf', ['tipo' => 'estado_proveedor', 'id' => $pid])) ?>" target="_blank" rel="noopener">Estado de cuenta (PDF)</a><?php endif; ?>
-    <?php if ($editable): ?><a class="boton boton-claro boton-chico" href="<?= e(url('proveedores', ['id' => $pid])) ?>#form-proveedor">Editar datos</a><?php endif; ?>
-    <a class="boton boton-claro boton-chico" href="<?= e(url('incidencias', ['proveedor' => $pid])) ?>#nueva">Reportar problema</a>
+<div class="acciones tk-acciones pv-barra">
+    <?php if ($wa): ?><a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($wa) ?>" target="_blank" rel="noopener">WhatsApp</a><?php endif; ?>
+    <?php if ($comercial): ?><a data-ico="mas" class="boton tk-boton boton-chico chico" href="<?= e(url('compras', ['nueva' => 1, 'proveedor' => $pid])) ?>#nueva">Nueva compra</a><?php endif; ?>
+    <?php if ($verDinero): ?><a data-ico="descargar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('pdf', ['tipo' => 'estado_proveedor', 'id' => $pid])) ?>" target="_blank" rel="noopener">Estado de cuenta (PDF)</a><?php endif; ?>
+    <?php if ($editable): ?><a data-ico="editar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('proveedores', ['id' => $pid])) ?>#form-proveedor">Editar datos</a><?php endif; ?>
+    <a data-ico="alerta" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('incidencias', ['proveedor' => $pid])) ?>#nueva">Reportar problema</a>
 </div>
 
 <?php if ($docAlertas): ?>
@@ -57,7 +57,7 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
     </div>
     <?php endif; ?>
     <div class="rejilla rejilla-2">
-        <section class="bloque">
+        <section class="bloque tk-tarjeta">
             <h2>Cómo cumple</h2>
             <?php if ($puntaje && $puntaje['puntaje'] !== null): ?>
                 <div class="pv-puntaje-grande pv-nivel-<?= e($puntaje['nivel']) ?>"><strong><?= (int) $puntaje['puntaje'] ?></strong><span>de 100 · <?= e(ProveedoresFicha::NIVELES[$puntaje['nivel']]) ?></span></div>
@@ -80,7 +80,7 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
                 <dt>Incidencias</dt><dd><?= (int) ($puntaje['incidencias'] ?? 0) ?><?= !empty($puntaje['graves']) ? ' · <span class="cb-rojo">' . (int) $puntaje['graves'] . ((int) $puntaje['graves'] === 1 ? ' grave' : ' graves') . '</span>' : '' ?></dd>
             </dl>
         </section>
-        <section class="bloque">
+        <section class="bloque tk-tarjeta">
             <h2>Datos</h2>
             <dl class="ficha-datos">
                 <?php if ($p['razon_social']): ?><dt>Razón social</dt><dd><?= e($p['razon_social']) ?></dd><?php endif; ?>
@@ -98,7 +98,7 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
                 <strong><?= e($p['banco'] ?: 'Banco') ?></strong>
                 <span><?= e(ProveedoresFicha::TIPOS_CUENTA[$p['tipo_cuenta'] ?? ''] ?? 'Cuenta') ?> N.º <strong><?= e($p['numero_cuenta']) ?></strong></span>
                 <span><?= e($p['titular_cuenta'] ?: ($p['razon_social'] ?: $p['nombre'])) ?><?= $p['ruc'] ? ' · ' . e($p['ruc']) : '' ?></span>
-                <button type="button" class="boton boton-claro boton-chico" data-copiar="<?= e(trim(($p['banco'] ?? '') . ' ' . (ProveedoresFicha::TIPOS_CUENTA[$p['tipo_cuenta'] ?? ''] ?? '') . ' ' . $p['numero_cuenta'] . ' ' . ($p['titular_cuenta'] ?? '') . ' ' . ($p['ruc'] ?? ''))) ?>">Copiar datos</button>
+                <button data-ico="copiar" type="button" class="boton tk-boton boton-claro secundario boton-chico chico" data-copiar="<?= e(trim(($p['banco'] ?? '') . ' ' . (ProveedoresFicha::TIPOS_CUENTA[$p['tipo_cuenta'] ?? ''] ?? '') . ' ' . $p['numero_cuenta'] . ' ' . ($p['titular_cuenta'] ?? '') . ' ' . ($p['ruc'] ?? ''))) ?>">Copiar datos</button>
             </div>
             <?php elseif ($verDinero && $comercial): ?>
                 <p class="suave"><small>Sin cuenta de banco. <a href="<?= e(url('proveedores', ['id' => $pid])) ?>#form-proveedor">Agrégala</a> para pagarle por transferencia.</small></p>
@@ -107,22 +107,22 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
         </section>
     </div>
     <?php if ($portal): ?>
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2>Portal del proveedor</h2>
         <p class="suave">Un enlace solo para <?= e($p['nombre']) ?>, sin contraseña: ve sus eventos con la dirección y la hora de llegada, confirma las órdenes de compra, sube sus facturas, ve sus pagos y marca "Ya llegué" el día del evento.</p>
-        <div class="acciones">
-            <a class="boton boton-claro boton-chico" href="<?= e($portal) ?>" target="_blank" rel="noopener">Abrir portal</a>
-            <button type="button" class="boton boton-claro boton-chico" data-copiar="<?= e($portal) ?>">Copiar enlace</button>
-            <?php if ($waPortal): ?><a class="boton boton-wa boton-chico" href="<?= e($waPortal) ?>" target="_blank" rel="noopener">Enviar por WhatsApp</a><?php endif; ?>
+        <div class="acciones tk-acciones">
+            <a data-ico="ojo" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e($portal) ?>" target="_blank" rel="noopener">Abrir portal</a>
+            <button data-ico="copiar" type="button" class="boton tk-boton boton-claro secundario boton-chico chico" data-copiar="<?= e($portal) ?>">Copiar enlace</button>
+            <?php if ($waPortal): ?><a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($waPortal) ?>" target="_blank" rel="noopener">Enviar por WhatsApp</a><?php endif; ?>
             <?php if ($comercial): ?>
             <form method="post" class="dia-en-linea"><?= campo_csrf() ?><input type="hidden" name="accion" value="nuevo_enlace">
-                <button class="boton-enlace" type="submit" data-confirmar="El enlace actual dejará de servir. ¿Crear uno nuevo?">Cambiar el enlace</button></form>
+                <button data-ico="editar" class="boton-enlace" type="submit" data-confirmar="El enlace actual dejará de servir. ¿Crear uno nuevo?">Cambiar el enlace</button></form>
             <?php endif; ?>
         </div>
     </section>
     <?php endif; ?>
     <?php $prox = $eventosProv['proximos'] ?? []; if ($prox): ?>
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2>Próximos eventos</h2>
         <ul class="filas">
             <?php foreach (array_slice($prox, 0, 5) as $x): ?>
@@ -141,18 +141,18 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
         <div class="cifra-tarjeta"><small>Retenciones y descuentos</small><strong><?= dinero($cuenta['retenciones'] + $cuenta['descuentos']) ?></strong></div>
         <div class="cifra-tarjeta <?= $cuenta['saldo'] > 0 ? 'alerta' : '' ?>"><small>Saldo</small><strong><?= dinero($cuenta['saldo']) ?></strong></div>
     </div>
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <div class="dia-titulo-acciones"><h2>Compras</h2>
-            <?php if ($comercial): ?><a class="boton boton-chico" href="<?= e(url('compras', ['nueva' => 1, 'proveedor' => $pid])) ?>#nueva">Nueva compra</a><?php endif; ?></div>
+            <?php if ($comercial): ?><a data-ico="mas" class="boton tk-boton boton-chico chico" href="<?= e(url('compras', ['nueva' => 1, 'proveedor' => $pid])) ?>#nueva">Nueva compra</a><?php endif; ?></div>
         <?php if (!$cuenta['compras']): ?>
-            <p class="vacio">Todavía no le has comprado nada.</p>
+            <p class="vacio tk-vacio">Todavía no le has comprado nada.</p>
         <?php else: ?>
         <?php $listaCompras = $cuenta['compras']; $ocultarProveedor = true; require RAIZ . '/app/vistas/_pv_compras.php'; ?>
         <?php endif; ?>
     </section>
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2>Pagos hechos</h2>
-        <?php if (!$pagos): ?><p class="vacio">Sin pagos todavía.</p><?php else: ?>
+        <?php if (!$pagos): ?><p class="vacio tk-vacio">Sin pagos todavía.</p><?php else: ?>
         <ul class="filas">
             <?php foreach ($pagos as $x): ?>
             <li class="<?= $x['estado'] === 'anulado' ? 'pv-anulado' : '' ?>"><div><strong><?= dinero($x['monto']) ?></strong> · <?= e(Compras::METODOS[$x['metodo']] ?? $x['metodo']) ?><?= $x['referencia'] ? ' ' . e($x['referencia']) : '' ?>
@@ -164,7 +164,7 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
         <?php endif; ?>
     </section>
     <?php if ($gastosProv): ?>
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2>Gastos anotados con este proveedor</h2>
         <p class="suave">Los que se registraron como gasto del evento (aparte de las compras).</p>
         <ul class="filas">
@@ -177,9 +177,9 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
 
 <?php elseif ($ver === 'eventos'): ?>
     <?php foreach (['proximos' => 'Próximos eventos', 'pasados' => 'Eventos donde trabajó'] as $k => $tit): ?>
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2><?= e($tit) ?></h2>
-        <?php if (!$eventosProv[$k]): ?><p class="vacio"><?= $k === 'proximos' ? 'Sin eventos próximos.' : 'Todavía no ha trabajado en un evento contigo.' ?></p><?php else: ?>
+        <?php if (!$eventosProv[$k]): ?><p class="vacio tk-vacio"><?= $k === 'proximos' ? 'Sin eventos próximos.' : 'Todavía no ha trabajado en un evento contigo.' ?></p><?php else: ?>
         <ul class="filas pv-filas">
             <?php foreach ($eventosProv[$k] as $x): $pu = $x['puntualidad']; ?>
             <li><div>
@@ -204,21 +204,21 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
     <?php endforeach; ?>
 
 <?php elseif ($ver === 'documentos'): ?>
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2>Documentos</h2>
         <?php if (!$documentos): ?>
-            <p class="vacio">Sin documentos. Sube su RUC, permisos (sanitario/ARCSA si es de comida), póliza de seguro o contrato, con la fecha en que vencen: te avisamos 30 días antes.</p>
+            <p class="vacio tk-vacio">Sin documentos. Sube su RUC, permisos (sanitario/ARCSA si es de comida), póliza de seguro o contrato, con la fecha en que vencen: te avisamos 30 días antes.</p>
         <?php else: ?>
         <ul class="filas">
             <?php foreach ($documentos as $d): [$cls, $txt] = $etqDoc[$d['estado']]; ?>
             <li><div><strong><?= e(ProveedoresFicha::TIPOS_DOC[$d['tipo']]) ?></strong><?= $d['nombre'] ? ' · ' . e($d['nombre']) : '' ?>
                 <br><small><?= $d['vence'] ? ($d['estado'] === 'vencido' ? 'Venció el ' : 'Vence el ') . e(fecha_corta($d['vence'])) : 'Sin fecha de vencimiento' ?> · subido el <?= e(fecha_corta(substr((string) $d['creado_en'], 0, 10), false)) ?></small>
                 <div class="pv-chips"><span class="pv-chip <?= e($cls) ?>"><?= e($txt) ?></span></div></div>
-                <div class="derecha acciones">
-                    <?php if ($d['archivo']): ?><a class="boton boton-claro boton-chico" href="<?= e(url('proveedor_archivo', ['tipo' => 'documento', 'id' => $d['id']])) ?>" target="_blank" rel="noopener">Ver <?= Adjuntos::esPdf($d['archivo']) ? 'PDF' : 'foto' ?></a><?php endif; ?>
+                <div class="derecha acciones tk-acciones">
+                    <?php if ($d['archivo']): ?><a data-ico="ojo" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('proveedor_archivo', ['tipo' => 'documento', 'id' => $d['id']])) ?>" target="_blank" rel="noopener">Ver <?= Adjuntos::esPdf($d['archivo']) ? 'PDF' : 'foto' ?></a><?php endif; ?>
                     <?php if ($editable): ?>
                     <form method="post"><?= campo_csrf() ?><input type="hidden" name="accion" value="documento_borrar"><input type="hidden" name="documento_id" value="<?= (int) $d['id'] ?>">
-                        <button class="boton boton-peligro boton-chico" type="submit" data-confirmar="¿Quitar este documento?">Quitar</button></form>
+                        <button data-ico="basura" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit" data-confirmar="¿Quitar este documento?">Quitar</button></form>
                     <?php endif; ?>
                 </div></li>
             <?php endforeach; ?>
@@ -226,25 +226,25 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
         <?php endif; ?>
     </section>
     <?php if ($editable): ?>
-    <form method="post" enctype="multipart/form-data" class="bloque"><?= campo_csrf() ?><input type="hidden" name="accion" value="documento">
+    <form method="post" enctype="multipart/form-data" class="bloque tk-tarjeta"><?= campo_csrf() ?><input type="hidden" name="accion" value="documento">
         <h2>Subir documento</h2>
         <div class="fila-campos">
-            <div class="campo"><label for="dtipo">¿Qué documento es?</label>
+            <div class="campo tk-campo"><label for="dtipo">¿Qué documento es?</label>
                 <select id="dtipo" name="tipo"><?php foreach (ProveedoresFicha::TIPOS_DOC as $k => $t): ?><option value="<?= e($k) ?>"><?= e($t) ?></option><?php endforeach; ?></select></div>
-            <div class="campo"><label for="dvence">Vence el <small>(opcional)</small></label><input type="date" id="dvence" name="vence"></div>
+            <div class="campo tk-campo"><label for="dvence">Vence el <small>(opcional)</small></label><input type="date" id="dvence" name="vence"></div>
         </div>
-        <div class="campo"><label for="dnom">Detalle <small>(opcional: aseguradora, número…)</small></label><input type="text" id="dnom" name="nombre_doc" maxlength="150"></div>
-        <div class="campo"><label for="darch">Foto o PDF</label><input type="file" id="darch" name="archivo" accept="image/*,application/pdf"></div>
-        <button class="boton" type="submit">Guardar documento</button>
+        <div class="campo tk-campo"><label for="dnom">Detalle <small>(opcional: aseguradora, número…)</small></label><input type="text" id="dnom" name="nombre_doc" maxlength="150"></div>
+        <div class="campo tk-campo"><label for="darch">Foto o PDF</label><input type="file" id="darch" name="archivo" accept="image/*,application/pdf"></div>
+        <button data-ico="guardar" class="boton tk-boton" type="submit">Guardar documento</button>
     </form>
     <?php endif; ?>
 
 <?php elseif ($ver === 'precios'): ?>
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2>Historial de precios</h2>
         <p class="suave">Todo lo que le compraste, con la fecha y el precio unitario. La flecha compara con la compra anterior del mismo ítem.</p>
-        <?php if (!$precios): ?><p class="vacio">Todavía no le has comprado nada.</p><?php else: ?>
-        <div class="tabla-scroll"><table class="tabla">
+        <?php if (!$precios): ?><p class="vacio tk-vacio">Todavía no le has comprado nada.</p><?php else: ?>
+        <div class="tabla-scroll"><table class="tabla tk-tabla">
             <thead><tr><th>Fecha</th><th>Ítem</th><th class="num">Cantidad</th><th class="num">Precio unitario</th><th>Compra</th></tr></thead>
             <tbody>
             <?php foreach ($precios as $x): ?>
@@ -260,9 +260,9 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
     </section>
 
 <?php elseif ($ver === 'incidencias'): ?>
-    <section class="bloque">
-        <div class="dia-titulo-acciones"><h2>Incidencias</h2><a class="boton boton-chico" href="<?= e(url('incidencias', ['proveedor' => $pid])) ?>#nueva">Reportar problema</a></div>
-        <?php if (!$incidenciasProv): ?><p class="vacio">Sin problemas registrados con este proveedor. 👍</p><?php else: ?>
+    <section class="bloque tk-tarjeta">
+        <div class="dia-titulo-acciones"><h2>Incidencias</h2><a data-ico="alerta" class="boton tk-boton boton-chico chico" href="<?= e(url('incidencias', ['proveedor' => $pid])) ?>#nueva">Reportar problema</a></div>
+        <?php if (!$incidenciasProv): ?><p class="vacio tk-vacio">Sin problemas registrados con este proveedor. 👍</p><?php else: ?>
         <ul class="filas pv-filas">
             <?php foreach ($incidenciasProv as $i): ?>
             <li><div><span class="pv-chip pv-grav-<?= e($i['gravedad']) ?>"><?= e(Incidencias::GRAVEDADES[$i['gravedad']]) ?></span> <strong><?= e(mb_strimwidth($i['descripcion'], 0, 120, '…')) ?></strong>
@@ -275,10 +275,10 @@ $conteo = ['documentos' => count($documentos), 'incidencias' => (int) ($puntaje[
     </section>
 
 <?php elseif ($ver === 'bitacora'): ?>
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2>Bitácora</h2>
         <p class="suave">Todo lo que pasó con <?= e($p['nombre']) ?>: compras, facturas, pagos, documentos, llegadas, calificaciones e incidencias.</p>
-        <?php if (!$bitacora): ?><p class="vacio">Todavía no hay movimientos.</p><?php else: ?>
+        <?php if (!$bitacora): ?><p class="vacio tk-vacio">Todavía no hay movimientos.</p><?php else: ?>
         <ol class="pv-linea">
             <?php foreach ($bitacora as $m): ?>
             <li class="pv-mov-<?= e($m['tipo']) ?>">

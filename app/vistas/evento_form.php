@@ -6,18 +6,18 @@ $nuevo = $modo === 'nuevo';
 $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']]);
 ?>
 <?php if ($nuevo): ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <h1>Nuevo evento</h1>
         <p>Con nombre, celular y fecha basta para empezar. Lo demás se completa después.</p>
     </div>
-    <div class="acciones">
-        <?php if (modulo_activo($u, 'asistente_ia')): ?><a class="boton boton-claro" href="<?= e(url('ia_cotizacion')) ?>">✨ Desde un mensaje de WhatsApp</a><?php endif; ?>
-        <a class="boton boton-claro" href="<?= e(url('eventos')) ?>">Cancelar</a>
+    <div class="acciones tk-acciones">
+        <?php if (modulo_activo($u, 'asistente_ia')): ?><a class="boton tk-boton boton-claro secundario" href="<?= e(url('ia_cotizacion')) ?>">✨ Desde un mensaje de WhatsApp</a><?php endif; ?>
+        <a data-ico="cruz" class="boton tk-boton boton-claro secundario" href="<?= e(url('eventos')) ?>">Cancelar</a>
     </div>
 </div>
 <?php else: ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <p class="evento-sub" style="margin:0"><a href="<?= e(url('evento', ['id' => $ev['id']])) ?>"><?= e($ev['codigo']) ?></a></p>
         <h1>Editar evento</h1>
@@ -25,7 +25,7 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
             <p>Este evento ya está <?= e(strtolower(Eventos::ESTADOS[$ev['estado']])) ?>: si cambias la fecha, la hora o el lugar, revisamos que siga libre.</p>
         <?php endif; ?>
     </div>
-    <a class="boton boton-claro" href="<?= e(url('evento', ['id' => $ev['id']])) ?>">Cancelar</a>
+    <a data-ico="cruz" class="boton tk-boton boton-claro secundario" href="<?= e(url('evento', ['id' => $ev['id']])) ?>">Cancelar</a>
 </div>
 <?php endif; ?>
 
@@ -35,7 +35,7 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
       data-disponible="<?= e(url('disponible')) ?>" data-excluir="<?= $ev ? (int) $ev['id'] : '' ?>">
     <?= campo_csrf() ?>
 
-    <fieldset class="bloque paso">
+    <fieldset class="bloque tk-tarjeta paso">
         <legend><span class="paso-num">1</span> Cliente</legend>
         <div class="modos" role="radiogroup" aria-label="¿Cliente nuevo o ya registrado?">
             <label class="modo"><input type="radio" name="modo_cliente" value="nuevo" <?= $d['modo_cliente'] !== 'existente' ? 'checked' : '' ?>>
@@ -46,19 +46,19 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
 
         <div class="caja-cliente caja-cliente-nuevo" data-si="nuevo" style="margin-top:14px">
             <div class="rejilla-form">
-                <div class="campo">
+                <div class="campo tk-campo">
                     <label for="cliente_nombre">Nombre del cliente</label>
                     <input type="text" id="cliente_nombre" name="cliente_nombre" value="<?= e($d['cliente_nombre']) ?>" placeholder="Ej. Ana Torres y Luis Pérez" autocomplete="off">
                 </div>
-                <div class="campo">
+                <div class="campo tk-campo">
                     <label for="cliente_telefono">Celular <small>(para WhatsApp)</small></label>
                     <input type="tel" id="cliente_telefono" name="cliente_telefono" value="<?= e($d['cliente_telefono']) ?>" placeholder="0991234567" inputmode="tel">
                 </div>
-                <div class="campo">
+                <div class="campo tk-campo">
                     <label for="cliente_identificacion">Cédula o RUC <small>(opcional, para el contrato)</small></label>
                     <input type="text" id="cliente_identificacion" name="cliente_identificacion" value="<?= e($d['cliente_identificacion']) ?>" inputmode="numeric" maxlength="13">
                 </div>
-                <div class="campo">
+                <div class="campo tk-campo">
                     <label for="cliente_email">Correo <small>(opcional)</small></label>
                     <input type="email" id="cliente_email" name="cliente_email" value="<?= e($d['cliente_email']) ?>">
                 </div>
@@ -70,11 +70,11 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
             <?php if (!$clientes): ?>
                 <p class="suave">Todavía no tienes clientes registrados. Marca "Cliente nuevo".</p>
             <?php else: ?>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="cliente_buscar">Buscar cliente</label>
                 <input type="search" id="cliente_buscar" class="js-filtrar-clientes" data-select="cliente_id" placeholder="Escribe el nombre, celular o cédula" autocomplete="off">
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="cliente_id">Cliente</label>
                 <select id="cliente_id" name="cliente_id" size="5" class="select-clientes">
                     <?php foreach ($clientes as $c): ?>
@@ -86,7 +86,7 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
             <?php endif; ?>
         </div>
 
-        <div class="campo" style="margin-top:6px">
+        <div class="campo tk-campo" style="margin-top:6px">
             <label for="origen">¿Cómo nos conoció?</label>
             <select id="origen" name="origen">
                 <option value="">— Elegir —</option>
@@ -95,39 +95,39 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
         </div>
     </fieldset>
 
-    <fieldset class="bloque paso">
+    <fieldset class="bloque tk-tarjeta paso">
         <legend><span class="paso-num">2</span> Evento</legend>
         <div class="rejilla-form">
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="tipo">¿Qué celebran?</label>
                 <select id="tipo" name="tipo">
                     <?php foreach (Eventos::TIPOS as $k => $t): ?><option value="<?= e($k) ?>" <?= $d['tipo'] === $k ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?>
                 </select>
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="nombre">Nombre del evento <small>(opcional)</small></label>
                 <input type="text" id="nombre" name="nombre" value="<?= e($d['nombre']) ?>" maxlength="150" placeholder="Ej. Boda de Ana y Luis (si lo dejas vacío, lo ponemos solo)">
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="fecha">Fecha</label>
                 <input type="date" id="fecha" name="fecha" value="<?= e($d['fecha']) ?>" required>
             </div>
             <div class="fila-campos">
-                <div class="campo">
+                <div class="campo tk-campo">
                     <label for="hora_inicio">Empieza</label>
                     <input type="time" id="hora_inicio" name="hora_inicio" value="<?= e($d['hora_inicio']) ?>" required>
                 </div>
-                <div class="campo">
+                <div class="campo tk-campo">
                     <label for="hora_fin">Termina</label>
                     <input type="time" id="hora_fin" name="hora_fin" value="<?= e($d['hora_fin']) ?>" required>
                     <small>Si termina después de medianoche, pon la hora (ej. 02:00): entendemos que es el día siguiente.</small>
                 </div>
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="invitados">Invitados <small>(aproximado)</small></label>
                 <input type="number" id="invitados" name="invitados" value="<?= e($d['invitados']) ?>" min="1" max="20000" inputmode="numeric" required>
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="montaje">Montaje</label>
                 <select id="montaje" name="montaje">
                     <option value="">— Por definir —</option>
@@ -136,7 +136,7 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
             </div>
         </div>
 
-        <fieldset class="campo">
+        <fieldset class="campo tk-campo">
             <legend>Lugares <small>(si todavía no lo eligen, déjalo sin marcar: queda "por definir")</small></legend>
             <?php if (!$espacios): ?><p class="suave ayuda-chica">Todavía no tienes lugares guardados.<?php if (es_admin_total($u)): ?> <a href="<?= e(url('espacios', ['nuevo' => 1])) ?>">Agregar las quintas, haciendas o iglesias donde trabajas</a>.<?php endif; ?></p><?php endif; ?>
             <div class="casillas casillas-espacios">
@@ -172,20 +172,20 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
         <?php endif; ?>
     </fieldset>
 
-    <fieldset class="bloque paso">
+    <fieldset class="bloque tk-tarjeta paso">
         <legend><span class="paso-num">3</span> Venta</legend>
         <div class="rejilla-form">
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="presupuesto_cliente">Presupuesto del cliente <small>(lo que piensa gastar, opcional)</small></label>
                 <input type="text" id="presupuesto_cliente" name="presupuesto_cliente" value="<?= e($d['presupuesto_cliente']) ?>" inputmode="decimal" placeholder="Ej. 8000">
             </div>
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="vendedor_id">Vendedor</label>
                 <select id="vendedor_id" name="vendedor_id">
                     <?php foreach ($vendedores as $v): ?><option value="<?= (int) $v['id'] ?>" <?= (int) $d['vendedor_id'] === (int) $v['id'] ? 'selected' : '' ?>><?= e($v['nombre']) ?><?= ['dueno' => ' (dueño)', 'admin' => ' (administrador)'][$v['rol']] ?? '' ?></option><?php endforeach; ?>
                 </select>
             </div>
-            <div class="campo ancho">
+            <div class="campo tk-campo ancho">
                 <label for="notas">Notas <small>(lo que conversaron, ideas, pedidos)</small></label>
                 <textarea id="notas" name="notas" rows="3"><?= e($d['notas']) ?></textarea>
             </div>
@@ -193,7 +193,7 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
     </fieldset>
 
     <div class="barra-guardar">
-        <button class="boton" type="submit"><?= $nuevo ? 'Crear evento' : 'Guardar cambios' ?></button>
-        <a class="boton boton-claro" href="<?= e($nuevo ? url('eventos') : url('evento', ['id' => $ev['id']])) ?>">Cancelar</a>
+        <button data-ico="guardar" class="boton tk-boton" type="submit"><?= $nuevo ? 'Crear evento' : 'Guardar cambios' ?></button>
+        <a data-ico="cruz" class="boton tk-boton boton-claro secundario" href="<?= e($nuevo ? url('eventos') : url('evento', ['id' => $ev['id']])) ?>">Cancelar</a>
     </div>
 </form>

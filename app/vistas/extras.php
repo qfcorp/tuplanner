@@ -10,36 +10,36 @@ $enPortal = count(array_filter($catalogo, fn($p) => $p['en_portal']));
 $etiquetas = ['pendiente' => 'por_revisar', 'aprobado' => 'pagada', 'rechazado' => 'rechazado', 'cancelado' => 'pendiente'];
 $lista = fn(array $p) => Extras::resumenLineas($p['items']);
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <h1>Extras del portal</h1>
         <p>Lo que tus clientes pueden pedir desde su portal: hora extra, barra libre, fotocabina, mesa de dulces… Tú apruebas cada pedido y se suma solo a su plan de pagos.</p>
     </div>
-    <a class="boton boton-claro" href="<?= e(url('catalogo')) ?>">Catálogo y precios</a>
+    <a data-ico="etiqueta" class="boton tk-boton boton-claro secundario" href="<?= e(url('catalogo')) ?>">Catálogo y precios</a>
 </div>
 
-<section class="bloque" id="pendientes">
+<section class="bloque tk-tarjeta" id="pendientes">
     <h2>Pedidos por responder <?php if ($pendientes): ?><span class="cb-contador pt-alerta"><?= count($pendientes) ?></span><?php endif; ?></h2>
     <?php if (!$pendientes): ?>
-        <p class="vacio">No hay pedidos esperando respuesta.</p>
+        <p class="vacio tk-vacio">No hay pedidos esperando respuesta.</p>
     <?php else: ?>
     <ul class="filas">
         <?php foreach ($pendientes as $p): ?>
         <li>
             <span><strong><?= e($p['cliente']) ?></strong> · <?= e($p['evento']) ?> <small class="suave">(<?= e($p['codigo']) ?>, <?= e(fecha_corta($p['evento_fecha'])) ?>)</small>
                 <small class="suave" style="display:block"><?= e($lista($p)) ?> · aprox. <?= dinero($p['total']) ?> · pedido el <?= e(fecha_corta(substr($p['creado_en'], 0, 10))) ?></small></span>
-            <a class="boton boton-chico derecha" href="<?= e(url('evento_formulario', ['id' => $p['evento_id']])) ?>#pedido-<?= (int) $p['id'] ?>">Responder</a>
+            <a data-ico="mensaje" class="boton tk-boton boton-chico chico derecha" href="<?= e(url('evento_formulario', ['id' => $p['evento_id']])) ?>#pedido-<?= (int) $p['id'] ?>">Responder</a>
         </li>
         <?php endforeach; ?>
     </ul>
     <?php endif; ?>
 </section>
 
-<section class="bloque" id="productos">
+<section class="bloque tk-tarjeta" id="productos">
     <h2>¿Qué se puede pedir desde el portal? <small class="suave">(<?= $enPortal ?> de <?= count($catalogo) ?>)</small></h2>
     <p class="suave ayuda-chica">Marca los productos que el cliente puede pedir solo. Se muestran con el precio del catálogo más IVA. Un texto corto y una foto venden más.</p>
     <?php if (!$catalogo): ?>
-        <p class="vacio">Tu catálogo está vacío. <a href="<?= e(url('catalogo', ['nuevo' => 1])) ?>">Agrega productos</a> primero.</p>
+        <p class="vacio tk-vacio">Tu catálogo está vacío. <a href="<?= e(url('catalogo', ['nuevo' => 1])) ?>">Agrega productos</a> primero.</p>
     <?php endif; ?>
     <ul class="pt-config">
         <?php foreach ($catalogo as $p): $pid = (int) $p['id']; ?>
@@ -56,15 +56,15 @@ $lista = fn(array $p) => Extras::resumenLineas($p['items']);
                     <?php if ($editar): ?>
                     <details class="pt-config-mas" <?= $p['en_portal'] ? '' : '' ?>>
                         <summary>Texto y foto para el cliente</summary>
-                        <div class="campo"><label for="pt-txt-<?= $pid ?>">Texto para el cliente <small>(opcional; si no, sale la descripción del catálogo)</small></label>
+                        <div class="campo tk-campo"><label for="pt-txt-<?= $pid ?>">Texto para el cliente <small>(opcional; si no, sale la descripción del catálogo)</small></label>
                             <input type="text" id="pt-txt-<?= $pid ?>" name="portal_texto" maxlength="300" value="<?= e($p['portal_texto']) ?>" placeholder="<?= e($p['descripcion'] ?: 'Ej.: Fotos ilimitadas impresas al instante') ?>"></div>
-                        <div class="campo"><label for="pt-foto-<?= $pid ?>">Foto <small>(opcional)</small></label>
+                        <div class="campo tk-campo"><label for="pt-foto-<?= $pid ?>">Foto <small>(opcional)</small></label>
                             <input type="file" id="pt-foto-<?= $pid ?>" name="portal_foto" accept="image/*"></div>
                         <?php if ($p['portal_foto']): ?><label class="doc-check-chico"><input type="checkbox" name="quitar_foto" value="1"> Quitar la foto</label><?php endif; ?>
                     </details>
                     <?php endif; ?>
                 </div>
-                <?php if ($editar): ?><button class="boton boton-claro boton-chico pt-config-guardar" type="submit">Guardar</button><?php endif; ?>
+                <?php if ($editar): ?><button data-ico="guardar" class="boton tk-boton boton-claro secundario boton-chico chico pt-config-guardar" type="submit">Guardar</button><?php endif; ?>
             </form>
         </li>
         <?php endforeach; ?>
@@ -72,7 +72,7 @@ $lista = fn(array $p) => Extras::resumenLineas($p['items']);
 </section>
 
 <?php if ($recientes): ?>
-<section class="bloque" id="respondidos">
+<section class="bloque tk-tarjeta" id="respondidos">
     <h2>Últimos pedidos respondidos</h2>
     <ul class="filas">
         <?php foreach ($recientes as $p): ?>

@@ -25,52 +25,52 @@ $filaItem = function (int $i, ?array $it) use ($opcionesProductos): string {
         <td><input type="text" inputmode="decimal" name="items[<?= $i ?>][cantidad]" value="<?= e(isset($it['cantidad']) ? rtrim(rtrim(number_format((float) str_replace(',', '.', (string) $it['cantidad']), 2, ',', ''), '0'), ',') : '1') ?>" aria-label="Cantidad" data-doc-paq-cant></td>
         <td><input type="text" inputmode="decimal" name="items[<?= $i ?>][precio]" value="<?= e(isset($it['precio_paquete']) && $it['precio_paquete'] !== null && $it['precio_paquete'] !== '' ? number_format((float) str_replace(',', '.', (string) $it['precio_paquete']), 2, ',', '') : '') ?>" placeholder="Normal" aria-label="Precio especial" data-doc-paq-precio></td>
         <td class="num" data-doc-paq-total>—</td>
-        <td><button type="button" class="boton boton-peligro boton-chico" data-doc-quitar-fila aria-label="Quitar producto">✕</button></td>
+        <td><button type="button" class="boton tk-boton boton-peligro peligro boton-chico chico" data-doc-quitar-fila aria-label="Quitar producto">✕</button></td>
     </tr>
     <?php return ob_get_clean();
 };
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <h1>Paquetes</h1>
         <p>Junta productos del catálogo en paquetes listos (Boda Oro, Quince años…). Al cotizar, se cargan con un toque.</p>
     </div>
     <?php if ($puede && $editar === null): ?>
-    <div class="acciones">
-        <a class="boton" href="<?= e(url('paquetes', ['nuevo' => 1])) ?>#form-paquete">+ Crear paquete</a>
-        <a class="boton boton-claro" href="<?= e(url('catalogo')) ?>">Catálogo</a>
+    <div class="acciones tk-acciones">
+        <a class="boton tk-boton" href="<?= e(url('paquetes', ['nuevo' => 1])) ?>#form-paquete">+ Crear paquete</a>
+        <a data-ico="etiqueta" class="boton tk-boton boton-claro secundario" href="<?= e(url('catalogo')) ?>">Catálogo</a>
     </div>
     <?php endif; ?>
 </div>
 
 <?php if ($editar !== null): ?>
-<form method="post" action="<?= e(url('paquetes', ['accion' => 'guardar'])) ?>" class="bloque" id="form-paquete"
+<form method="post" action="<?= e(url('paquetes', ['accion' => 'guardar'])) ?>" class="bloque tk-tarjeta" id="form-paquete"
       data-doc-paquete data-iva="<?= e($ivaPct) ?>">
     <?= campo_csrf() ?>
     <?php if (!empty($editar['id'])): ?><input type="hidden" name="paquete_id" value="<?= (int) $editar['id'] ?>"><?php endif; ?>
     <h2><?= !empty($editar['id']) ? 'Editar paquete' : 'Nuevo paquete' ?></h2>
     <?php if (!$productos): ?>
-        <p class="vacio">Primero agrega productos en el <a href="<?= e(url('catalogo')) ?>">catálogo</a>.</p>
+        <p class="vacio tk-vacio">Primero agrega productos en el <a href="<?= e(url('catalogo')) ?>">catálogo</a>.</p>
     <?php else: ?>
     <div class="rejilla-form">
-        <div class="campo ancho"><label for="qnom">Nombre del paquete</label>
+        <div class="campo tk-campo ancho"><label for="qnom">Nombre del paquete</label>
             <input type="text" id="qnom" name="nombre" maxlength="120" required value="<?= e($editar['nombre']) ?>" placeholder="Ej.: Paquete Boda Oro"></div>
-        <div class="campo"><label for="qtipo">Para qué tipo de evento</label>
+        <div class="campo tk-campo"><label for="qtipo">Para qué tipo de evento</label>
             <select id="qtipo" name="tipo_evento">
                 <option value="">Cualquier evento</option>
                 <?php foreach (Eventos::TIPOS as $k => $v): ?><option value="<?= e($k) ?>" <?= ($editar['tipo_evento'] ?? '') === $k ? 'selected' : '' ?>><?= e($v) ?></option><?php endforeach; ?>
             </select></div>
-        <div class="campo"><label for="qmin">Mínimo de invitados</label>
+        <div class="campo tk-campo"><label for="qmin">Mínimo de invitados</label>
             <input type="number" id="qmin" name="minimo_invitados" min="0" max="5000" value="<?= (int) $editar['minimo_invitados'] ?>" data-doc-paq-min>
             <small>Si el evento tiene menos, se cobra como si fueran este número. 0 = sin mínimo.</small></div>
-        <div class="campo ancho"><label for="qdes">Qué incluye <small>(sale en la cotización)</small></label>
+        <div class="campo tk-campo ancho"><label for="qdes">Qué incluye <small>(sale en la cotización)</small></label>
             <textarea id="qdes" name="descripcion" rows="2" maxlength="800" placeholder="Ej.: Salón, menú tres tiempos, barra libre, DJ y decoración."><?= e($editar['descripcion'] ?? '') ?></textarea></div>
     </div>
 
     <h3>Productos del paquete</h3>
     <p class="suave" style="font-size:.9rem">Lo que es <strong>por persona</strong> se multiplica por los invitados. Deja el precio especial vacío para usar el precio normal del catálogo.</p>
     <div class="tabla-scroll">
-        <table class="tabla doc-tabla-items">
+        <table class="tabla tk-tabla doc-tabla-items">
             <thead><tr><th>Producto</th><th style="width:90px">Cantidad</th><th style="width:120px">Precio especial</th><th class="num" style="width:110px">Total*</th><th style="width:48px"></th></tr></thead>
             <tbody data-doc-paq-filas>
                 <?php $i = 0; foreach ($editar['items'] as $it) echo $filaItem($i++, $it); ?>
@@ -79,8 +79,8 @@ $filaItem = function (int $i, ?array $it) use ($opcionesProductos): string {
         </table>
     </div>
     <template data-doc-paq-plantilla><?= $filaItem(999, null) ?></template>
-    <div class="acciones" style="margin:10px 0 14px">
-        <button type="button" class="boton boton-claro boton-chico" data-doc-agregar-fila>+ Agregar otro producto</button>
+    <div class="acciones tk-acciones" style="margin:10px 0 14px">
+        <button type="button" class="boton tk-boton boton-claro secundario boton-chico chico" data-doc-agregar-fila>+ Agregar otro producto</button>
     </div>
     <div class="doc-sim-vivo" aria-live="polite">
         <label for="qsimn">Calcular para</label>
@@ -88,16 +88,16 @@ $filaItem = function (int $i, ?array $it) use ($opcionesProductos): string {
         <strong data-doc-paq-resumen>—</strong>
     </div>
     <small class="suave">* Total para el número de invitados de arriba, sin IVA.</small>
-    <div class="acciones" style="margin-top:14px">
-        <button class="boton" type="submit"><?= !empty($editar['id']) ? 'Guardar paquete' : 'Crear paquete' ?></button>
-        <a class="boton boton-claro" href="<?= e(url('paquetes')) ?>">Cancelar</a>
+    <div class="acciones tk-acciones" style="margin-top:14px">
+        <button data-ico="guardar" class="boton tk-boton" type="submit"><?= !empty($editar['id']) ? 'Guardar paquete' : 'Crear paquete' ?></button>
+        <a data-ico="cruz" class="boton tk-boton boton-claro secundario" href="<?= e(url('paquetes')) ?>">Cancelar</a>
     </div>
     <?php endif; ?>
 </form>
 <?php endif; ?>
 
 <?php if ($sim): $sp = $sim['paquete']; ?>
-<section class="bloque doc-simulador" id="simulador">
+<section class="bloque tk-tarjeta doc-simulador" id="simulador">
     <div class="doc-sim-cabeza">
         <div>
             <h2>¿Cuánto sale el <?= e($sp['nombre']) ?>?</h2>
@@ -107,7 +107,7 @@ $filaItem = function (int $i, ?array $it) use ($opcionesProductos): string {
             <input type="hidden" name="r" value="paquetes"><input type="hidden" name="sim" value="<?= (int) $sp['id'] ?>">
             <label for="simn">Invitados</label>
             <input type="number" id="simn" name="n" min="1" max="5000" value="<?= (int) $sim['invitados'] ?>">
-            <button class="boton boton-chico" type="submit">Calcular</button>
+            <button data-ico="refrescar" class="boton tk-boton boton-chico chico" type="submit">Calcular</button>
         </form>
     </div>
     <?php if ($sim['bajo_minimo']): ?>
@@ -122,7 +122,7 @@ $filaItem = function (int $i, ?array $it) use ($opcionesProductos): string {
     </div>
     <details>
         <summary>Ver el detalle (<?= count($sim['lineas']) ?> productos)</summary>
-        <div class="tabla-scroll"><table class="tabla">
+        <div class="tabla-scroll"><table class="tabla tk-tabla">
             <thead><tr><th>Producto</th><th class="num">Cantidad</th><th class="num">Precio</th><th class="num">Total</th></tr></thead>
             <tbody>
             <?php foreach ($sim['lineas'] as $l): ?>
@@ -137,22 +137,22 @@ $filaItem = function (int $i, ?array $it) use ($opcionesProductos): string {
     $msg = $sp['nombre'] . ' para ' . (int) $sim['invitados_calculo'] . ' invitados: ' . dinero($sim['total']) . ' con IVA (' . dinero($sim['por_persona']) . ' por persona).'
          . ($sp['descripcion'] ? ' Incluye: ' . $sp['descripcion'] : '');
     ?>
-    <div class="acciones" style="margin-top:12px">
-        <button type="button" class="boton boton-claro boton-chico" data-copiar="<?= e($msg) ?>">Copiar respuesta para el cliente</button>
-        <a class="boton boton-claro boton-chico" href="<?= e(url('paquetes')) ?>">Cerrar</a>
+    <div class="acciones tk-acciones" style="margin-top:12px">
+        <button data-ico="copiar" type="button" class="boton tk-boton boton-claro secundario boton-chico chico" data-copiar="<?= e($msg) ?>">Copiar respuesta para el cliente</button>
+        <a data-ico="candado" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('paquetes')) ?>">Cerrar</a>
     </div>
 </section>
 <?php endif; ?>
 
 <?php if (!$paquetes): ?>
-<section class="bloque vacio">
+<section class="bloque tk-tarjeta vacio tk-vacio">
     <p><strong>Todavía no tienes paquetes.</strong><br>Un paquete junta varios productos con precio especial: el vendedor cotiza en un toque y el cliente entiende rápido qué incluye.</p>
-    <?php if ($puede): ?><a class="boton" href="<?= e(url('paquetes', ['nuevo' => 1])) ?>#form-paquete">Crear el primero</a><?php endif; ?>
+    <?php if ($puede): ?><a data-ico="mas" class="boton tk-boton" href="<?= e(url('paquetes', ['nuevo' => 1])) ?>#form-paquete">Crear el primero</a><?php endif; ?>
 </section>
 <?php else: ?>
 <div class="doc-paquetes">
     <?php foreach ($paquetes as $p): $r = $resumen[(int) $p['id']] ?? null; ?>
-    <article class="bloque doc-paquete<?= $p['activo'] ? '' : ' doc-inactivo' ?>">
+    <article class="bloque tk-tarjeta doc-paquete<?= $p['activo'] ? '' : ' doc-inactivo' ?>">
         <div class="doc-paquete-cabeza">
             <h2><?= e($p['nombre']) ?></h2>
             <?php if (!$p['activo']): ?><span class="ev-estado ev-perdido">Desactivado</span><?php endif; ?>
@@ -167,20 +167,20 @@ $filaItem = function (int $i, ?array $it) use ($opcionesProductos): string {
             <p class="doc-paquete-precio"><strong><?= dinero($r['por_persona']) ?></strong> por persona
                 <small>· <?= dinero($r['total']) ?> para <?= (int) $r['invitados_calculo'] ?> invitados, con IVA</small></p>
         <?php endif; ?>
-        <div class="acciones">
-            <a class="boton boton-chico" href="<?= e(url('paquetes', ['sim' => $p['id']])) ?>#simulador">¿Cuánto sale?</a>
+        <div class="acciones tk-acciones">
+            <a data-ico="dinero" class="boton tk-boton boton-chico chico" href="<?= e(url('paquetes', ['sim' => $p['id']])) ?>#simulador">¿Cuánto sale?</a>
             <?php if ($puede): ?>
-            <a class="boton boton-claro boton-chico" href="<?= e(url('paquetes', ['editar' => $p['id']])) ?>#form-paquete">Editar</a>
+            <a data-ico="editar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('paquetes', ['editar' => $p['id']])) ?>#form-paquete">Editar</a>
             <form method="post" action="<?= e(url('paquetes', ['accion' => 'duplicar'])) ?>">
                 <?= campo_csrf() ?><input type="hidden" name="paquete_id" value="<?= (int) $p['id'] ?>">
-                <button class="boton boton-claro boton-chico" type="submit">Duplicar</button>
+                <button data-ico="copiar" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Duplicar</button>
             </form>
             <form method="post" action="<?= e(url('paquetes', ['accion' => $p['activo'] ? 'desactivar' : 'activar'])) ?>">
                 <?= campo_csrf() ?><input type="hidden" name="paquete_id" value="<?= (int) $p['id'] ?>">
                 <?php if ($p['activo']): ?>
-                    <button class="boton boton-peligro boton-chico" type="submit" data-confirmar="¿Desactivar «<?= e($p['nombre']) ?>»? Ya no saldrá al cotizar (las cotizaciones hechas no cambian).">Desactivar</button>
+                    <button data-ico="cruz" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit" data-confirmar="¿Desactivar «<?= e($p['nombre']) ?>»? Ya no saldrá al cotizar (las cotizaciones hechas no cambian).">Desactivar</button>
                 <?php else: ?>
-                    <button class="boton boton-claro boton-chico" type="submit">Activar</button>
+                    <button data-ico="check" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Activar</button>
                 <?php endif; ?>
             </form>
             <?php endif; ?>

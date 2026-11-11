@@ -20,7 +20,7 @@ $mtAvance = function (?int $pct): string {
 $mtT = $mtRep['total'];
 $mtMeses = $mtRep['meses'];
 ?>
-<section class="bloque" id="metas">
+<section class="bloque tk-tarjeta" id="metas">
     <div class="g-bloque-cab">
         <h2>Metas y comparación con el año anterior</h2>
         <?php if (es_admin_total($u)): ?><a href="<?= e(url('metas', ['anio' => substr($per['desde'], 0, 4)])) ?>"><?= $mtRep['hay_metas'] ? 'Cambiar metas' : 'Poner metas' ?></a><?php endif; ?>
@@ -42,7 +42,7 @@ $mtMeses = $mtRep['meses'];
     <?php endif; ?>
 
     <div class="tabla-scroll">
-        <table class="tabla mt-tabla-rep">
+        <table class="tabla tk-tabla mt-tabla-rep">
             <caption class="sr-only">Metas por mes</caption>
             <thead><tr><th>Mes</th><th class="num">Meta</th><th class="num">Vendido</th><th>Cumplimiento</th><th class="num">Año anterior</th><th class="num">Cambio</th></tr></thead>
             <tbody>
@@ -65,7 +65,7 @@ $mtMeses = $mtRep['meses'];
     <?php if ($mtRep['vendedores']): ?>
     <h3 style="margin-top:16px"><?= $mtSolo ? 'Tu avance' : 'Por vendedor' ?></h3>
     <div class="tabla-scroll">
-        <table class="tabla mt-tabla-rep">
+        <table class="tabla tk-tabla mt-tabla-rep">
             <caption class="sr-only">Metas por vendedor</caption>
             <thead><tr><th>Vendedor</th><th class="num">Meta</th><th class="num">Vendido</th><th>Cumplimiento</th><th class="num">Año anterior</th><th class="num">Cambio</th></tr></thead>
             <tbody>

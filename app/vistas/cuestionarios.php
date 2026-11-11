@@ -8,24 +8,24 @@ $secciones = array_values(array_unique(array_filter(array_column($plantilla['pre
 $url = url('cuestionarios', ['tipo' => $tipo]);
 $n = count($plantilla['preguntas']);
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <h1>Formularios del evento</h1>
         <p>Las preguntas que el cliente responde desde su portal: música, decoración, menú, horarios… Un formulario por tipo de evento.</p>
     </div>
 </div>
 
-<section class="bloque" id="ajustes">
+<section class="bloque tk-tarjeta" id="ajustes">
     <h2>Fechas del formulario</h2>
     <form method="post" action="<?= e($url) ?>" class="fila-campos pt-ajustes">
         <?= campo_csrf() ?><input type="hidden" name="accion" value="ajustes">
-        <div class="campo"><label for="dias_cierre">El cliente lo llena hasta</label>
+        <div class="campo tk-campo"><label for="dias_cierre">El cliente lo llena hasta</label>
             <div class="pt-dias"><input type="number" id="dias_cierre" name="dias_cierre" min="0" max="90" value="<?= (int) $ajustes['cierre'] ?>" <?= $editar ? '' : 'disabled' ?>> <span>días antes del evento</span></div>
             <small>Después, solo tu equipo puede cambiar las respuestas.</small></div>
-        <div class="campo"><label for="dias_aviso">Recordarle por WhatsApp desde</label>
+        <div class="campo tk-campo"><label for="dias_aviso">Recordarle por WhatsApp desde</label>
             <div class="pt-dias"><input type="number" id="dias_aviso" name="dias_aviso" min="1" max="365" value="<?= (int) $ajustes['aviso'] ?>" <?= $editar ? '' : 'disabled' ?>> <span>días antes del evento</span></div>
             <small>Sale en "Mensajes por WhatsApp" si no lo ha llenado.</small></div>
-        <?php if ($editar): ?><div class="campo pt-ajustes-boton"><button class="boton boton-claro" type="submit">Guardar</button></div><?php endif; ?>
+        <?php if ($editar): ?><div class="campo tk-campo pt-ajustes-boton"><button data-ico="guardar" class="boton tk-boton boton-claro secundario" type="submit">Guardar</button></div><?php endif; ?>
     </form>
 </section>
 
@@ -36,15 +36,15 @@ $n = count($plantilla['preguntas']);
     <?php endforeach; ?>
 </nav>
 
-<section class="bloque" id="plantilla">
+<section class="bloque tk-tarjeta" id="plantilla">
     <?php if ($editar): ?>
     <form method="post" action="<?= e($url) ?>" class="pt-plantilla-cabeza">
         <?= campo_csrf() ?><input type="hidden" name="accion" value="plantilla">
-        <div class="campo"><label for="pl-nombre">Nombre del formulario (lo ve el cliente)</label>
+        <div class="campo tk-campo"><label for="pl-nombre">Nombre del formulario (lo ve el cliente)</label>
             <input type="text" id="pl-nombre" name="nombre" maxlength="100" required value="<?= e($plantilla['nombre']) ?>"></div>
         <label class="opcion"><input type="checkbox" name="activo" value="1" <?= $plantilla['activo'] ? 'checked' : '' ?>>
             <span><strong>Usar este formulario</strong><small>Si lo apagas, los eventos de este tipo usan el formulario de "Otro".</small></span></label>
-        <button class="boton boton-claro boton-chico" type="submit">Guardar</button>
+        <button data-ico="guardar" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Guardar</button>
     </form>
     <?php else: ?>
         <h2><?= e($plantilla['nombre']) ?></h2>
@@ -52,9 +52,9 @@ $n = count($plantilla['preguntas']);
     <p class="suave ayuda-chica">Cada evento recibe una copia de este formulario. Si cambias algo aquí, vale para los eventos que todavía no lo tienen; los formularios ya copiados no cambian.</p>
 </section>
 
-<section class="bloque" id="preguntas">
+<section class="bloque tk-tarjeta" id="preguntas">
     <h2>Preguntas <small class="suave">(<?= $n ?>)</small></h2>
-    <?php if (!$n): ?><p class="vacio">Este formulario no tiene preguntas.</p><?php endif; ?>
+    <?php if (!$n): ?><p class="vacio tk-vacio">Este formulario no tiene preguntas.</p><?php endif; ?>
     <ol class="pt-plantilla-lista">
         <?php $seccionAnt = null; foreach ($plantilla['preguntas'] as $i => $q):
             if (($q['seccion'] ?: '') !== $seccionAnt): $seccionAnt = $q['seccion'] ?: ''; ?>
@@ -68,10 +68,10 @@ $n = count($plantilla['preguntas']);
                 <span class="pt-plantilla-botones">
                     <?php foreach (['subir' => ['↑', $i === 0], 'bajar' => ['↓', $i === $n - 1]] as $acc => [$flecha, $off]): ?>
                     <form method="post" action="<?= e($url) ?>"><?= campo_csrf() ?><input type="hidden" name="accion" value="<?= $acc ?>"><input type="hidden" name="pregunta_id" value="<?= (int) $q['id'] ?>">
-                        <button class="boton boton-claro boton-chico" type="submit" <?= $off ? 'disabled' : '' ?> aria-label="<?= $acc === 'subir' ? 'Subir' : 'Bajar' ?>: <?= e($q['texto']) ?>"><?= $flecha ?></button></form>
+                        <button class="boton tk-boton boton-claro secundario boton-chico chico" type="submit" <?= $off ? 'disabled' : '' ?> aria-label="<?= $acc === 'subir' ? 'Subir' : 'Bajar' ?>: <?= e($q['texto']) ?>"><?= $flecha ?></button></form>
                     <?php endforeach; ?>
                     <form method="post" action="<?= e($url) ?>"><?= campo_csrf() ?><input type="hidden" name="accion" value="pregunta_borrar"><input type="hidden" name="pregunta_id" value="<?= (int) $q['id'] ?>">
-                        <button class="boton boton-peligro boton-chico" type="submit" data-confirmar="¿Borrar «<?= e($q['texto']) ?>»?" aria-label="Borrar: <?= e($q['texto']) ?>">Borrar</button></form>
+                        <button data-ico="basura" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit" data-confirmar="¿Borrar «<?= e($q['texto']) ?>»?" aria-label="Borrar: <?= e($q['texto']) ?>">Borrar</button></form>
                 </span>
                 <?php endif; ?>
             </div>
@@ -88,7 +88,7 @@ $n = count($plantilla['preguntas']);
 </section>
 
 <?php if ($editar): ?>
-<section class="bloque" id="nueva">
+<section class="bloque tk-tarjeta" id="nueva">
     <h2>Agregar una pregunta</h2>
     <?php $f = $borrador ?? []; $ptAccionUrl = $url; $ptOcultos = ['accion' => 'pregunta']; $ptSecciones = $secciones; $ptBoton = 'Agregar pregunta';
     require RAIZ . '/app/vistas/_pt_pregunta_form.php'; ?>
@@ -96,6 +96,6 @@ $n = count($plantilla['preguntas']);
 
 <form method="post" action="<?= e($url) ?>" class="pt-restaurar">
     <?= campo_csrf() ?><input type="hidden" name="accion" value="restaurar">
-    <button class="enlace-chico cb-boton-enlace" type="submit" data-confirmar="¿Volver a las preguntas de ejemplo? Se borran las preguntas que tiene este formulario (los eventos que ya lo tienen no cambian).">Volver a las preguntas de ejemplo</button>
+    <button data-ico="volver" class="enlace-chico cb-boton-enlace" type="submit" data-confirmar="¿Volver a las preguntas de ejemplo? Se borran las preguntas que tiene este formulario (los eventos que ya lo tienen no cambian).">Volver a las preguntas de ejemplo</button>
 </form>
 <?php endif; ?>

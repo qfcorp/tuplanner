@@ -27,10 +27,10 @@ $f = $borradorPregunta ?? [];
 </nav>
 
 <!-- Formulario -->
-<section class="bloque" id="formulario">
+<section class="bloque tk-tarjeta" id="formulario">
     <div class="bloque-cabeza">
         <h2><?= e($form['cuestionario']['nombre'] ?? 'Formulario del evento') ?></h2>
-        <?php if ($form['total']): ?><a class="boton boton-claro boton-chico" href="<?= e(url('pdf', ['tipo' => 'formulario', 'id' => $id])) ?>" target="_blank">PDF</a><?php endif; ?>
+        <?php if ($form['total']): ?><a data-ico="descargar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('pdf', ['tipo' => 'formulario', 'id' => $id])) ?>" target="_blank">PDF</a><?php endif; ?>
     </div>
     <div class="pt-avance-mini">
         <div class="barra" role="progressbar" aria-valuenow="<?= (int) $form['pct'] ?>" aria-valuemin="0" aria-valuemax="100" aria-label="Avance del formulario"><span style="width:<?= (int) $form['pct'] ?>%"></span></div>
@@ -47,18 +47,18 @@ $f = $borradorPregunta ?? [];
         <?php endif; ?>
     </p>
     <?php if ($comercial && in_array($ev['estado'], Cuestionarios::ESTADOS_CLIENTE, true) && $form['total']): ?>
-    <div class="acciones">
-        <?php if ($waForm): ?><a class="boton boton-wa boton-chico" href="<?= e($waForm) ?>" target="_blank" rel="noopener">Enviar al cliente por WhatsApp</a><?php endif; ?>
-        <button class="boton boton-claro boton-chico" type="button" data-copiar="<?= e($enlaceForm) ?>">Copiar enlace</button>
+    <div class="acciones tk-acciones">
+        <?php if ($waForm): ?><a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($waForm) ?>" target="_blank" rel="noopener">Enviar al cliente por WhatsApp</a><?php endif; ?>
+        <button data-ico="copiar" class="boton tk-boton boton-claro secundario boton-chico chico" type="button" data-copiar="<?= e($enlaceForm) ?>">Copiar enlace</button>
     </div>
     <?php endif; ?>
 
     <?php if (!$form['total']): ?>
-        <p class="vacio">Este evento no tiene preguntas. <?= $comercial ? 'Agrégalas abajo o carga el formulario de su tipo de evento.' : '' ?></p>
+        <p class="vacio tk-vacio">Este evento no tiene preguntas. <?= $comercial ? 'Agrégalas abajo o carga el formulario de su tipo de evento.' : '' ?></p>
         <?php if ($comercial): ?>
         <form method="post" action="<?= e(url('evento_formulario', ['id' => $id])) ?>">
             <?= campo_csrf() ?><input type="hidden" name="accion" value="recargar">
-            <button class="boton boton-chico" type="submit">Cargar el formulario de <?= e(mb_strtolower(\TuPlanner\Eventos::TIPOS[$ev['tipo']])) ?></button>
+            <button data-ico="adjunto" class="boton tk-boton boton-chico chico" type="submit">Cargar el formulario de <?= e(mb_strtolower(\TuPlanner\Eventos::TIPOS[$ev['tipo']])) ?></button>
         </form>
         <?php endif; ?>
     <?php elseif ($comercial): ?>
@@ -69,7 +69,7 @@ $f = $borradorPregunta ?? [];
                 <?php foreach ($preguntas as $p) echo pt_campo($p, true); ?>
             <?php endforeach; ?>
             <div class="pt-barra-guardar pt-barra-local">
-                <button class="boton" type="submit">Guardar respuestas</button>
+                <button data-ico="guardar" class="boton tk-boton" type="submit">Guardar respuestas</button>
             </div>
         </form>
     <?php else: ?>
@@ -81,7 +81,7 @@ $f = $borradorPregunta ?? [];
 </section>
 
 <?php if ($comercial): ?>
-<details class="bloque pt-desplegar" id="preguntas" <?= $borradorPregunta ? 'open' : '' ?>>
+<details class="bloque tk-tarjeta pt-desplegar" id="preguntas" <?= $borradorPregunta ? 'open' : '' ?>>
     <summary><strong>Agregar o quitar preguntas de este evento</strong> <small>— solo cambia el formulario de este evento, no la plantilla</small></summary>
     <?php if ($form['total']): ?>
     <ul class="filas pt-lista-preguntas">
@@ -89,7 +89,7 @@ $f = $borradorPregunta ?? [];
         <li><span><?= e($p['texto']) ?> <small class="suave">· <?= e(Cuestionarios::TIPOS[$p['tipo']]) ?><?= $p['respuesta'] !== null ? ' · respondida' : '' ?></small></span>
             <form method="post" action="<?= e(url('evento_formulario', ['id' => $id])) ?>" class="derecha">
                 <?= campo_csrf() ?><input type="hidden" name="accion" value="pregunta_borrar"><input type="hidden" name="pregunta_id" value="<?= (int) $p['id'] ?>">
-                <button class="boton boton-peligro boton-chico" type="submit" aria-label="Quitar: <?= e($p['texto']) ?>"
+                <button data-ico="basura" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit" aria-label="Quitar: <?= e($p['texto']) ?>"
                         data-confirmar="¿Quitar «<?= e($p['texto']) ?>» del formulario de este evento?<?= $p['respuesta'] !== null ? ' Ya tiene respuesta: se pierde.' : '' ?>">Quitar</button>
             </form></li>
         <?php endforeach; ?>
@@ -99,7 +99,7 @@ $f = $borradorPregunta ?? [];
     <?php if ($form['total'] && $form['respondidas'] === 0): ?>
     <form method="post" action="<?= e(url('evento_formulario', ['id' => $id])) ?>" class="pt-recargar">
         <?= campo_csrf() ?><input type="hidden" name="accion" value="recargar">
-        <button class="boton boton-claro boton-chico" type="submit" data-confirmar="¿Volver a cargar el formulario de <?= e(mb_strtolower(\TuPlanner\Eventos::TIPOS[$ev['tipo']])) ?>? Se cambian todas las preguntas de este evento.">Volver a cargar el formulario de <?= e(mb_strtolower(\TuPlanner\Eventos::TIPOS[$ev['tipo']])) ?></button>
+        <button data-ico="volver" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit" data-confirmar="¿Volver a cargar el formulario de <?= e(mb_strtolower(\TuPlanner\Eventos::TIPOS[$ev['tipo']])) ?>? Se cambian todas las preguntas de este evento.">Volver a cargar el formulario de <?= e(mb_strtolower(\TuPlanner\Eventos::TIPOS[$ev['tipo']])) ?></button>
         <small class="suave">Útil si cambiaste el tipo de evento. Solo mientras no haya respuestas.</small>
     </form>
     <?php endif; ?>
@@ -108,13 +108,13 @@ $f = $borradorPregunta ?? [];
 
 <?php if ($verDinero): ?>
 <!-- Extras pedidos desde el portal -->
-<section class="bloque" id="extras">
+<section class="bloque tk-tarjeta" id="extras">
     <div class="bloque-cabeza">
         <h2>Extras que pidió el cliente</h2>
-        <?php if (es_comercial($u)): ?><a class="boton boton-claro boton-chico" href="<?= e(url('extras')) ?>">Configurar</a><?php endif; ?>
+        <?php if (es_comercial($u)): ?><a data-ico="ajustes" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('extras')) ?>">Configurar</a><?php endif; ?>
     </div>
     <?php if (!$pedidos): ?>
-        <p class="vacio">El cliente todavía no pide extras desde su portal. Elige qué extras se ofrecen en <a href="<?= e(url('extras')) ?>">Extras del portal</a>.</p>
+        <p class="vacio tk-vacio">El cliente todavía no pide extras desde su portal. Elige qué extras se ofrecen en <a href="<?= e(url('extras')) ?>">Extras del portal</a>.</p>
     <?php else: ?>
     <ul class="pt-pedidos">
         <?php foreach ($pedidos as $p): ?>
@@ -144,25 +144,25 @@ $f = $borradorPregunta ?? [];
             <?php endif; ?>
             <?php if ($p['nota_negocio']): ?><p class="pt-pedido-nota"><strong>Nota para el cliente:</strong> <?= e($p['nota_negocio']) ?></p><?php endif; ?>
             <?php if (in_array($p['estado'], ['aprobado', 'rechazado'], true) && ($wa = WhatsApp::enlace($ev['cliente_telefono'], Extras::textoRespuesta($p, (string) $u['negocio'], $portal)))): ?>
-                <a class="boton boton-wa boton-chico" href="<?= e($wa) ?>" target="_blank" rel="noopener">Avisar al cliente por WhatsApp</a>
+                <a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($wa) ?>" target="_blank" rel="noopener">Avisar al cliente por WhatsApp</a>
             <?php endif; ?>
             <?php if ($p['estado'] === 'pendiente' && $comercial): ?>
             <div class="pt-responder">
                 <form method="post" action="<?= e(url('evento_formulario', ['id' => $id])) ?>" class="pt-responder-form">
                     <?= campo_csrf() ?><input type="hidden" name="accion" value="aprobar"><input type="hidden" name="pedido_id" value="<?= (int) $p['id'] ?>">
-                    <div class="campo"><label for="nota-a<?= (int) $p['id'] ?>">Nota para el cliente <small>(opcional)</small></label>
+                    <div class="campo tk-campo"><label for="nota-a<?= (int) $p['id'] ?>">Nota para el cliente <small>(opcional)</small></label>
                         <input type="text" id="nota-a<?= (int) $p['id'] ?>" name="nota" maxlength="400" placeholder="Ej.: ¡Listo! La fotocabina llega a las 20:00"></div>
-                    <button class="boton boton-chico" type="submit" data-confirmar="¿Aprobar estos extras? Se crea una versión nueva de la cotización aceptada y se suma una cuota al plan de pagos.<?= $contratoFirmado ? ' Como el contrato ya está firmado, se prepara un anexo para que el cliente lo firme.' : '' ?> Un pedido aprobado no se puede deshacer.">Aprobar y sumar al evento</button>
+                    <button data-ico="check" class="boton tk-boton boton-chico chico" type="submit" data-confirmar="¿Aprobar estos extras? Se crea una versión nueva de la cotización aceptada y se suma una cuota al plan de pagos.<?= $contratoFirmado ? ' Como el contrato ya está firmado, se prepara un anexo para que el cliente lo firme.' : '' ?> Un pedido aprobado no se puede deshacer.">Aprobar y sumar al evento</button>
                     <small class="suave" style="display:block;margin-top:6px"><?= $contratoFirmado ? 'El contrato ya está firmado: al aprobar se prepara un anexo para que el cliente lo firme.' : 'Todavía no hay contrato firmado: los extras entran en el contrato cuando lo generes (no hace falta anexo).' ?></small>
                     <?php if ($borradores): ?><small class="pt-advertencia">Hay <?= $borradores ?> cotización<?= $borradores === 1 ? '' : 'es' ?> en borrador o enviada sin aceptar: al aprobar quedará<?= $borradores === 1 ? '' : 'n' ?> reemplazada<?= $borradores === 1 ? '' : 's' ?>.</small><?php endif; ?>
                 </form>
                 <details class="pt-rechazar">
-                    <summary class="boton boton-peligro boton-chico">No aprobar</summary>
+                    <summary data-ico="cruz" class="boton tk-boton boton-peligro peligro boton-chico chico">No aprobar</summary>
                     <form method="post" action="<?= e(url('evento_formulario', ['id' => $id])) ?>">
                         <?= campo_csrf() ?><input type="hidden" name="accion" value="rechazar"><input type="hidden" name="pedido_id" value="<?= (int) $p['id'] ?>">
-                        <div class="campo"><label for="nota-r<?= (int) $p['id'] ?>">¿Por qué? <small>(lo ve el cliente)</small></label>
+                        <div class="campo tk-campo"><label for="nota-r<?= (int) $p['id'] ?>">¿Por qué? <small>(lo ve el cliente)</small></label>
                             <input type="text" id="nota-r<?= (int) $p['id'] ?>" name="nota" maxlength="400" required minlength="3" placeholder="Ej.: Ese día la fotocabina ya está reservada"></div>
-                        <button class="boton boton-peligro boton-chico" type="submit">Confirmar: no aprobar</button>
+                        <button data-ico="check" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit">Confirmar: no aprobar</button>
                     </form>
                 </details>
             </div>
@@ -175,7 +175,7 @@ $f = $borradorPregunta ?? [];
 <?php endif; ?>
 
 <!-- Opinión del cliente -->
-<section class="bloque" id="opinion">
+<section class="bloque tk-tarjeta" id="opinion">
     <h2>Opinión del cliente</h2>
     <?php if ($encuesta): $g = Encuestas::grupo((int) $encuesta['nps']); ?>
         <div class="pt-opinion">
@@ -194,9 +194,9 @@ $f = $borradorPregunta ?? [];
     <?php elseif ($ev['fecha'] < date('Y-m-d') && in_array($ev['estado'], Encuestas::ESTADOS, true)): ?>
         <p class="suave">El cliente todavía no responde la encuesta. Sale sola en "Mensajes de hoy" el día después del evento.</p>
         <?php if ($comercial): ?>
-        <div class="acciones">
-            <?php if ($waEncuesta): ?><a class="boton boton-wa boton-chico" href="<?= e($waEncuesta) ?>" target="_blank" rel="noopener">Enviar la encuesta por WhatsApp</a><?php endif; ?>
-            <button class="boton boton-claro boton-chico" type="button" data-copiar="<?= e($enlaceEncuesta) ?>">Copiar enlace</button>
+        <div class="acciones tk-acciones">
+            <?php if ($waEncuesta): ?><a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($waEncuesta) ?>" target="_blank" rel="noopener">Enviar la encuesta por WhatsApp</a><?php endif; ?>
+            <button data-ico="copiar" class="boton tk-boton boton-claro secundario boton-chico chico" type="button" data-copiar="<?= e($enlaceEncuesta) ?>">Copiar enlace</button>
         </div>
         <?php endif; ?>
     <?php else: ?>

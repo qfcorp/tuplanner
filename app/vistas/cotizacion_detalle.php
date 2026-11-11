@@ -14,7 +14,7 @@ $ivaTxt = rtrim(rtrim(number_format((float) $c['iva_pct'], 2, ',', ''), '0'), ',
 $cantTxt = fn($n) => rtrim(rtrim(number_format((float) $n, 2, ',', '.'), '0'), ',');
 ?>
 <div class="doc-detalle">
-    <?php if (!$grupos): ?><p class="vacio">Esta cotización todavía no tiene productos.</p><?php endif; ?>
+    <?php if (!$grupos): ?><p class="vacio tk-vacio">Esta cotización todavía no tiene productos.</p><?php endif; ?>
     <?php foreach ($grupos as $cat => $lineas): ?>
     <div class="doc-detalle-grupo">
         <h3><span><?= e(Cotizaciones::CATEGORIAS[$cat] ?? 'Otros') ?></span>

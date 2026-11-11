@@ -33,15 +33,15 @@ $iconoTipo = function (string $tipo): string {
 <p class="pl-migas"><a href="<?= e(url('plano', ['espacio' => $plano['espacio_id']])) ?>">Planos del salón</a> · <?= e($plano['espacio']) ?></p>
 <?php endif; ?>
 
-<div class="cabecera pl-cabecera">
+<div class="cabecera tk-titulo-pagina pl-cabecera">
     <div>
         <h1><?= $esEvento ? 'Plano del salón' : e($plano['nombre']) ?></h1>
         <p><?= $esEvento ? e($plano['nombre']) . ' · ' : '' ?><?= e(Planos::m($plano['ancho'])) ?> × <?= e(Planos::m($plano['largo'])) ?> m<?= $plano['espacio'] ? ' · ' . e($plano['espacio']) : '' ?></p>
     </div>
-    <div class="acciones">
-        <a class="boton boton-claro boton-chico" href="<?= e(url('pdf', ['tipo' => 'plano', 'id' => $plano['id']])) ?>" target="_blank" rel="noopener">PDF para imprimir</a>
+    <div class="acciones tk-acciones">
+        <a data-ico="descargar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('pdf', ['tipo' => 'plano', 'id' => $plano['id']])) ?>" target="_blank" rel="noopener">PDF para imprimir</a>
         <?php if ($esEvento && $ev): ?>
-            <a class="boton boton-claro boton-chico" href="<?= e(url('invitados', ['id' => $ev['id'], 'ver' => 'mesas'])) ?>">Sentar invitados</a>
+            <a data-ico="usuarios" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('invitados', ['id' => $ev['id'], 'ver' => 'mesas'])) ?>">Sentar invitados</a>
         <?php endif; ?>
     </div>
 </div>
@@ -71,7 +71,7 @@ $iconoTipo = function (string $tipo): string {
         </div>
         <?php if ($editable): ?>
         <span class="pl-estado" data-pl-estado role="status" aria-live="polite">Guardado ✓</span>
-        <button type="button" class="boton boton-chico pl-guardar" data-pl-accion="guardar">Guardar</button>
+        <button data-ico="guardar" type="button" class="boton tk-boton boton-chico chico pl-guardar" data-pl-accion="guardar">Guardar</button>
         <?php else: ?>
         <span class="pl-estado pl-estado-mirar">Solo para mirar</span>
         <?php endif; ?>
@@ -108,33 +108,33 @@ $iconoTipo = function (string $tipo): string {
 <?php if ($editable || $puedeBorrar): ?>
 <div class="rejilla rejilla-2 pl-ajustes">
     <?php if ($editable): ?>
-    <details class="bloque pl-plegable">
+    <details class="bloque tk-tarjeta pl-plegable">
         <summary><h2>Nombre y medidas del salón</h2></summary>
         <form method="post" action="<?= e(url('plano', $esEvento && $ev ? ['id' => $ev['id']] : ['p' => $plano['id']])) ?>">
             <?= campo_csrf() ?><input type="hidden" name="accion" value="datos">
-            <div class="campo"><label for="pl-nombre">Nombre</label><input type="text" id="pl-nombre" name="nombre" value="<?= e($plano['nombre']) ?>" maxlength="80" required></div>
+            <div class="campo tk-campo"><label for="pl-nombre">Nombre</label><input type="text" id="pl-nombre" name="nombre" value="<?= e($plano['nombre']) ?>" maxlength="80" required></div>
             <div class="fila-campos pl-fila-2">
-                <div class="campo"><label for="pl-ancho">Ancho (m)</label><input type="text" inputmode="decimal" id="pl-ancho" name="ancho" value="<?= e(Planos::m($plano['ancho'])) ?>" required></div>
-                <div class="campo"><label for="pl-largo">Largo (m)</label><input type="text" inputmode="decimal" id="pl-largo" name="largo" value="<?= e(Planos::m($plano['largo'])) ?>" required></div>
+                <div class="campo tk-campo"><label for="pl-ancho">Ancho (m)</label><input type="text" inputmode="decimal" id="pl-ancho" name="ancho" value="<?= e(Planos::m($plano['ancho'])) ?>" required></div>
+                <div class="campo tk-campo"><label for="pl-largo">Largo (m)</label><input type="text" inputmode="decimal" id="pl-largo" name="largo" value="<?= e(Planos::m($plano['largo'])) ?>" required></div>
             </div>
             <p class="suave"><small>Si achicas el salón, lo que quede afuera se acerca a la pared.</small></p>
-            <button class="boton boton-chico" type="submit">Guardar medidas</button>
+            <button data-ico="guardar" class="boton tk-boton boton-chico chico" type="submit">Guardar medidas</button>
         </form>
     </details>
     <?php endif; ?>
     <?php if ($puedeBorrar && puede_editar($u)): ?>
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2><?= $esEvento ? 'Empezar de nuevo' : 'Esta distribución' ?></h2>
         <?php if ($esEvento): ?>
             <p class="suave">Borra este plano para elegir otra distribución. Las mesas y los invitados sentados no se pierden.</p>
             <form method="post" action="<?= e(url('plano', ['id' => $ev['id']])) ?>"><?= campo_csrf() ?><input type="hidden" name="accion" value="evento_borrar">
-                <button class="boton boton-peligro boton-chico" type="submit" data-confirmar="¿Borrar el plano de este evento? Las mesas y los invitados sentados se mantienen.">Borrar el plano</button></form>
+                <button data-ico="basura" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit" data-confirmar="¿Borrar el plano de este evento? Las mesas y los invitados sentados se mantienen.">Borrar el plano</button></form>
         <?php else: ?>
-            <div class="acciones">
+            <div class="acciones tk-acciones">
                 <form method="post" action="<?= e(url('plano', ['p' => $plano['id']])) ?>"><?= campo_csrf() ?><input type="hidden" name="accion" value="duplicar">
-                    <button class="boton boton-claro boton-chico" type="submit">Hacer una copia</button></form>
+                    <button data-ico="copiar" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Hacer una copia</button></form>
                 <form method="post" action="<?= e(url('plano', ['p' => $plano['id']])) ?>"><?= campo_csrf() ?><input type="hidden" name="accion" value="borrar">
-                    <button class="boton boton-peligro boton-chico" type="submit" data-confirmar="¿Borrar la distribución «<?= e($plano['nombre']) ?>»? Los planos de eventos que ya la usaron no cambian.">Borrar</button></form>
+                    <button data-ico="basura" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit" data-confirmar="¿Borrar la distribución «<?= e($plano['nombre']) ?>»? Los planos de eventos que ya la usaron no cambian.">Borrar</button></form>
             </div>
         <?php endif; ?>
     </section>

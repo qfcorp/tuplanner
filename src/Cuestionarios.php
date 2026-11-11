@@ -467,7 +467,7 @@ final class Cuestionarios
         $n = (int) $this->q('SELECT count(*) FROM evento_preguntas WHERE evento_id = ? AND respuesta IS NOT NULL', [$eventoId])->fetchColumn();
         if ($n > 0) throw new RuntimeException('El formulario ya tiene respuestas: no se puede volver a cargar. Agrega o quita preguntas una por una.');
         $pl = $this->plantillaParaTipo($negocioId, (string) $ev['tipo']);
-        if (!$pl) throw new RuntimeException('No hay un formulario activo para este tipo de evento. Revísalo en Más → Formularios del evento.');
+        if (!$pl) throw new RuntimeException('No hay un formulario activo para este tipo de evento. Revísalo en el menú: Formularios del evento.');
         $propia = !$this->db->inTransaction();
         if ($propia) $this->db->beginTransaction();
         try {

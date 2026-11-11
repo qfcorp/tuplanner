@@ -16,21 +16,21 @@ $ayudas = [
 ];
 $nombres = ['cuota' => 'Cuota', 'contrato' => 'Contrato', 'cotizacion' => 'Cotización', 'staff' => 'Personal', 'invitados' => 'Invitados', 'cuestionario' => 'Formulario', 'anexo' => 'Anexo', 'resena' => 'Reseña'];
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div><h1>Mensajes por WhatsApp de hoy</h1>
         <p><?= $total ? "Tienes $total " . ($total === 1 ? 'mensaje listo' : 'mensajes listos') . ' para enviar. Toca "Enviar", revisa el texto en WhatsApp y mándalo.' : 'Estás al día.' ?></p></div>
-    <?php if (es_comercial($u)): ?><a class="boton boton-claro" href="<?= e(url('cobros')) ?>">Ir a cobros</a><?php endif; ?>
+    <?php if (es_comercial($u)): ?><a data-ico="flecha" class="boton tk-boton boton-claro secundario" href="<?= e(url('cobros')) ?>">Ir a cobros</a><?php endif; ?>
 </div>
 
 <?php if (!$total): ?>
-    <section class="bloque vacio cb-vacio">
+    <section class="bloque tk-tarjeta vacio tk-vacio cb-vacio">
         <h2>¡No hay mensajes pendientes hoy!</h2>
         <p>Aquí aparecen cada día los recordatorios de cuotas, contratos por firmar, cotizaciones sin respuesta, personal por confirmar, listas de invitados y reseñas.</p>
     </section>
 <?php endif; ?>
 
 <?php foreach ($grupos as $tipo => $lista): if (!$lista) continue; ?>
-<section class="bloque cb-grupo" id="m-<?= e($tipo) ?>">
+<section class="bloque tk-tarjeta cb-grupo" id="m-<?= e($tipo) ?>">
     <h2><?= e(Cobranza::MENSAJES[$tipo][0]) ?> <span class="cb-contador"><?= count($lista) ?></span></h2>
     <p class="suave"><?= e($ayudas[$tipo]) ?></p>
     <?php if ($tipo === 'resena' && $sinResenas && es_admin_total($u)): ?>
@@ -49,15 +49,15 @@ $nombres = ['cuota' => 'Cuota', 'contrato' => 'Contrato', 'cotizacion' => 'Cotiz
             </details>
             <div class="cb-cobro-botones">
                 <?php if ($m['wa']): ?>
-                    <a class="boton boton-wa boton-chico" href="<?= e($m['wa']) ?>" target="_blank" rel="noopener" data-cb-wa>Enviar por WhatsApp</a>
+                    <a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($m['wa']) ?>" target="_blank" rel="noopener" data-cb-wa>Enviar por WhatsApp</a>
                 <?php else: ?>
                     <span class="cb-sin-tel">Sin celular registrado</span>
-                    <button type="button" class="boton boton-claro boton-chico" data-copiar="<?= e($m['texto']) ?>">Copiar mensaje</button>
+                    <button data-ico="copiar" type="button" class="boton tk-boton boton-claro secundario boton-chico chico" data-copiar="<?= e($m['texto']) ?>">Copiar mensaje</button>
                 <?php endif; ?>
                 <?php if (puede_editar($u)): ?>
                 <form method="post" action="<?= e(url('mensajes', ['accion' => 'enviado'])) ?>">
                     <?= campo_csrf() ?><input type="hidden" name="tipo" value="<?= e($tipo) ?>"><input type="hidden" name="ref_id" value="<?= (int) $m['ref_id'] ?>">
-                    <button class="boton boton-claro boton-chico" type="submit">✓ Marcar como enviado</button>
+                    <button data-ico="check" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">✓ Marcar como enviado</button>
                 </form>
                 <?php endif; ?>
             </div>
@@ -68,7 +68,7 @@ $nombres = ['cuota' => 'Cuota', 'contrato' => 'Contrato', 'cotizacion' => 'Cotiz
 <?php endforeach; ?>
 
 <?php if ($enviados): ?>
-<section class="bloque cb-enviados">
+<section class="bloque tk-tarjeta cb-enviados">
     <h2>Ya enviados hoy (<?= count($enviados) ?>)</h2>
     <ul class="filas">
         <?php foreach ($enviados as $m): ?>
@@ -78,7 +78,7 @@ $nombres = ['cuota' => 'Cuota', 'contrato' => 'Contrato', 'cotizacion' => 'Cotiz
             <?php if (puede_editar($u)): ?>
             <form method="post" action="<?= e(url('mensajes', ['accion' => 'deshacer'])) ?>" class="derecha">
                 <?= campo_csrf() ?><input type="hidden" name="tipo" value="<?= e($m['tipo']) ?>"><input type="hidden" name="ref_id" value="<?= (int) $m['ref_id'] ?>">
-                <button class="enlace-chico cb-boton-enlace" type="submit">Deshacer</button>
+                <button data-ico="restaurar" class="enlace-chico cb-boton-enlace" type="submit">Deshacer</button>
             </form>
             <?php endif; ?>
         </li>

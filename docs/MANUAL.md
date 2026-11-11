@@ -12,15 +12,15 @@ Para regenerar el manual (base de ejemplo, capturas y PDF): `bash docs/manual/ge
 ## La base
 
 ### Entrar y el Inicio
-- Correo y contraseña → **Entrar**. En el celular, abajo: Inicio, Calendario, Eventos, Cobros y **Más**.
+- Correo y contraseña → **Entrar**. Menú: a la izquierda en la computadora, con todas las secciones a la vista y agrupadas (Principal, Ventas, Dinero, Operación, Configuración) y «Buscar evento o cliente…» arriba; en el celular se abre con el botón ☰ de arriba a la izquierda. En la barra de arriba: el nombre del negocio, tu nombre (lleva a Mi cuenta) y Salir.
 - **App de Android** (Google Play, «TuPlanner»): el mismo correo y la misma contraseña, a pantalla completa. En la app no se ven precios ni pagos del plan de TuPlanner (Mi plan muestra solo el plan y los módulos); lo que cobras a tus clientes funciona igual.
-- **Más → Mi cuenta → Borrar mi cuenta**: abre un correo listo para pedir que se borre la cuenta y sus datos (máximo 15 días). Detalle en la política de privacidad.
+- **Menú → Mi cuenta → Borrar mi cuenta**: abre un correo listo para pedir que se borre la cuenta y sus datos (máximo 15 días). Detalle en la política de privacidad.
 - El Inicio muestra comprobantes por revisar, cifras, próximos 7 días, avisos, seguimientos, tareas y cuotas.
 - Cuenta nueva: guía **Primeros pasos** (datos del negocio, logo, lugares y precios, primer evento).
 
 ![Inicio](manual/capturas/02_inicio_compu.png)
 
-### Usuarios y roles (Más → Usuarios)
+### Usuarios y roles (Menú → Usuarios)
 | Rol | Qué puede hacer |
 |---|---|
 | Dueño | Todo, incluida la configuración, los usuarios y el plan |
@@ -29,7 +29,7 @@ Para regenerar el manual (base de ejemplo, capturas y PDF): `bash docs/manual/ge
 | Coordinador | Organiza el día del evento; ve tareas e ideas; no ve dinero |
 | Solo consulta | Ve todo pero no cambia nada (contador, socio) |
 
-- **Más → Usuarios** (dueño o administrador) → **Agregar a alguien** → ¿Qué va a hacer?: **Administrador (mismos permisos que el dueño)**, Vendedor, Coordinador o Solo consulta. Arriba dice «Administradores: 2 de 4».
+- **Menú → Usuarios** (dueño o administrador) → **Agregar a alguien** → ¿Qué va a hacer?: **Administrador (mismos permisos que el dueño)**, Vendedor, Coordinador o Solo consulta. Arriba dice «Administradores: 2 de 4».
 - **Administradores:** hasta 4 además del dueño; un quinto (al crear o activar) muestra «Puede tener hasta 4 administradores además del dueño». No cuentan en el límite de usuarios del plan (el dueño sí cuenta); si un administrador pasa a otro rol, empieza a contar.
 - **Solo del dueño:** ser la cuenta registrada en Tukán (contacto del negocio en el Panel Tukán Central y «Nueva clave del dueño» desde Tukán). Nadie, ni un administrador, cambia ni desactiva al dueño; nadie se cambia el rol ni se desactiva a sí mismo.
 - En este manual, «solo el dueño» vale también para los administradores.
@@ -74,7 +74,7 @@ Pestaña **Planificación** → Lista de tareas por meses («6 meses antes»… 
 
 ### Honorarios y comisiones
 - **Tus honorarios**: tarifa fija o porcentaje del presupuesto → **Poner en la cotización**.
-- **Comisiones de proveedores** (necesita Presupuesto): % o fijo por partida contratada; **Más → Comisiones** con Por cobrar (Recordarle por WhatsApp, Ya me pagó) y Cobradas por periodo.
+- **Comisiones de proveedores** (necesita Presupuesto): % o fijo por partida contratada; **Menú → Comisiones** con Por cobrar (Recordarle por WhatsApp, Ya me pagó) y Cobradas por periodo.
 
 ### Ideas e inspiración
 Temática, paleta de colores y tablero de fotos (❤️ Va / ✕ No va); el cliente sube las suyas en su portal.
@@ -86,13 +86,13 @@ Paquetes y simulador · Contratos con firma (firma con el dedo, QR de verificaci
 
 ## Mi plan y demos
 - **Planes:** **Básico** (la base + **3 módulos que tú eliges**; si necesitas más, se suman a tu plan) y **Completo** (todos los módulos, con el **Asistente IA** incluido, usuarios sin límite). Tukán cotiza por WhatsApp.
-- **Más → Mi plan**: módulos encendidos, los que puedes agregar («Precio por cotización» y **Pedir cotización**) y lo que viene siempre incluido. En el Básico dice «Tu plan trae 3 módulos a tu elección» y cuántos te quedan: los que elegiste dicen «Incluido · lo elegiste», los demás que pagas dicen «Extra», y mientras te queden por elegir, los que no tienes dicen «Puedes elegirlo en tu plan» con **Elegir este módulo**. El **Asistente IA** viene incluido en el plan Completo; en el Básico dice «Pídalo y le cotizamos».
+- **Menú → Mi plan**: módulos encendidos, los que puedes agregar («Precio por cotización» y **Pedir cotización**) y lo que viene siempre incluido. En el Básico dice «Tu plan trae 3 módulos a tu elección» y cuántos te quedan: los que elegiste dicen «Incluido · lo elegiste», los demás que pagas dicen «Extra», y mientras te queden por elegir, los que no tienes dicen «Puedes elegirlo en tu plan» con **Elegir este módulo**. El **Asistente IA** viene incluido en el plan Completo; en el Básico dice «Pídalo y le cotizamos».
 - **Pagar tu plan con tarjeta (si ves la sección «Pagar con tarjeta» en Mi plan):** sirve en la demo y si ya eres cliente. Ves los planes uno al lado del otro, con lo que incluye cada uno y su valor sin IVA → elige plan y cada cuánto pagas: cada mes, cada 6 meses (pagas 5, recibes 6) o cada año (pagas 10, recibes 12); sale marcado tu plan, cada mes → elige **Suscripción** (se cobra sola a tu tarjeta cada período, hasta que la canceles) o **Solo esta vez** → **Pagar con tarjeta** → se abre la página de pago segura. Los valores son sin IVA: el IVA se suma al pagar y la factura te llega al correo. Al aprobarse vuelves a Mi plan con «¡Pago recibido!» y tu plan se activa solo (la demo pasa a ser tu cuenta, sin perder nada). Si el pago no se completó, Mi plan lo dice y puedes intentar otra vez. Si ya tienes una suscripción con tarjeta, no se crea otra; un pago sin terminar se termina con **Pagar ahora** o se quita con **Cancelar este pago**. Si te agregan un módulo con la suscripción con tarjeta: desde el próximo cobro se cobra el valor nuevo y lo proporcional de los días que faltan se cobra aparte (enlace al correo y en Mi plan con **Pagar ahora**). Los módulos ya pagados no se quitan ni se baja del Completo al Básico mientras dure el período pagado. **Te sugerimos el Completo:** si con tus módulos pagas lo mismo o más que el Completo (o estás cerca), Mi plan lo avisa, también antes de pedir un módulo que te haría pasarlo. **Pasar al Completo cuando ya pagaste tu período:** bloque **Pasar al Completo** con la cuenta a la vista (días que faltan, hasta qué fecha y valor de la diferencia con IVA); pagas solo esa diferencia y tu vencimiento no cambia. Dos formas: **Pagar con tarjeta** (el plan cambia al aprobarse el pago) o **Enviar por WhatsApp** (mensaje listo para pagar por transferencia; el plan cambia cuando Tukán registra el pago). Si la diferencia es menor a un dólar (por ejemplo, si ya pagas lo mismo o más que el Completo), no se cobra: **Pasarme ahora (no se cobra)** y pasas en ese momento. Con suscripción con tarjeta, **Pasarme al Completo** te pasa ya: si cuesta más, lo proporcional se cobra aparte con **Pagar ahora**; si cuesta menos, rige desde el próximo cobro. Nadie pasa al Completo sin pagar; en la demo o con el período vencido se paga el Completo entero. Si no ves la sección, se paga como siempre (botón **Pagar** → WhatsApp). En la app de Google Play no aparece.
-- No hay registro abierto: **Solicitar demo** → llena todos los datos (nombre y apellido, nombre del negocio, celular o WhatsApp, dirección, ciudad y correo) → **la demo dura 3 días** y preparar la demo toma entre 5 y 10 minutos aproximadamente; cuando está lista llega al correo la clave, el manual y la guía de primeros pasos (revisa el spam). En **Inicio** de la demo está la tarjeta «Tu demo dura hasta el…» con **Descargar el manual** y **Descargar primeros pasos**; los mismos botones están siempre en **Más → Ayuda**. Al contratar, nada de lo cargado se pierde.
+- No hay registro abierto: **Solicitar demo** → llena todos los datos (nombre y apellido, nombre del negocio, celular o WhatsApp, dirección, ciudad y correo) → **la demo dura 3 días** y preparar la demo toma entre 5 y 10 minutos aproximadamente; cuando está lista llega al correo la clave, el manual y la guía de primeros pasos (revisa el spam). En **Inicio** de la demo está la tarjeta «Tu demo dura hasta el…» con **Descargar el manual** y **Descargar primeros pasos**; los mismos botones están siempre en **Menú → Ayuda**. Al contratar, nada de lo cargado se pierde.
 - El valor del programa siempre es por cotización según los módulos: WhatsApp 098 366 2181.
 
 ## Ayuda e inteligencia artificial
-- **Ayuda (base, todos los planes y cargos):** **Más → Ayuda** → cuadro **¿Qué necesita hacer?** (hasta 500 letras) → **Preguntar**. Responde al instante y paso a paso con el manual. Las preguntas ya hechas quedan guardadas (Tukán las revisa) y salen de inmediato. Hasta 10 preguntas por minuto. Si no sirvió: **WhatsApp 098 366 2181**.
+- **Ayuda (base, todos los planes y cargos):** **Menú → Ayuda** → cuadro **¿Qué necesita hacer?** (hasta 500 letras) → **Preguntar**. Responde al instante y paso a paso con el manual. Las preguntas ya hechas quedan guardadas (Tukán las revisa) y salen de inmediato. Hasta 10 preguntas por minuto. Si no sirvió: **WhatsApp 098 366 2181**.
 - **Asistente IA (incluido en el plan Completo; en el Básico, «Pídalo y le cotizamos»):**
   - **Eventos** o **Nuevo evento** → **✨ Desde un mensaje de WhatsApp** → pega el mensaje del cliente → **Proponer la cotización** → borrador con cliente, tipo, fecha, invitados, lugar (o por definir), paquete y servicios de **tu catálogo** → **Guardar evento y cotización** (evento en Consulta, cotización en borrador; no se envía nada).
   - **Planificación → Presupuesto** → **✨ Leer cotización de proveedor** → sube la foto o el PDF de la proforma (y una nota) → **Leer la cotización** → marca las partidas → **Agregar al presupuesto** (quedan «Pidiendo precios», el cliente le paga directo).
@@ -115,7 +115,7 @@ Con este módulo, cada pago confirmado de un evento sale como **factura electró
 3. Si quieres, marca **Facturar automático al cobrar**. Revisa también si tus precios ya traen IVA y la tarifa (15 %, 5 % o 0 %).
 
 **Facturar**
-- **A mano:** toca **Facturar**, en **Más → Factura electrónica**.
+- **A mano:** toca **Facturar**, en **Menú → Factura electrónica**.
 - **Sola:** con «automático» encendido, cada cobro sale facturado al momento.
 - La factura va a nombre de la cédula o el RUC del cliente. Si no los tiene, va a consumidor final.
 - El total es exactamente lo que cobraste. Cuando la cuenta del SRI no lo permite, queda 1 centavo menos.

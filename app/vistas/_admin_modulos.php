@@ -9,7 +9,7 @@ $porGrupo = [];
 foreach ($catalogo as $m) $porGrupo[$m['grupo_nombre']][] = $m;
 $pendientes = array_values(array_filter($pedidosModulos, fn($s) => $s['estado'] === 'pendiente'));
 ?>
-<section class="bloque adm-mod" id="modulos">
+<section class="bloque tk-tarjeta adm-mod" id="modulos">
     <div class="dia-titulo-acciones"><h2>Módulos</h2>
         <span class="adm-mod-total">Paga <strong><?= dinero($me['mensual']) ?></strong> al mes<?= $me['precio_acordado'] !== null ? ' <small>(precio acordado)</small>' : '' ?></span></div>
     <?php $sugAdm = (new TuPlanner\PagoPlan(db(), fn() => [0, null]))->sugerenciaCompleto((int) $n['id']);   /* (10 nov 2026) solo cuentas, sin llamar al Panel */ ?>
@@ -30,9 +30,9 @@ $pendientes = array_values(array_filter($pedidosModulos, fn($s) => $s['estado'] 
                     <input type="hidden" name="solicitud" value="<?= (int) $s['id'] ?>">
                     <p><strong>Pidió desde Mi plan:</strong> <?= e(implode(', ', array_map([Modulos::class, 'nombre'], $ids))) ?>
                         <small class="suave">· <?= e(date('d/m/Y H:i', strtotime($s['creado']))) ?><?= $s['nota'] ? ' · «' . e($s['nota']) . '»' : '' ?></small></p>
-                    <div class="acciones">
-                        <button class="boton boton-chico" type="submit" name="resultado" value="aprobada" data-confirmar="¿Encender <?= e(implode(', ', array_map([Modulos::class, 'nombre'], $ids))) ?>? Se suma a lo que paga al mes.">Aprobar y encender</button>
-                        <button class="boton boton-claro boton-chico" type="submit" name="resultado" value="rechazada">Rechazar</button>
+                    <div class="acciones tk-acciones">
+                        <button data-ico="check" class="boton tk-boton boton-chico chico" type="submit" name="resultado" value="aprobada" data-confirmar="¿Encender <?= e(implode(', ', array_map([Modulos::class, 'nombre'], $ids))) ?>? Se suma a lo que paga al mes.">Aprobar y encender</button>
+                        <button data-ico="cruz" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit" name="resultado" value="rechazada">Rechazar</button>
                     </div>
                 </form>
             <?php endforeach; ?>
@@ -71,7 +71,7 @@ $pendientes = array_values(array_filter($pedidosModulos, fn($s) => $s['estado'] 
             <li class="total"><span>Calculado al mes</span><span class="monto"><?= dinero($me['calculado']) ?></span></li>
         </ul>
         <div class="fila-campos">
-            <div class="campo"><label for="precio_acordado">Precio acordado al mes ($) <small>(vacío = el calculado)</small></label>
+            <div class="campo tk-campo"><label for="precio_acordado">Precio acordado al mes ($) <small>(vacío = el calculado)</small></label>
                 <input type="text" inputmode="decimal" id="precio_acordado" name="precio_acordado" value="<?= $me['precio_acordado'] !== null ? e(number_format($me['precio_acordado'], 2, '.', '')) : '' ?>" style="max-width:180px"></div>
         </div>
         <?php if ($me['demo']): ?>
@@ -79,6 +79,6 @@ $pendientes = array_values(array_filter($pedidosModulos, fn($s) => $s['estado'] 
                 Que la demo tenga solo estos módulos (si no, la demo tiene todos)</label></div>
         <?php endif; ?>
         <p class="g-nota">Apagar un módulo no borra nada: solo se esconde. Si lo vuelves a encender, todo sigue como estaba.</p>
-        <button class="boton" type="submit" data-confirmar="¿Guardar los módulos de <?= e($n['nombre']) ?>? Cambia lo que puede usar y lo que paga al mes.">Guardar módulos</button>
+        <button data-ico="guardar" class="boton tk-boton" type="submit" data-confirmar="¿Guardar los módulos de <?= e($n['nombre']) ?>? Cambia lo que puede usar y lo que paga al mes.">Guardar módulos</button>
     </form>
 </section>

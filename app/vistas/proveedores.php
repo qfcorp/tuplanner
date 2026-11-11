@@ -10,18 +10,18 @@ $porServicio = [];
 foreach ($lista as $x) $porServicio[$x['servicio']][] = $x;
 $num = fn($x) => $x === null || $x === '' ? '' : rtrim(rtrim(number_format((float) $x, 2, ',', '.'), '0'), ',');
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <h1>Proveedores</h1>
         <p>DJ, fotógrafos, florerías, catering y más: lo que les compras, lo que les debes, sus documentos y cómo cumplen.</p>
     </div>
-    <div class="acciones">
+    <div class="acciones tk-acciones">
         <?php if ($verDinero): ?>
-            <a class="boton boton-claro" href="<?= e(url('compras')) ?>">Compras</a>
-            <a class="boton boton-claro" href="<?= e(url('por_pagar')) ?>">Por pagar</a>
+            <a data-ico="recibo" class="boton tk-boton boton-claro secundario" href="<?= e(url('compras')) ?>">Compras</a>
+            <a data-ico="tarjeta" class="boton tk-boton boton-claro secundario" href="<?= e(url('por_pagar')) ?>">Por pagar</a>
         <?php endif; ?>
-        <a class="boton boton-claro" href="<?= e(url('incidencias')) ?>">Incidencias</a>
-        <?php if ($p): ?><a class="boton boton-claro" href="<?= e(url('proveedores')) ?>">Ver todos</a><?php endif; ?>
+        <a data-ico="alerta" class="boton tk-boton boton-claro secundario" href="<?= e(url('incidencias')) ?>">Incidencias</a>
+        <?php if ($p): ?><a data-ico="ojo" class="boton tk-boton boton-claro secundario" href="<?= e(url('proveedores')) ?>">Ver todos</a><?php endif; ?>
     </div>
 </div>
 
@@ -31,12 +31,12 @@ $num = fn($x) => $x === null || $x === '' ? '' : rtrim(rtrim(number_format((floa
 </nav>
 
 <?php if ($verRanking): ?>
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <h2>Ranking de proveedores</h2>
     <p class="suave"><?= e(\TuPlanner\PuntajeProveedores::explicar($cfgPuntaje)[0]) ?> Se califica en el día del evento → Proveedores, después del evento.
         <a href="<?= e(url('puntaje_proveedores')) ?>">Cómo se calcula el puntaje</a></p>
     <?php if (!$ranking): ?>
-        <p class="vacio">Todavía no tienes proveedores.</p>
+        <p class="vacio tk-vacio">Todavía no tienes proveedores.</p>
     <?php else: ?>
     <ol class="pv-ranking">
         <?php foreach ($ranking as $i => $r): ?>
@@ -62,10 +62,10 @@ $num = fn($x) => $x === null || $x === '' ? '' : rtrim(rtrim(number_format((floa
 </section>
 <?php else: ?>
 <div class="rejilla rejilla-2">
-    <section class="bloque">
+    <section class="bloque tk-tarjeta">
         <h2>Tus proveedores <small class="suave">(<?= count(array_filter($lista, fn($x) => $x['activo'])) ?> activos)</small></h2>
         <?php if (!$lista): ?>
-            <div class="vacio">
+            <div class="vacio tk-vacio">
                 <p><strong>Todavía no tienes proveedores.</strong></p>
                 <p>Agrega a los que trabajan contigo seguido (DJ, fotógrafo, florería). Los que trae el cliente se anotan directo en cada evento.</p>
             </div>
@@ -91,9 +91,9 @@ $num = fn($x) => $x === null || $x === '' ? '' : rtrim(rtrim(number_format((floa
                             <?php if ((int) $x['proximos']): ?><span class="pv-chip pv-chip-suave"><?= (int) $x['proximos'] ?> <?= (int) $x['proximos'] === 1 ? 'evento próximo' : 'eventos próximos' ?></span><?php endif; ?>
                         </div>
                     </div>
-                    <div class="derecha acciones">
-                        <?php if ($wa): ?><a class="boton boton-wa boton-chico" href="<?= e($wa) ?>" target="_blank" rel="noopener" aria-label="WhatsApp a <?= e($x['nombre']) ?>">WhatsApp</a><?php endif; ?>
-                        <a class="boton boton-claro boton-chico" href="<?= e(url('proveedor', ['id' => $x['id']])) ?>">Ficha</a>
+                    <div class="derecha acciones tk-acciones">
+                        <?php if ($wa): ?><a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($wa) ?>" target="_blank" rel="noopener" aria-label="WhatsApp a <?= e($x['nombre']) ?>">WhatsApp</a><?php endif; ?>
+                        <a data-ico="nota" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('proveedor', ['id' => $x['id']])) ?>">Ficha</a>
                     </div>
                 </li>
                 <?php endforeach; ?>
@@ -102,72 +102,72 @@ $num = fn($x) => $x === null || $x === '' ? '' : rtrim(rtrim(number_format((floa
         <?php endif; ?>
     </section>
     <?php if ($editable): ?>
-    <form method="post" class="bloque" id="form-proveedor">
+    <form method="post" class="bloque tk-tarjeta" id="form-proveedor">
         <h2><?= $p ? 'Editar ' . e($p['nombre']) : 'Agregar proveedor' ?></h2>
         <?= campo_csrf() ?>
         <input type="hidden" name="accion" value="<?= $p ? 'editar' : 'crear' ?>">
         <?php if ($p): ?><input type="hidden" name="proveedor_id" value="<?= (int) $p['id'] ?>"><?php endif; ?>
-        <div class="campo"><label for="pnom">Nombre o empresa</label>
+        <div class="campo tk-campo"><label for="pnom">Nombre o empresa</label>
             <input type="text" id="pnom" name="nombre" value="<?= $v('nombre') ?>" required maxlength="150" placeholder="DJ Fiesta Total"></div>
         <div class="fila-campos">
-            <div class="campo"><label for="pser">Servicio</label>
+            <div class="campo tk-campo"><label for="pser">Servicio</label>
                 <select id="pser" name="servicio">
                     <?php foreach (Cotizaciones::CATEGORIAS as $k => $t): ?><option value="<?= e($k) ?>" <?= ($previo['servicio'] ?? $p['servicio'] ?? 'musica') === $k ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?>
                 </select></div>
-            <div class="campo"><label for="pcon">Persona de contacto</label>
+            <div class="campo tk-campo"><label for="pcon">Persona de contacto</label>
                 <input type="text" id="pcon" name="contacto" value="<?= $v('contacto') ?>" maxlength="100"></div>
         </div>
         <div class="fila-campos">
-            <div class="campo"><label for="ptel">Celular</label>
+            <div class="campo tk-campo"><label for="ptel">Celular</label>
                 <input type="tel" id="ptel" name="telefono" value="<?= $v('telefono') ?>" placeholder="0991234567"></div>
-            <div class="campo"><label for="pmail">Correo <small>(opcional)</small></label>
+            <div class="campo tk-campo"><label for="pmail">Correo <small>(opcional)</small></label>
                 <input type="email" id="pmail" name="email" value="<?= $v('email') ?>"></div>
         </div>
         <?php if ($comercial): ?>
         <details class="pv-detalles" <?= $previo || ($p && ($p['ruc'] || $p['numero_cuenta'] || (int) $p['credito_dias'])) ? 'open' : '' ?>>
             <summary>RUC, cuenta del banco y crédito</summary>
             <div class="fila-campos">
-                <div class="campo"><label for="pruc">RUC o cédula</label>
+                <div class="campo tk-campo"><label for="pruc">RUC o cédula</label>
                     <input type="text" id="pruc" name="ruc" value="<?= $v('ruc') ?>" inputmode="numeric" maxlength="13" placeholder="1791234567001"></div>
-                <div class="campo"><label for="prazon">Razón social <small>(como sale en la factura)</small></label>
+                <div class="campo tk-campo"><label for="prazon">Razón social <small>(como sale en la factura)</small></label>
                     <input type="text" id="prazon" name="razon_social" value="<?= $v('razon_social') ?>" maxlength="150"></div>
             </div>
             <div class="fila-campos">
-                <div class="campo"><label for="pdir">Dirección</label><input type="text" id="pdir" name="direccion" value="<?= $v('direccion') ?>" maxlength="250"></div>
-                <div class="campo"><label for="pciu">Ciudad</label><input type="text" id="pciu" name="ciudad" value="<?= $v('ciudad') ?>" maxlength="80"></div>
+                <div class="campo tk-campo"><label for="pdir">Dirección</label><input type="text" id="pdir" name="direccion" value="<?= $v('direccion') ?>" maxlength="250"></div>
+                <div class="campo tk-campo"><label for="pciu">Ciudad</label><input type="text" id="pciu" name="ciudad" value="<?= $v('ciudad') ?>" maxlength="80"></div>
             </div>
             <div class="fila-campos">
-                <div class="campo"><label for="pban">Banco</label>
+                <div class="campo tk-campo"><label for="pban">Banco</label>
                     <input type="text" id="pban" name="banco" value="<?= $v('banco') ?>" maxlength="80" list="pv-bancos" placeholder="Banco Pichincha">
                     <datalist id="pv-bancos"><?php foreach (ProveedoresFicha::BANCOS as $b): ?><option value="<?= e($b) ?>"><?php endforeach; ?></datalist></div>
-                <div class="campo"><label for="ptcu">Tipo de cuenta</label>
+                <div class="campo tk-campo"><label for="ptcu">Tipo de cuenta</label>
                     <select id="ptcu" name="tipo_cuenta"><option value="">—</option>
                         <?php foreach (ProveedoresFicha::TIPOS_CUENTA as $k => $t): ?><option value="<?= e($k) ?>" <?= ($previo['tipo_cuenta'] ?? $p['tipo_cuenta'] ?? '') === $k ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?>
                     </select></div>
             </div>
             <div class="fila-campos">
-                <div class="campo"><label for="pncu">Número de cuenta</label><input type="text" id="pncu" name="numero_cuenta" value="<?= $v('numero_cuenta') ?>" inputmode="numeric" maxlength="30"></div>
-                <div class="campo"><label for="ptit">Titular de la cuenta</label><input type="text" id="ptit" name="titular_cuenta" value="<?= $v('titular_cuenta') ?>" maxlength="150"></div>
+                <div class="campo tk-campo"><label for="pncu">Número de cuenta</label><input type="text" id="pncu" name="numero_cuenta" value="<?= $v('numero_cuenta') ?>" inputmode="numeric" maxlength="30"></div>
+                <div class="campo tk-campo"><label for="ptit">Titular de la cuenta</label><input type="text" id="ptit" name="titular_cuenta" value="<?= $v('titular_cuenta') ?>" maxlength="150"></div>
             </div>
             <div class="pv-fila-3">
-                <div class="campo"><label for="pcre">Días de crédito <small>(0 = contado)</small></label>
+                <div class="campo tk-campo"><label for="pcre">Días de crédito <small>(0 = contado)</small></label>
                     <input type="number" id="pcre" name="credito_dias" value="<?= $v('credito_dias', '0') ?>" min="0" max="365"></div>
-                <div class="campo"><label for="pcup">Cupo de crédito <small>($, opcional)</small></label>
+                <div class="campo tk-campo"><label for="pcup">Cupo de crédito <small>($, opcional)</small></label>
                     <input type="text" id="pcup" name="cupo_credito" inputmode="decimal" value="<?= e($previo['cupo_credito'] ?? $num($p['cupo_credito'] ?? null)) ?>" placeholder="Sin límite"></div>
-                <div class="campo"><label for="pant">Anticipo habitual <small>(%)</small></label>
+                <div class="campo tk-campo"><label for="pant">Anticipo habitual <small>(%)</small></label>
                     <input type="text" id="pant" name="anticipo_pct" inputmode="decimal" value="<?= e($previo['anticipo_pct'] ?? $num($p['anticipo_pct'] ?? 0)) ?>"></div>
             </div>
             <label class="opcion" style="margin-bottom:14px"><input type="checkbox" name="preferido" value="1" <?= !empty($previo['preferido'] ?? $p['preferido'] ?? false) ? 'checked' : '' ?>>
                 <span><strong>Proveedor preferido</strong><small>Sale con ★ y primero cuando eliges a quién comprar.</small></span></label>
         </details>
         <?php endif; ?>
-        <div class="campo"><label for="pnot">Notas <small>(precios, qué incluye…)</small></label>
+        <div class="campo tk-campo"><label for="pnot">Notas <small>(precios, qué incluye…)</small></label>
             <textarea id="pnot" name="notas" rows="3" maxlength="500"><?= $v('notas') ?></textarea></div>
         <?php if ($p): ?>
             <label class="opcion" style="margin-bottom:14px"><input type="checkbox" name="activo" value="1" <?= $p['activo'] ? 'checked' : '' ?>>
                 <span><strong>Activo</strong><small>Desmárcalo si ya no trabajas con este proveedor.</small></span></label>
         <?php endif; ?>
-        <button class="boton boton-ancho" type="submit"><?= $p ? 'Guardar cambios' : 'Agregar proveedor' ?></button>
+        <button data-ico="guardar" class="boton tk-boton boton-ancho" type="submit"><?= $p ? 'Guardar cambios' : 'Agregar proveedor' ?></button>
     </form>
     <?php endif; ?>
 </div>

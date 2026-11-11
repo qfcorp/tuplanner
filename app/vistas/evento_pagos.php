@@ -19,10 +19,10 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
 <?php endif; ?>
 
 <?php if ($sinValor): ?>
-    <section class="bloque vacio cb-vacio">
+    <section class="bloque tk-tarjeta vacio tk-vacio cb-vacio">
         <h2>Este evento todavía no tiene valor</h2>
         <p>Cuando el cliente acepte una cotización, aquí aparece su plan de pagos (reserva, cuotas y saldo).</p>
-        <a class="boton" href="<?= e(url('cotizacion', ['id' => $ev['id']])) ?>">Ir a la cotización</a>
+        <a data-ico="flecha" class="boton tk-boton" href="<?= e(url('cotizacion', ['id' => $ev['id']])) ?>">Ir a la cotización</a>
     </section>
 <?php else: ?>
 <section class="cifras cb-cifras" aria-label="Resumen de pagos">
@@ -40,18 +40,18 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
 </div>
 <?php endif; ?>
 
-<div class="acciones cb-acciones no-imprimir">
-    <?php if ($puede && $activo && !$sinValor && $res['saldo'] > 0): ?><a class="boton" href="#registrar">Registrar un pago</a><?php endif; ?>
-    <?php if ($recordatorio && $res['saldo'] > 0): ?><a class="boton boton-wa" href="<?= e($recordatorio) ?>" target="_blank" rel="noopener">Recordar el pago por WhatsApp</a><?php endif; ?>
-    <a class="boton boton-claro" href="<?= e(url('pdf', ['tipo' => 'estado_cuenta', 'id' => $ev['id']])) ?>" target="_blank">Estado de cuenta (PDF)</a>
-    <a class="boton boton-claro" href="<?= e($portal) ?>" target="_blank" rel="noopener">Ver el portal del cliente</a>
-    <button type="button" class="boton boton-claro" data-copiar="<?= e($portal) ?>">Copiar enlace del portal</button>
-    <?php if ($waPortal): ?><a class="boton boton-claro" href="<?= e($waPortal) ?>" target="_blank" rel="noopener">Enviar portal por WhatsApp</a><?php endif; ?>
+<div class="acciones tk-acciones cb-acciones no-imprimir">
+    <?php if ($puede && $activo && !$sinValor && $res['saldo'] > 0): ?><a data-ico="check" class="boton tk-boton" href="#registrar">Registrar un pago</a><?php endif; ?>
+    <?php if ($recordatorio && $res['saldo'] > 0): ?><a class="boton tk-boton boton-wa ok" href="<?= e($recordatorio) ?>" target="_blank" rel="noopener">Recordar el pago por WhatsApp</a><?php endif; ?>
+    <a data-ico="descargar" class="boton tk-boton boton-claro secundario" href="<?= e(url('pdf', ['tipo' => 'estado_cuenta', 'id' => $ev['id']])) ?>" target="_blank">Estado de cuenta (PDF)</a>
+    <a data-ico="ojo" class="boton tk-boton boton-claro secundario" href="<?= e($portal) ?>" target="_blank" rel="noopener">Ver el portal del cliente</a>
+    <button data-ico="copiar" type="button" class="boton tk-boton boton-claro secundario" data-copiar="<?= e($portal) ?>">Copiar enlace del portal</button>
+    <?php if ($waPortal): ?><a data-ico="enviar" class="boton tk-boton boton-claro secundario" href="<?= e($waPortal) ?>" target="_blank" rel="noopener">Enviar portal por WhatsApp</a><?php endif; ?>
 </div>
 <?php if (!$ev['cliente_telefono']): ?><p class="suave cb-nota">El cliente no tiene celular registrado: agrégalo en el evento para mandarle recordatorios por WhatsApp.</p><?php endif; ?>
 
 <?php if ($porRevisar): ?>
-<section class="bloque cb-por-revisar" id="revisar">
+<section class="bloque tk-tarjeta cb-por-revisar" id="revisar">
     <h2>Comprobantes por revisar (<?= count($porRevisar) ?>)</h2>
     <p class="suave">El cliente los subió desde su portal. Revisa en tu banco que el dinero llegó y confírmalos; recién ahí suman a lo pagado.</p>
     <?php foreach ($porRevisar as $p): ?>
@@ -69,7 +69,7 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
                     <?= campo_csrf() ?><input type="hidden" name="pago_id" value="<?= (int) $p['id'] ?>">
                     <label class="sr-only" for="ref<?= (int) $p['id'] ?>">Número de comprobante</label>
                     <input type="text" id="ref<?= (int) $p['id'] ?>" name="referencia" maxlength="120" placeholder="N.º de comprobante (opcional)" value="<?= e($p['referencia']) ?>">
-                    <button class="boton boton-chico" type="submit">Confirmar: el dinero llegó</button>
+                    <button data-ico="check" class="boton tk-boton boton-chico chico" type="submit">Confirmar: el dinero llegó</button>
                 </form>
                 <details class="cb-detalles">
                     <summary>Rechazar</summary>
@@ -77,7 +77,7 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
                         <?= campo_csrf() ?><input type="hidden" name="pago_id" value="<?= (int) $p['id'] ?>">
                         <label class="sr-only" for="mot<?= (int) $p['id'] ?>">Motivo</label>
                         <input type="text" id="mot<?= (int) $p['id'] ?>" name="motivo" maxlength="200" placeholder="Motivo (ej.: no llegó a la cuenta)">
-                        <button class="boton boton-chico boton-peligro" type="submit" data-confirmar="¿Rechazar este comprobante? No sumará a lo pagado.">Rechazar comprobante</button>
+                        <button data-ico="cruz" class="boton tk-boton boton-chico chico boton-peligro peligro" type="submit" data-confirmar="¿Rechazar este comprobante? No sumará a lo pagado.">Rechazar comprobante</button>
                     </form>
                 </details>
                 <?php endif; ?>
@@ -88,11 +88,11 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
 <?php endif; ?>
 
 <?php if (!$sinValor): ?>
-<section class="bloque" id="plan">
+<section class="bloque tk-tarjeta" id="plan">
     <h2>Plan de pagos</h2>
     <?php if ($res['cuotas']): ?>
     <div class="tabla-scroll">
-        <table class="tabla cb-tabla-cuotas">
+        <table class="tabla tk-tabla cb-tabla-cuotas">
             <thead><tr><th>Pago</th><th>Vence</th><th class="num">Valor</th><th class="num">Pagado</th><th class="num">Falta</th><th>Estado</th></tr></thead>
             <tbody>
             <?php foreach ($res['cuotas'] as $c): ?>
@@ -110,7 +110,7 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
         </table>
     </div>
     <?php else: ?>
-        <p class="vacio">Todavía no hay plan de pagos. Ármalo abajo con el número de pagos que acordaste con el cliente.</p>
+        <p class="vacio tk-vacio">Todavía no hay plan de pagos. Ármalo abajo con el número de pagos que acordaste con el cliente.</p>
     <?php endif; ?>
 
     <?php if ($puede): ?>
@@ -121,12 +121,12 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
                 <?= campo_csrf() ?>
                 <p class="suave">Reserva hoy + cuotas repartidas hasta el saldo, que vence unos días antes del evento (según tu configuración). Lo ya pagado se vuelve a repartir.</p>
                 <div class="fila-campos">
-                    <div class="campo"><label for="cuotas">Número de pagos (con reserva y saldo)</label>
+                    <div class="campo tk-campo"><label for="cuotas">Número de pagos (con reserva y saldo)</label>
                         <input type="number" id="cuotas" name="cuotas" min="1" max="24" value="<?= max(1, count($res['cuotas']) ?: 3) ?>" required></div>
-                    <div class="campo"><label for="reserva_pct">Reserva (%)</label>
+                    <div class="campo tk-campo"><label for="reserva_pct">Reserva (%)</label>
                         <input type="number" id="reserva_pct" name="reserva_pct" min="1" max="100" step="0.5" value="<?= e($reservaPct) ?>" required></div>
                 </div>
-                <button class="boton boton-claro" type="submit" <?= $res['cuotas'] ? 'data-confirmar="Se reemplaza el plan actual por uno nuevo. ¿Seguir?"' : '' ?>>Armar plan</button>
+                <button data-ico="ajustes" class="boton tk-boton boton-claro secundario" type="submit" <?= $res['cuotas'] ? 'data-confirmar="Se reemplaza el plan actual por uno nuevo. ¿Seguir?"' : '' ?>>Armar plan</button>
             </form>
         </details>
         <details class="cb-detalles">
@@ -138,16 +138,16 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
                     <?php $filas = $res['cuotas'] ?: [['concepto' => 'Reserva', 'vence' => $hoy, 'monto' => $res['total']]];
                     foreach ($filas as $i => $c): ?>
                     <div class="cb-plan-fila">
-                        <div class="campo"><label for="pc<?= $i ?>">Pago</label><input type="text" id="pc<?= $i ?>" name="concepto[]" maxlength="80" value="<?= e($c['concepto']) ?>"></div>
-                        <div class="campo"><label for="pv<?= $i ?>">Vence</label><input type="date" id="pv<?= $i ?>" name="vence[]" value="<?= e($c['vence']) ?>"></div>
-                        <div class="campo"><label for="pm<?= $i ?>">Valor</label><input type="text" inputmode="decimal" id="pm<?= $i ?>" name="monto_cuota[]" value="<?= e($num((float) $c['monto'])) ?>" class="cb-monto-cuota"></div>
+                        <div class="campo tk-campo"><label for="pc<?= $i ?>">Pago</label><input type="text" id="pc<?= $i ?>" name="concepto[]" maxlength="80" value="<?= e($c['concepto']) ?>"></div>
+                        <div class="campo tk-campo"><label for="pv<?= $i ?>">Vence</label><input type="date" id="pv<?= $i ?>" name="vence[]" value="<?= e($c['vence']) ?>"></div>
+                        <div class="campo tk-campo"><label for="pm<?= $i ?>">Valor</label><input type="text" inputmode="decimal" id="pm<?= $i ?>" name="monto_cuota[]" value="<?= e($num((float) $c['monto'])) ?>" class="cb-monto-cuota"></div>
                     </div>
                     <?php endforeach; ?>
                 </div>
                 <p class="cb-suma" aria-live="polite"></p>
-                <div class="acciones">
-                    <button type="button" class="boton boton-claro boton-chico" data-cb-agregar-fila>+ Agregar otro pago</button>
-                    <button class="boton" type="submit">Guardar plan</button>
+                <div class="acciones tk-acciones">
+                    <button type="button" class="boton tk-boton boton-claro secundario boton-chico chico" data-cb-agregar-fila>+ Agregar otro pago</button>
+                    <button data-ico="guardar" class="boton tk-boton" type="submit">Guardar plan</button>
                 </div>
             </form>
         </details>
@@ -157,35 +157,35 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
 <?php endif; ?>
 
 <?php if ($puede && $activo && !$sinValor): ?>
-<section class="bloque" id="registrar">
+<section class="bloque tk-tarjeta" id="registrar">
     <h2>Registrar un pago recibido</h2>
     <?php if ($res['saldo'] <= 0): ?><p class="aviso aviso-ok">El evento ya está pagado por completo. Si recibes algo más, quedará como saldo a favor del cliente.</p><?php endif; ?>
     <form method="post" action="<?= e(url('evento_pagos', ['id' => $ev['id'], 'accion' => 'pago'])) ?>" enctype="multipart/form-data" class="rejilla-form">
         <?= campo_csrf() ?>
-        <div class="campo"><label for="monto">Valor recibido ($)</label>
+        <div class="campo tk-campo"><label for="monto">Valor recibido ($)</label>
             <input type="text" inputmode="decimal" id="monto" name="monto" required value="<?= $sugerido > 0 ? e($num($sugerido)) : '' ?>">
             <?php if ($res['proxima']): ?><small class="suave">Sugerido: lo que falta de "<?= e($res['proxima']['concepto']) ?>".</small><?php endif; ?></div>
-        <div class="campo"><label for="metodo">Forma de pago</label>
+        <div class="campo tk-campo"><label for="metodo">Forma de pago</label>
             <select id="metodo" name="metodo">
                 <?php foreach (Pagos::METODOS as $k => $t): if ($k === 'payphone') continue; ?><option value="<?= e($k) ?>" <?= $k === 'transferencia' ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?>
             </select></div>
-        <div class="campo"><label for="fecha">Fecha del pago</label>
+        <div class="campo tk-campo"><label for="fecha">Fecha del pago</label>
             <input type="date" id="fecha" name="fecha" value="<?= e($hoy) ?>" max="<?= e($hoy) ?>"></div>
-        <div class="campo"><label for="referencia">N.º de comprobante o referencia <small>(opcional)</small></label>
+        <div class="campo tk-campo"><label for="referencia">N.º de comprobante o referencia <small>(opcional)</small></label>
             <input type="text" id="referencia" name="referencia" maxlength="120"></div>
-        <div class="campo"><label for="foto">Foto del comprobante <small>(opcional)</small></label>
+        <div class="campo tk-campo"><label for="foto">Foto del comprobante <small>(opcional)</small></label>
             <input type="file" id="foto" name="foto" accept="image/*"></div>
-        <div class="campo"><label for="notas">Notas <small>(opcional)</small></label>
+        <div class="campo tk-campo"><label for="notas">Notas <small>(opcional)</small></label>
             <input type="text" id="notas" name="notas" maxlength="300"></div>
-        <div class="ancho"><button class="boton" type="submit">Guardar pago y generar recibo</button></div>
+        <div class="ancho"><button data-ico="guardar" class="boton tk-boton" type="submit">Guardar pago y generar recibo</button></div>
     </form>
 </section>
 <?php endif; ?>
 
-<section class="bloque" id="pagos">
+<section class="bloque tk-tarjeta" id="pagos">
     <h2>Pagos del evento</h2>
     <?php if (!$lista): ?>
-        <p class="vacio">Todavía no hay pagos. Cuando registres uno (o el cliente suba su comprobante), aparece aquí con su recibo en PDF.</p>
+        <p class="vacio tk-vacio">Todavía no hay pagos. Cuando registres uno (o el cliente suba su comprobante), aparece aquí con su recibo en PDF.</p>
     <?php else: ?>
     <ul class="filas cb-pagos">
         <?php foreach ($lista as $p):
@@ -211,7 +211,7 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
                             <?= campo_csrf() ?><input type="hidden" name="pago_id" value="<?= (int) $p['id'] ?>">
                             <label class="sr-only" for="an<?= (int) $p['id'] ?>">Motivo</label>
                             <input type="text" id="an<?= (int) $p['id'] ?>" name="motivo" maxlength="200" required minlength="3" placeholder="¿Por qué se anula?">
-                            <button class="boton boton-chico boton-peligro" type="submit" data-confirmar="¿Anular este pago de <?= e(dinero($p['monto'])) ?>? Se resta de lo pagado y no se puede deshacer.">Anular pago</button>
+                            <button data-ico="cruz" class="boton tk-boton boton-chico chico boton-peligro peligro" type="submit" data-confirmar="¿Anular este pago de <?= e(dinero($p['monto'])) ?>? Se resta de lo pagado y no se puede deshacer.">Anular pago</button>
                         </form>
                     </details>
                     <?php endif; ?>
@@ -223,7 +223,7 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
     <?php endif; ?>
 </section>
 
-<section class="bloque" id="garantia">
+<section class="bloque tk-tarjeta" id="garantia">
     <h2>Garantía por daños</h2>
     <p class="suave">Es un depósito aparte del valor del evento: se recibe antes, y después del evento se devuelve o se retiene lo que se dañó.</p>
     <dl class="ficha-datos cb-garantia">
@@ -243,7 +243,7 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
                 <?= campo_csrf() ?>
                 <label class="sr-only" for="garantia">Garantía ($)</label>
                 <input type="text" inputmode="decimal" id="garantia" name="garantia" value="<?= e($num($g['pedida'])) ?>">
-                <button class="boton boton-chico boton-claro" type="submit">Guardar</button>
+                <button data-ico="guardar" class="boton tk-boton boton-chico chico boton-claro secundario" type="submit">Guardar</button>
             </form>
         </details>
         <?php if ($activo): ?>
@@ -251,9 +251,9 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
             <summary>Registrar garantía recibida</summary>
             <form method="post" action="<?= e(url('evento_pagos', ['id' => $ev['id'], 'accion' => 'garantia_recibir'])) ?>" class="rejilla-form">
                 <?= campo_csrf() ?>
-                <div class="campo"><label for="gr_monto">Valor ($)</label><input type="text" inputmode="decimal" id="gr_monto" name="monto" required value="<?= $g['pedida'] > $g['recibida'] ? e($num($g['pedida'] - $g['recibida'])) : '' ?>"></div>
-                <div class="campo"><label for="gr_metodo">Forma de pago</label><select id="gr_metodo" name="metodo"><?php foreach (Pagos::METODOS as $k => $t): if ($k === 'payphone') continue; ?><option value="<?= e($k) ?>"><?= e($t) ?></option><?php endforeach; ?></select></div>
-                <div class="ancho"><button class="boton boton-claro" type="submit">Guardar garantía recibida</button></div>
+                <div class="campo tk-campo"><label for="gr_monto">Valor ($)</label><input type="text" inputmode="decimal" id="gr_monto" name="monto" required value="<?= $g['pedida'] > $g['recibida'] ? e($num($g['pedida'] - $g['recibida'])) : '' ?>"></div>
+                <div class="campo tk-campo"><label for="gr_metodo">Forma de pago</label><select id="gr_metodo" name="metodo"><?php foreach (Pagos::METODOS as $k => $t): if ($k === 'payphone') continue; ?><option value="<?= e($k) ?>"><?= e($t) ?></option><?php endforeach; ?></select></div>
+                <div class="ancho"><button data-ico="guardar" class="boton tk-boton boton-claro secundario" type="submit">Guardar garantía recibida</button></div>
             </form>
         </details>
         <?php endif; ?>
@@ -262,10 +262,10 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
             <summary>Devolver la garantía</summary>
             <form method="post" action="<?= e(url('evento_pagos', ['id' => $ev['id'], 'accion' => 'garantia_devolver'])) ?>" class="rejilla-form">
                 <?= campo_csrf() ?>
-                <div class="campo"><label for="gd_monto">Valor devuelto ($)</label><input type="text" inputmode="decimal" id="gd_monto" name="monto" required value="<?= e($num($g['saldo'])) ?>"></div>
-                <div class="campo"><label for="gd_metodo">Cómo se devolvió</label><select id="gd_metodo" name="metodo"><?php foreach (['transferencia', 'efectivo', 'deuna', 'cheque', 'otro'] as $k): ?><option value="<?= e($k) ?>"><?= e(Pagos::METODOS[$k]) ?></option><?php endforeach; ?></select></div>
-                <div class="campo ancho"><label for="gd_ref">Referencia <small>(opcional)</small></label><input type="text" id="gd_ref" name="referencia" maxlength="120"></div>
-                <div class="ancho"><button class="boton" type="submit" data-confirmar="¿Registrar la devolución de la garantía?">Registrar devolución</button></div>
+                <div class="campo tk-campo"><label for="gd_monto">Valor devuelto ($)</label><input type="text" inputmode="decimal" id="gd_monto" name="monto" required value="<?= e($num($g['saldo'])) ?>"></div>
+                <div class="campo tk-campo"><label for="gd_metodo">Cómo se devolvió</label><select id="gd_metodo" name="metodo"><?php foreach (['transferencia', 'efectivo', 'deuna', 'cheque', 'otro'] as $k): ?><option value="<?= e($k) ?>"><?= e(Pagos::METODOS[$k]) ?></option><?php endforeach; ?></select></div>
+                <div class="campo tk-campo ancho"><label for="gd_ref">Referencia <small>(opcional)</small></label><input type="text" id="gd_ref" name="referencia" maxlength="120"></div>
+                <div class="ancho"><button data-ico="check" class="boton tk-boton" type="submit" data-confirmar="¿Registrar la devolución de la garantía?">Registrar devolución</button></div>
             </form>
         </details>
         <details class="cb-detalles">
@@ -273,9 +273,9 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
             <form method="post" action="<?= e(url('evento_pagos', ['id' => $ev['id'], 'accion' => 'garantia_retener'])) ?>" class="rejilla-form">
                 <?= campo_csrf() ?>
                 <input type="hidden" name="metodo" value="efectivo">
-                <div class="campo"><label for="gt_monto">Valor que se retiene ($)</label><input type="text" inputmode="decimal" id="gt_monto" name="monto" required></div>
-                <div class="campo"><label for="gt_notas">¿Qué se dañó?</label><input type="text" id="gt_notas" name="notas" maxlength="300" required minlength="3" placeholder="Ej.: 3 copas rotas y un mantel manchado"></div>
-                <div class="ancho"><button class="boton boton-peligro" type="submit" data-confirmar="¿Retener este valor de la garantía por daños?">Retener por daños</button></div>
+                <div class="campo tk-campo"><label for="gt_monto">Valor que se retiene ($)</label><input type="text" inputmode="decimal" id="gt_monto" name="monto" required></div>
+                <div class="campo tk-campo"><label for="gt_notas">¿Qué se dañó?</label><input type="text" id="gt_notas" name="notas" maxlength="300" required minlength="3" placeholder="Ej.: 3 copas rotas y un mantel manchado"></div>
+                <div class="ancho"><button data-ico="candado" class="boton tk-boton boton-peligro peligro" type="submit" data-confirmar="¿Retener este valor de la garantía por daños?">Retener por daños</button></div>
             </form>
         </details>
         <?php endif; ?>
@@ -285,12 +285,12 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
 
 <?php /* Compras a proveedores del evento (060) */ $comprasEv ??= []; $activasEv = array_filter($comprasEv, fn($c) => in_array($c['estado'], \TuPlanner\Compras::ACTIVAS, true)); ?>
 <?php if (modulo_activo($u, 'proveedores')): /* Anexo B: módulo "Proveedores y compras" */ ?>
-<section class="bloque" id="compras">
+<section class="bloque tk-tarjeta" id="compras">
     <div class="dia-titulo-acciones"><h2>Compras a proveedores</h2>
-        <?php if ($puede): ?><a class="boton boton-claro boton-chico" href="<?= e(url('compras', ['nueva' => 1, 'evento' => $ev['id']])) ?>#nueva">Nueva compra</a><?php endif; ?></div>
+        <?php if ($puede): ?><a data-ico="mas" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('compras', ['nueva' => 1, 'evento' => $ev['id']])) ?>#nueva">Nueva compra</a><?php endif; ?></div>
     <p class="suave">Órdenes de compra de este evento (DJ, catering, flores…). Las pedidas, confirmadas y entregadas cuentan en la ganancia real; los pedidos de precio y las canceladas, no.</p>
     <?php if (!$comprasEv): ?>
-        <p class="vacio">Sin compras para este evento.</p>
+        <p class="vacio tk-vacio">Sin compras para este evento.</p>
     <?php else: $listaCompras = $comprasEv; $ocultarEvento = true; require RAIZ . '/app/vistas/_pv_compras.php'; ?>
     <ul class="filas">
         <li><strong>Total en compras</strong><span class="monto"><?= dinero($ganancia['compras'] ?? 0) ?></span></li>
@@ -300,7 +300,7 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
 </section>
 <?php endif; ?>
 
-<section class="bloque" id="gastos">
+<section class="bloque tk-tarjeta" id="gastos">
     <h2>Gastos del evento</h2>
     <p class="suave">Lo que pagas a proveedores o compras para este evento. Sirve para saber cuánto ganaste de verdad.</p>
     <?php if ($gastos): ?>
@@ -313,7 +313,7 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
                 <?php if ($puede): ?>
                 <form method="post" action="<?= e(url('evento_pagos', ['id' => $ev['id'], 'accion' => 'gasto_borrar'])) ?>">
                     <?= campo_csrf() ?><input type="hidden" name="gasto_id" value="<?= (int) $gs['id'] ?>">
-                    <button class="enlace-chico cb-boton-enlace" type="submit" data-confirmar="¿Borrar el gasto &quot;<?= e($gs['concepto']) ?>&quot;?">Borrar</button>
+                    <button data-ico="basura" class="enlace-chico cb-boton-enlace" type="submit" data-confirmar="¿Borrar el gasto &quot;<?= e($gs['concepto']) ?>&quot;?">Borrar</button>
                 </form>
                 <?php endif; ?></div>
         </li>
@@ -321,30 +321,30 @@ $num = fn(float $v) => number_format($v, 2, ',', '');
         <li><strong>Total de gastos</strong><span class="monto"><?= dinero($ganancia['gastos']) ?></span></li>
     </ul>
     <?php else: ?>
-        <p class="vacio">Sin gastos registrados todavía.</p>
+        <p class="vacio tk-vacio">Sin gastos registrados todavía.</p>
     <?php endif; ?>
     <?php if ($puede): ?>
     <details class="cb-detalles no-imprimir">
         <summary>+ Registrar un gasto</summary>
         <form method="post" action="<?= e(url('evento_pagos', ['id' => $ev['id'], 'accion' => 'gasto'])) ?>" class="rejilla-form">
             <?= campo_csrf() ?>
-            <div class="campo ancho"><label for="g_concepto">¿En qué se gastó?</label><input type="text" id="g_concepto" name="concepto" maxlength="200" required placeholder="Ej.: Flores para la ceremonia"></div>
-            <div class="campo"><label for="g_monto">Valor ($)</label><input type="text" inputmode="decimal" id="g_monto" name="monto" required></div>
-            <div class="campo"><label for="g_categoria">Tipo de gasto</label><select id="g_categoria" name="categoria"><?php foreach (Cobranza::CATEGORIAS_GASTO as $k => $t): ?><option value="<?= e($k) ?>"><?= e($t) ?></option><?php endforeach; ?></select></div>
-            <div class="campo"><label for="g_fecha">Fecha</label><input type="date" id="g_fecha" name="fecha" value="<?= e($hoy) ?>"></div>
-            <div class="campo"><label for="g_proveedor">Proveedor <small>(opcional)</small></label>
+            <div class="campo tk-campo ancho"><label for="g_concepto">¿En qué se gastó?</label><input type="text" id="g_concepto" name="concepto" maxlength="200" required placeholder="Ej.: Flores para la ceremonia"></div>
+            <div class="campo tk-campo"><label for="g_monto">Valor ($)</label><input type="text" inputmode="decimal" id="g_monto" name="monto" required></div>
+            <div class="campo tk-campo"><label for="g_categoria">Tipo de gasto</label><select id="g_categoria" name="categoria"><?php foreach (Cobranza::CATEGORIAS_GASTO as $k => $t): ?><option value="<?= e($k) ?>"><?= e($t) ?></option><?php endforeach; ?></select></div>
+            <div class="campo tk-campo"><label for="g_fecha">Fecha</label><input type="date" id="g_fecha" name="fecha" value="<?= e($hoy) ?>"></div>
+            <div class="campo tk-campo"><label for="g_proveedor">Proveedor <small>(opcional)</small></label>
                 <select id="g_proveedor" name="proveedor_id"><option value="0">— Ninguno —</option><?php foreach ($proveedores as $pv): ?><option value="<?= (int) $pv['id'] ?>"><?= e($pv['nombre']) ?></option><?php endforeach; ?></select></div>
-            <div class="ancho"><button class="boton boton-claro" type="submit">Guardar gasto</button></div>
+            <div class="ancho"><button data-ico="guardar" class="boton tk-boton boton-claro secundario" type="submit">Guardar gasto</button></div>
         </form>
     </details>
     <?php endif; ?>
 </section>
 
 <?php if (!$sinValor): ?>
-<section class="bloque" id="ganancia">
+<section class="bloque tk-tarjeta" id="ganancia">
     <h2>Ganancia del evento</h2>
     <div class="tabla-scroll cb-sin-minimo">
-    <table class="tabla cb-ganancia">
+    <table class="tabla tk-tabla cb-ganancia">
         <tbody>
             <tr><td>Valor del evento</td><td class="num"><?= dinero($ganancia['total']) ?></td></tr>
             <tr><td>Menos IVA</td><td class="num">−<?= dinero($ganancia['iva']) ?></td></tr>

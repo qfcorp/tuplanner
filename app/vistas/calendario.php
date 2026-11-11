@@ -14,13 +14,13 @@ $dispAyuda = [
 $filtroEsp = $espacioId ? ['espacio' => $espacioId] : [];
 $urlMes = fn(DateTimeImmutable $d, array $extra = []) => url('calendario', ['a' => $d->format('Y'), 'm' => $d->format('n')] + $filtroEsp + $extra);
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <h1>Calendario</h1>
         <p><?= $vistaCal === 'sabados' ? 'Los próximos 12 sábados, lugar por espacio' : 'Toca un día para ver qué lugares están libres' ?></p>
     </div>
-    <div class="acciones">
-        <?php if ($puedeCrear): ?><a class="boton" href="<?= e(url('evento_nuevo', $dia ? ['fecha' => $dia] : [])) ?>">Nuevo evento</a><?php endif; ?>
+    <div class="acciones tk-acciones">
+        <?php if ($puedeCrear): ?><a data-ico="mas" class="boton tk-boton" href="<?= e(url('evento_nuevo', $dia ? ['fecha' => $dia] : [])) ?>">Nuevo evento</a><?php endif; ?>
     </div>
 </div>
 
@@ -31,9 +31,9 @@ $urlMes = fn(DateTimeImmutable $d, array $extra = []) => url('calendario', ['a' 
 
 <?php if ($vistaCal === 'sabados'): ?>
     <?php if (!$espacios): ?>
-        <section class="bloque vacio">
+        <section class="bloque tk-tarjeta vacio tk-vacio">
             <p>Todavía no tienes lugares activos.</p>
-            <a class="boton" href="<?= e(url('espacios')) ?>">Crear un lugar</a>
+            <a data-ico="mas" class="boton tk-boton" href="<?= e(url('espacios')) ?>">Crear un lugar</a>
         </section>
     <?php else: ?>
     <p class="suave cal-ayuda">Los sábados son los días que más se venden. Úsalo cuando un cliente pregunte "¿qué sábados tienen libres?".</p>
@@ -66,9 +66,9 @@ $urlMes = fn(DateTimeImmutable $d, array $extra = []) => url('calendario', ['a' 
 
 <div class="cal-barra">
     <div class="cal-nav">
-        <a class="boton boton-claro boton-chico" href="<?= e($urlMes($anterior)) ?>" aria-label="Mes anterior">‹ <span class="solo-ancho"><?= e(ucfirst($mesesLargos[(int) $anterior->format('n')])) ?></span></a>
+        <a class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e($urlMes($anterior)) ?>" aria-label="Mes anterior">‹ <span class="solo-ancho"><?= e(ucfirst($mesesLargos[(int) $anterior->format('n')])) ?></span></a>
         <h2 class="cal-titulo"><?= e(ucfirst($mesesLargos[$mes])) ?> <?= $anio ?></h2>
-        <a class="boton boton-claro boton-chico" href="<?= e($urlMes($siguiente)) ?>" aria-label="Mes siguiente"><span class="solo-ancho"><?= e(ucfirst($mesesLargos[(int) $siguiente->format('n')])) ?></span> ›</a>
+        <a class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e($urlMes($siguiente)) ?>" aria-label="Mes siguiente"><span class="solo-ancho"><?= e(ucfirst($mesesLargos[(int) $siguiente->format('n')])) ?></span> ›</a>
     </div>
     <form method="get" class="cal-filtro">
         <input type="hidden" name="r" value="calendario">
@@ -81,9 +81,9 @@ $urlMes = fn(DateTimeImmutable $d, array $extra = []) => url('calendario', ['a' 
                 <option value="<?= (int) $es['id'] ?>" <?= $espacioId === (int) $es['id'] ? 'selected' : '' ?>><?= e($es['nombre']) ?></option>
             <?php endforeach; ?>
         </select>
-        <noscript><button class="boton boton-chico" type="submit">Ver</button></noscript>
+        <noscript><button data-ico="ojo" class="boton tk-boton boton-chico chico" type="submit">Ver</button></noscript>
         <?php if ((int) date('Y') !== $anio || (int) date('n') !== $mes): ?>
-            <a class="boton boton-claro boton-chico" href="<?= e(url('calendario', $filtroEsp)) ?>">Hoy</a>
+            <a data-ico="calendario" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('calendario', $filtroEsp)) ?>">Hoy</a>
         <?php endif; ?>
     </form>
 </div>
@@ -136,10 +136,10 @@ $urlMes = fn(DateTimeImmutable $d, array $extra = []) => url('calendario', ['a' 
     </div>
 
     <?php if ($dia): ?>
-    <aside class="bloque cal-panel" id="dia" aria-labelledby="titulo-dia">
+    <aside class="bloque tk-tarjeta cal-panel" id="dia" aria-labelledby="titulo-dia">
         <div class="cal-panel-cabeza">
             <h2 id="titulo-dia"><?= e(ucfirst(fecha_larga($dia))) ?></h2>
-            <a class="boton boton-claro boton-chico" href="<?= e(url('calendario', ['a' => $anio, 'm' => $mes] + $filtroEsp)) ?>" aria-label="Cerrar el detalle del día">✕</a>
+            <a class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('calendario', ['a' => $anio, 'm' => $mes] + $filtroEsp)) ?>" aria-label="Cerrar el detalle del día">✕</a>
         </div>
         <?php if (!empty($cierresDia)): ?>
             <?php foreach ($cierresDia as $c): ?>
@@ -148,7 +148,7 @@ $urlMes = fn(DateTimeImmutable $d, array $extra = []) => url('calendario', ['a' 
         <?php endif; ?>
         <?php if ($dia < $hoyTxt): ?><p class="suave">Este día ya pasó.</p><?php endif; ?>
         <?php if (!$disponibilidad): ?>
-            <p class="vacio">No tienes lugares activos. <a href="<?= e(url('espacios')) ?>">Crea uno</a>.</p>
+            <p class="vacio tk-vacio">No tienes lugares activos. <a href="<?= e(url('espacios')) ?>">Crea uno</a>.</p>
         <?php else: ?>
         <h3>Lugares</h3>
         <ul class="filas disp-lista">
@@ -170,7 +170,7 @@ $urlMes = fn(DateTimeImmutable $d, array $extra = []) => url('calendario', ['a' 
         </ul>
         <?php endif; ?>
         <?php if ($puedeCrear && $dia >= $hoyTxt): ?>
-            <a class="boton boton-ancho" href="<?= e(url('evento_nuevo', ['fecha' => $dia])) ?>">Nuevo evento este día</a>
+            <a data-ico="mas" class="boton tk-boton boton-ancho" href="<?= e(url('evento_nuevo', ['fecha' => $dia])) ?>">Nuevo evento este día</a>
         <?php endif; ?>
     </aside>
     <?php endif; ?>

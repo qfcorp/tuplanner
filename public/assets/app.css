@@ -40,43 +40,10 @@ small, .suave { color: var(--tinta-suave); }
 
 /* ---------- Estructura ---------- */
 .principal { padding: 16px 16px 96px; max-width: 1100px; margin: 0 auto; }
-.lateral {
-    position: fixed; z-index: 20; left: 0; right: 0; bottom: 0;
-    background: var(--verde-oscuro); color: #fff;
-    padding-bottom: env(safe-area-inset-bottom);
-}
-.lateral .marca, .lateral-pie { display: none; }
-.menu { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
-.menu a {
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-    padding: 8px 2px 10px; color: #E2C9CE; text-decoration: none; font-size: .75rem; font-weight: 500;
-}
-.menu a.activo { color: #fff; box-shadow: inset 0 3px 0 var(--navaja); }
-.menu svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* La barra de arriba y el menú de la izquierda son del kit común (tukan-ui.css: .tk-arriba, .tk-menu) */
 .solo-ancho { display: none; }
-
-@media (min-width: 900px) {
-    .lateral {
-        top: 0; right: auto; width: 240px; display: flex; flex-direction: column;
-        padding: 20px 14px;
-    }
-    .lateral .marca { display: flex; gap: 10px; align-items: center; color: #fff; text-decoration: none; margin: 0 6px 28px; }
-    .marca-sello {
-        width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
-        background: var(--navaja); color: var(--verde-oscuro); font-weight: 700;
-    }
-    .marca-texto { display: flex; flex-direction: column; line-height: 1.25; }
-    .marca-texto small { color: #E2C9CE; }
-    .menu { display: flex; flex-direction: column; gap: 2px; }
-    .menu a { flex-direction: row; gap: 12px; padding: 10px 12px; font-size: .95rem; border-radius: 8px; }
-    .menu a.activo { background: rgba(255,255,255,.1); box-shadow: inset 3px 0 0 var(--navaja); }
-    .solo-ancho { display: inline; }
-    .solo-celular { display: none; }
-    .lateral-pie { display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding: 0 12px; }
-    .lateral-pie a { color: #E2C9CE; text-decoration: none; font-size: .9rem; }
-    .lateral-pie a:hover { color: #fff; }
-    .con-sesion .principal { margin-left: 240px; padding: 28px 32px 48px; max-width: none; }
-}
+@media (min-width: 900px) { .solo-ancho { display: inline; } .solo-celular { display: none; } }
+.marca-sello { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--navaja); color: var(--verde-oscuro); font-weight: 700; }
 
 /* ---------- Encabezado de página ---------- */
 .cabecera { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
@@ -593,3 +560,186 @@ body.admin { background: var(--fondo); }
 .tukan-legal-aviso label{display:inline-flex;gap:8px;align-items:center;margin-right:10px}
 .pie-legal{font-size:.85rem;opacity:.8;margin-top:10px}
 .tukan-legal-enlaces a{color:inherit}
+
+/* =====================================================================================================================
+   PUENTE A LA IDENTIDAD GRÁFICA COMÚN TUKÁN (public/assets/tukan-ui.css = kit idéntico en todos los programas; NO se edita)
+   Solo en las pantallas del sistema (<body class="tk">): el portal público del cliente, los PDF y los correos NO cambian.
+   Aquí va lo propio de TuPlanner que el kit no trae: sus colores de antes pasan a los del kit, sus piezas propias (avisos,
+   estados del evento, campos sueltos, calendario…) toman la misma letra, radios y colores, y los emojis de los botones.
+   Ver docs/LINEA_GRAFICA.md.
+   ===================================================================================================================== */
+body.tk {
+    --fondo: var(--tk-fondo); --superficie: var(--tk-blanco); --tinta: var(--tk-tinta); --tinta-suave: var(--tk-suave); --linea: var(--tk-linea);
+    --verde: var(--tk-color); --rojo: var(--tk-mal); --rojo-claro: #fee2e2; --ok-claro: #dcfce7;
+    --radio: var(--tk-radio); --sombra: 0 1px 3px rgba(0,0,0,.04); --fuente: var(--tk-letra);
+    font-feature-settings: normal;
+}
+body.tk [hidden] { display: none !important; }
+body.tk .tk-contenido { max-width: 1500px; }
+body.tk.sin-sesion .tk-contenido { max-width: 520px; margin: 0 auto; padding-top: 28px; }
+body.tk .tk-contenido :is(h1, h2, h3) { letter-spacing: 0; }
+body.tk .tk-contenido h1 { font-size: 22px; font-weight: 900; }
+body.tk .tk-contenido h2 { font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: .2px; }
+body.tk .tk-contenido h3 { font-size: 14px; font-weight: 800; }
+:where(body.tk .tk-contenido) a:not([class]) { color: var(--tk-color); }   /* enlaces sueltos: del color del programa (los que tienen clase conservan el suyo) */
+body.tk .tk-contenido small, body.tk .suave { color: var(--tk-muy-suave); }
+body.tk :focus-visible { border-radius: 4px; }
+
+/* Barra de arriba y menú: lo propio de TuPlanner (el buscador rápido y el pie legal) */
+.te-arriba-izq { display: flex; align-items: center; gap: 10px; min-width: 0; }
+body.tk .tk-usuario a.tk-nombre { color: inherit; text-decoration: none; }
+body.tk .tk-usuario a.tk-nombre:hover { text-decoration: underline; }
+body.tk .tk-arriba :focus-visible, body.tk .tk-menu :focus-visible { outline-color: #fff; }
+.te-buscar { position: relative; padding: 0 14px 6px; }
+.te-buscar input[type=search] { width: 100%; min-height: 40px; padding: 8px 12px; border: 1px solid #334155; border-radius: 6px; background: var(--tk-noche-2); color: #fff; font: inherit; font-size: 13.5px; }
+.te-buscar input[type=search]::placeholder { color: var(--tk-menu-texto); opacity: 1; }
+.te-buscar input[type=search]:focus { outline: none; border-color: var(--tk-color-claro); }
+body.tk .buscar-resultados { left: 14px; right: 14px; top: 44px; }
+body.tk .buscar-resultados a { color: var(--tk-tinta); padding: 8px 10px; min-height: 0; font-weight: 400; }
+body.tk .buscar-resultados a:hover { background: var(--tk-fondo); color: var(--tk-tinta); padding-left: 10px; }
+.te-pie-legal { margin: 18px 20px 0; font-size: 12px; color: var(--tk-menu-texto); }
+.te-pie-legal a { display: inline !important; padding: 0 !important; min-height: 0 !important; font-size: 12px !important; color: var(--tk-menu-texto) !important; text-decoration: underline !important; background: none !important; }
+@media (max-width: 768px) { body.tk .tk-menu { width: min(86vw, 300px); } body.tk .tk-salir { padding: 10px 12px; } }
+
+/* Avisos de arriba (demo, plan por vencer, términos) y mensajes */
+body.tk .tk-tira { flex-wrap: wrap; }
+body.tk .tk-tira.franja-prueba, body.tk .tk-tira.franja-admin { background: #fff; color: var(--tk-tinta); padding: 12px 16px; border-radius: var(--tk-radio); margin-bottom: 18px; border-left: 5px solid var(--tk-color); }
+body.tk .tk-tira.franja-admin { border-left-color: var(--tk-noche); }
+body.tk .tk-tira a.tk-boton, body.tk .tk-contenido a.tk-boton { text-decoration: none; }
+body.tk .tukan-legal-aviso { background: #fff; border: 0; border-left: 5px solid var(--tk-aviso); border-radius: var(--tk-radio); padding: 12px 16px; margin: 0 0 18px; box-shadow: 0 1px 3px rgba(0,0,0,.04); font-size: 13.5px; }
+body.tk .tukan-legal-aviso form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+body.tk .tukan-legal-aviso p { margin: 0; flex: 1 1 100%; }
+body.tk .tukan-legal-aviso label { display: inline-flex; gap: 8px; align-items: center; min-height: 40px; margin: 0; font-weight: 700; cursor: pointer; }
+body.tk .aviso, body.tk .g-franja { display: block; border-radius: var(--tk-radio); padding: 12px 16px; margin: 0 0 16px; font-size: 14px; font-weight: 500; border: 0; border-left: 5px solid var(--tk-info); background: #e0f2fe; color: #0c4a6e; }
+body.tk .aviso-ok { border-left-color: var(--tk-ok); background: #dcfce7; color: #14532d; }
+body.tk .aviso-error, body.tk .g-franja.roja { border-left-color: var(--tk-mal); background: #fee2e2; color: #7f1d1d; }
+body.tk .aviso-alerta, body.tk .g-franja { border-left-color: var(--tk-aviso); background: #fef3c7; color: #78350f; }
+body.tk .aviso-suave { border-left-color: var(--tk-muy-suave); background: #fff; color: var(--tk-tinta); }
+body.tk .tk-contenido :is(.aviso, .g-franja, .tk-aviso) a:not(.tk-boton) { color: inherit; font-weight: 700; }
+body.tk a.g-franja { text-decoration: none; }
+
+/* Botones: los del programa llevan también las clases del kit (boton tk-boton, boton-claro secundario…) */
+body.tk .tk-boton { font-family: inherit; box-shadow: none; }
+body.tk .tk-boton:not(.secundario, .oscuro, .ok, .peligro) { background: var(--tk-color); color: var(--tk-color-texto); border-color: transparent; }
+body.tk .tk-boton.secundario { background: #fff; color: var(--tk-tinta); border-color: #cbd5e1; }
+body.tk .tk-boton.secundario:hover { background: var(--tk-fondo); }
+body.tk .tk-boton.ok { background: var(--tk-ok); color: #fff; border-color: transparent; }
+body.tk .tk-boton.peligro { background: #fff; color: var(--tk-mal); border-color: var(--tk-mal); }   /* peligro de fila: borde rojo (no compite con la acción principal) */
+body.tk .tk-boton.peligro:hover { background: #fee2e2; }
+body.tk .tk-boton.chico { min-height: 32px; }
+body.tk .boton-ancho { width: 100%; }
+body.tk summary.tk-boton { list-style: none; }
+body.tk summary.tk-boton::-webkit-details-marker { display: none; }
+@media (max-width: 768px), (pointer: coarse) { body.tk .tk-boton, body.tk .tk-boton.chico { min-height: 44px; } }
+/* Emoji + palabra: los botones llevan data-ico="guardar|mas|editar…" y aquí sale su emoji (sin cambiar el texto del botón) */
+body.tk .tk-boton[data-ico]::before, body.tk .tk-boton.ok:not([data-ico])::before { content: var(--te-emoji, ""); font-weight: 400; }
+body.tk .tk-boton.ok:not([data-ico]) { --te-emoji: "💬"; }
+[data-ico="guardar"] { --te-emoji: "💾"; } [data-ico="mas"] { --te-emoji: "➕"; } [data-ico="editar"] { --te-emoji: "✏️"; } [data-ico="basura"] { --te-emoji: "🗑️"; }
+[data-ico="descargar"] { --te-emoji: "⬇️"; } [data-ico="imprimir"] { --te-emoji: "🖨️"; } [data-ico="buscar"] { --te-emoji: "🔍"; } [data-ico="enviar"] { --te-emoji: "📨"; }
+[data-ico="copiar"] { --te-emoji: "📋"; } [data-ico="ojo"] { --te-emoji: "👁️"; } [data-ico="tarjeta"] { --te-emoji: "💳"; } [data-ico="volver"] { --te-emoji: "↩️"; }
+[data-ico="cruz"] { --te-emoji: "✖️"; } [data-ico="check"] { --te-emoji: "✅"; } [data-ico="flecha"] { --te-emoji: "➡️"; } [data-ico="enchufe"] { --te-emoji: "🔌"; }
+[data-ico="adjunto"] { --te-emoji: "📎"; } [data-ico="nota"] { --te-emoji: "📝"; } [data-ico="salir"] { --te-emoji: "🚪"; } [data-ico="telefono"] { --te-emoji: "📞"; }
+[data-ico="refrescar"] { --te-emoji: "🔄"; } [data-ico="calendario"] { --te-emoji: "📅"; } [data-ico="reloj"] { --te-emoji: "⏰"; } [data-ico="pausa"] { --te-emoji: "⏸️"; }
+[data-ico="ayuda"] { --te-emoji: "❓"; } [data-ico="candado"] { --te-emoji: "🔒"; } [data-ico="filtro"] { --te-emoji: "↕️"; } [data-ico="restaurar"] { --te-emoji: "↩️"; }
+[data-ico="ajustes"] { --te-emoji: "⚙️"; } [data-ico="mensaje"] { --te-emoji: "💬"; } [data-ico="alerta"] { --te-emoji: "⚠️"; } [data-ico="dinero"] { --te-emoji: "💵"; }
+[data-ico="caja"] { --te-emoji: "📦"; } [data-ico="camion"] { --te-emoji: "🚚"; } [data-ico="etiqueta"] { --te-emoji: "🏷️"; } [data-ico="recibo"] { --te-emoji: "🧾"; }
+[data-ico="regalo"] { --te-emoji: "🎁"; } [data-ico="local"] { --te-emoji: "🏛️"; } [data-ico="usuarios"] { --te-emoji: "👥"; } [data-ico="escudo"] { --te-emoji: "⭐"; }
+[data-ico="silla"] { --te-emoji: "🪑"; } [data-ico="plano"] { --te-emoji: "🗺️"; } [data-ico="abajo"] { --te-emoji: "👇"; } [data-ico="whatsapp"] { --te-emoji: "💬"; }
+[data-ico="estrella"] { --te-emoji: "🎉"; } [data-ico="clientes"] { --te-emoji: "👥"; } [data-ico="llave"] { --te-emoji: "🔑"; }
+
+/* Título de página, tarjetas y rejillas */
+body.tk .tk-titulo-pagina { align-items: flex-end; }
+body.tk .tk-titulo-pagina h1 { margin: 0; }
+body.tk .tk-tarjeta { box-shadow: 0 1px 3px rgba(0,0,0,.03); }
+body.tk .tk-tarjeta > h2:first-child, body.tk .tk-tarjeta > h3:first-child { margin: 0 0 12px; }
+body.tk .rejilla > .tk-tarjeta { margin-bottom: 0; }
+body.tk .tk-columnas > .tk-tarjeta { margin-bottom: 0; }
+@media (max-width: 480px) { body.tk .tk-columnas { grid-template-columns: minmax(0, 1fr); } body.tk .tk-tarjeta, body.tk .tk-pasos { padding: 16px 14px; } }
+body.tk .tk-tarjeta-cabeza a:not(.tk-boton) { font-size: 13px; font-weight: 700; }
+
+/* Formularios: todos los campos como los del kit (también los que no están dentro de .tk-campo) */
+body.tk .tk-contenido :is(input[type=text], input[type=email], input[type=password], input[type=tel], input[type=number], input[type=url], input[type=search],
+    input[type=date], input[type=time], input[type=datetime-local], input[type=month], select, textarea) {
+    padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; font-size: 14px; background: #f8fafc; color: var(--tk-tinta); width: 100%; min-height: 42px; }
+body.tk .tk-contenido :is(input, select, textarea):focus { border-color: var(--tk-color); background: #fff; outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--tk-color) 25%, transparent); }
+body.tk .tk-contenido :is(input[type=checkbox], input[type=radio]) { width: 18px; height: 18px; min-height: 0; padding: 0; flex: none; accent-color: var(--tk-color); box-shadow: none; }
+body.tk .tk-contenido :is(input[type=checkbox], input[type=radio]):focus-visible { outline: 3px solid var(--tk-color); outline-offset: 2px; }
+body.tk .tk-contenido :is(input[type=file], input[type=color], input[type=range]) { width: auto; min-height: 0; padding: 0; border: 0; background: none; }
+body.tk .tk-contenido input[type=file] { font-size: 13px; min-height: 40px; }
+body.tk .tk-contenido textarea { min-height: 84px; }
+body.tk .tk-campo { margin-bottom: 14px; }
+body.tk .tk-campo > label, body.tk .tk-campo > .etiqueta, body.tk .tk-contenido fieldset.campo > legend { font-size: 12px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: .3px; }
+body.tk .tk-campo label small, body.tk .tk-campo > small { font-size: 12px; font-weight: 400; color: var(--tk-muy-suave); text-transform: none; letter-spacing: 0; }
+body.tk .campo-error { font-size: 12.5px; color: var(--tk-mal) !important; font-weight: 700; }
+@media (max-width: 768px), (pointer: coarse) { body.tk .tk-contenido :is(input[type=text], input[type=email], input[type=password], input[type=tel], input[type=number], input[type=url], input[type=search],
+    input[type=date], input[type=time], input[type=datetime-local], input[type=month], select) { min-height: 44px; font-size: 16px; } }
+
+/* Tablas: cabecera azul noche; en el celular se vuelven tarjetas (app.js les pone data-titulo y la clase «tarjetas») */
+body.tk table.tk-tabla.tarjetas { display: table; margin: 0; }   /* «tarjetas» ya era una clase de TuPlanner (una rejilla): en las tablas del kit no aplica */
+body.tk .tk-tabla th { background: var(--tk-noche); color: #fff; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; font-weight: 800; border-bottom: 0; }
+body.tk .tk-tabla .der { text-align: right; }
+@media (max-width: 768px) {
+    body.tk table.tk-tabla.tarjetas { min-width: 0 !important; display: block; }
+    body.tk .tk-tabla.tarjetas :is(tbody, tfoot) { display: block; }
+    body.tk .tk-tabla.tarjetas td:not([data-titulo]) { justify-content: flex-start; text-align: left; font-weight: 700; }
+    body.tk .tk-tabla.tarjetas td:not([data-titulo])::before { content: none; }
+    body.tk .tk-tabla.tarjetas td:empty { display: none; }
+    body.tk .tk-tabla.tarjetas td::before { flex: none; max-width: 40%; padding-top: 2px; }
+    body.tk .tk-tabla.tarjetas .te-celda { display: block; min-width: 0; text-align: right; overflow-wrap: anywhere; }
+    body.tk .tk-tabla.tarjetas td:not([data-titulo]) .te-celda { text-align: left; }
+    body.tk .tk-tabla.tarjetas .te-celda .tk-acciones { justify-content: flex-end; flex-wrap: wrap; }
+    body.tk .cb-tabla-cuotas.tarjetas tr.cb-cuota-vencida td:first-child { box-shadow: none; }
+    body.tk .cb-tabla-cuotas.tarjetas tr.cb-cuota-vencida { border-color: var(--tk-mal); }
+}
+
+/* Estados (chips), vacíos, dinero */
+body.tk .ev-estado, body.tk .mp-estado { display: inline-block; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; padding: 3px 8px; border-radius: 4px; border: 0; white-space: nowrap; }
+body.tk .ev-consulta, body.tk .ev-realizado, body.tk .mp-estado.off { background: var(--tk-linea); color: #334155; }
+body.tk .ev-cotizado, body.tk .mp-estado.pedido { background: #fef3c7; color: #92400e; }
+body.tk .ev-separado { background: #e0f2fe; color: #075985; }
+body.tk .ev-confirmado, body.tk .mp-estado.on { background: #dcfce7; color: #166534; }
+body.tk .ev-perdido, body.tk .ev-cancelado { background: #fee2e2; color: #991b1b; }
+body.tk .ev-cerrado { background: var(--tk-noche); color: #fff; }
+body.tk .tk-vacio { font-size: 13.5px; }
+body.tk .tk-vacio .tk-boton { margin-top: 12px; }
+body.tk .monto, body.tk .tk-dinero { font-variant-numeric: tabular-nums; font-weight: 900; }
+body.tk .g-nota { font-size: 12.5px; color: var(--tk-muy-suave); }
+body.tk .cb-comprobante-datos:only-child { grid-column: 1 / -1; }   /* comprobante sin foto: los datos a todo el ancho */
+
+/* Inicio (dashboard) */
+body.tk .tk-saludo h1 { font-size: 24px; }
+body.tk .tk-tira .tk-acciones { gap: 8px; }
+body.tk .tk-pasos li { flex-wrap: wrap; }
+body.tk .tk-pasos li .te-paso-cuerpo { flex: 1 1 200px; min-width: 0; }
+body.tk .tk-pasos li .te-paso-cuerpo small { display: block; }
+body.tk .tk-pasos li .tk-acciones { margin-left: auto; }
+body.tk .tk-pasos li .tk-acciones .tk-boton { margin-left: 0; }
+body.tk .tk-pasos li form { margin: 0; }
+body.tk a.tk-cifra { text-decoration: none; display: block; }
+body.tk a.tk-cifra:hover { filter: brightness(1.12); }
+body.tk .tk-tabla td form { margin: 0; }
+body.tk .tk-tabla .tk-boton { white-space: nowrap; }
+body.tk .te-celda { display: contents; }
+body.tk .tk-tabla td .tk-acciones { gap: 6px; flex-wrap: nowrap; justify-content: flex-end; }
+body.tk .tk-tabla td a:not(.tk-boton) { font-weight: 700; }
+body.tk .te-accesos { justify-content: center; margin: 4px 0 22px; }
+body.tk .te-accesos .tk-boton { flex: 1 1 180px; max-width: 280px; }
+body.tk .instalar-app { border-radius: var(--tk-radio); background: #fff; border: 1px solid var(--tk-linea); border-left: 5px solid var(--tk-info); }
+body.tk .barra, body.tk .mt-barra { background: var(--tk-linea); height: 8px; }
+body.tk .barra > span, body.tk .mt-barra > span { background: var(--tk-ok); }
+/* Pantalla «Más» (todas las opciones con su grupo, emoji y descripción) */
+body.tk .te-mas { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 10px; margin-bottom: 20px; }
+body.tk .te-mas a { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 14px; background: #fff; border: 1px solid var(--tk-linea); border-left: 5px solid var(--tk-color); border-radius: var(--tk-radio);
+    text-decoration: none; color: var(--tk-tinta); font-weight: 800; line-height: 1.3; }
+body.tk .te-mas a small { display: block; font-weight: 400; }
+body.tk .te-mas a .tk-ico { font-size: 22px; width: 30px; text-align: center; flex: none; }
+/* Entrar / Solicitar demo */
+body.tk .acceso-marca { justify-content: center; text-align: center; margin-bottom: 18px; }
+body.tk .acceso-marca h1 { font-size: 24px; }
+/* Ámbar para cifras y tarjetas: el kit usa la clase «aviso» para eso, pero en TuPlanner «aviso» ya es la clase de los mensajes; aquí se usa «te-ambar» */
+body.tk .tk-cifra.te-ambar { border-left-color: var(--tk-aviso); } body.tk .tk-cifra.te-ambar .tk-cifra-valor { color: var(--tk-aviso-claro); }
+body.tk .tk-tarjeta.te-ambar { border-left-color: var(--tk-aviso); }
+body.tk .tk-arriba small { color: inherit; }
+/* Contraste AA que al kit le falta (avisado para corregirlo en el kit): texto gris sobre el fondo gris (4,3:1) y blanco sobre el verde (3,3:1) */
+body.tk { --tk-muy-suave: #55627a; }
+body.tk .tk-boton.ok { background: #15803d; }

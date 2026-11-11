@@ -3,9 +3,9 @@
     <span class="marca-sello" aria-hidden="true">Tk</span>
     <div><h1>Panel Tukán</h1><p>Administración de TuPlanner</p></div>
 </div>
-<section class="bloque acceso-caja">
+<section class="bloque tk-tarjeta acceso-caja">
     <h2>No se pudo entrar</h2>
     <p class="aviso aviso-error" role="alert"><?= e($mensaje) ?></p>
     <p>Vuelve al Panel Tukán y toca otra vez el botón de TuPlanner.</p>
-    <a class="boton boton-ancho" href="<?= e($urlCentral) ?>">← Volver al Panel Tukán</a>
+    <a class="boton tk-boton boton-ancho" href="<?= e($urlCentral) ?>">← Volver al Panel Tukán</a>
 </section>

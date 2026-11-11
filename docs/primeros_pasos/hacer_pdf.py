@@ -41,7 +41,7 @@ h.append(f'''<div class="top"><img src="{u(D)}/logo_oscuro.png"><span class="chi
 <h1>Primeros pasos en TuPlanner</h1>
 <p class="lead">Lo básico para empezar a organizar, presupuestar y cobrar sus eventos hoy. Para todo lo demás está el <b>Manual de TuPlanner</b>.</p>
 <div class="box"><b>Antes de empezar:</b> lo que ve en el menú depende de su usuario (dueño, administrador, vendedor, coordinador o solo consulta) y de los módulos que contrató.
-En el <b>celular</b>, los botones principales están abajo (Inicio, Calendario, Eventos, Cobros) y todo lo demás en <b>Más</b>.
+En el <b>celular</b>, el menú se abre con el botón <b>☰</b> de arriba a la izquierda.
 La configuración se hace mejor en la <b>computadora</b>.</div>''')
 
 h.append('<h2>Parte 1 · Deje listo su negocio (una sola vez, una tarde)</h2>')
@@ -52,14 +52,14 @@ h.append(paso(1, 'Entre al programa', 'La dirección, el correo y la contraseña
 h.append(paso(2, 'Datos del negocio y reglas', 'Menú Configuración → Negocio · Reglas', [
     'En <b>Negocio</b>: nombre comercial, razón social, RUC, teléfono, <b>WhatsApp del negocio</b>, correo, ciudad y dirección. Toque <b>Guardar datos del negocio</b> y suba su logo con <b>Guardar logo</b>.',
     'En <b>Reglas</b>: el IVA, la <b>Reserva para separar la fecha (%)</b>, el <b>Número de pagos</b>, el <b>Máximo de eventos por día</b> de su equipo y <b>Cómo cobras tus honorarios</b> (tarifa fija o porcentaje del presupuesto). Toque <b>Guardar reglas</b>.']))
-h.append(paso(3, 'Los lugares donde trabaja', 'Menú Más → Lugares', [
+h.append(paso(3, 'Los lugares donde trabaja', 'Menú Menú → Lugares', [
     'Vienen dos de ejemplo (Hacienda La Herradura y Capilla del Valle): toque <b>Editar</b> para poner los suyos, o <b>Nuevo lugar</b> para agregar otro.',
     'Ponga el nombre, el <b>Tipo</b> (recepción, ceremonia o ambos), la dirección, el enlace de Google Maps y el contacto del lugar. Toque <b>Crear espacio</b> o <b>Guardar</b>.',
     'Así, al crear un evento solo elige el lugar y el cliente lo ve con su dirección y mapa.']))
-h.append(paso(4, 'Catálogo y precios', 'Menú Más → Catálogo y precios', [
+h.append(paso(4, 'Catálogo y precios', 'Menú Menú → Catálogo y precios', [
     'Ya viene un catálogo de ejemplo, con sus servicios de <b>Organización (honorarios)</b>: cambie nombres y precios con <b>Editar</b>, o quite lo que no ofrece con <b>Desactivar</b>.',
     'Para algo nuevo toque <b>+ Agregar producto</b>: nombre, categoría, cómo <b>Se cobra</b>, el <b>Precio al cliente</b> sin IVA y lo que le cuesta (eso solo lo ve usted). Toque <b>Agregar al catálogo</b>.']))
-h.append(paso(5, 'Su equipo', 'Menú Más → Usuarios', [
+h.append(paso(5, 'Su equipo', 'Menú Menú → Usuarios', [
     'En <b>Agregar a alguien</b>: nombre, correo (con ese entra), celular y <b>¿Qué va a hacer?</b>: administrador, vendedor, coordinador o solo consulta.',
     'Toque <b>Crear usuario</b>. El programa muestra una contraseña temporal <b>solo esta vez</b>: mándesela con <b>Enviar por WhatsApp</b>.',
     'El <b>Administrador (mismos permisos que el dueño)</b> maneja todo como usted, incluidos los usuarios y Mi plan. Puede tener hasta 4 y no cuentan en el límite de usuarios de su plan. Nadie puede cambiar ni desactivar su cuenta de dueño.',
@@ -89,13 +89,13 @@ h.append(paso(9, 'Registre cada pago', 'En el evento → pestaña Pagos', [
     'Ahí ve el valor del evento, lo pagado, lo que falta y el <b>Plan de pagos</b> (reserva, cuotas y saldo).',
     'Toque <b>Registrar un pago</b>: valor recibido, forma de pago (efectivo, transferencia, DeUna…) y fecha. Toque <b>Guardar pago y generar recibo</b>.',
     'Cuando el cliente paga la reserva, la fecha queda <b>separada</b>.']))
-h.append(paso(10, 'Cobre y dé seguimiento cada mañana', 'Botón Cobros · Menú Más → Mensajes por WhatsApp', [
+h.append(paso(10, 'Cobre y dé seguimiento cada mañana', 'Botón Cobros · Menú Menú → Mensajes por WhatsApp', [
     'En <b>Cobros</b> vea el total por cobrar, las <b>Cuotas vencidas</b>, lo que está <b>Por vencer</b> y los <b>Comprobantes por revisar</b>: confírmelos solo después de ver el dinero en su banco.',
     'En <b>Mensajes por WhatsApp</b> están listos los recordatorios del día: toque <b>Enviar por WhatsApp</b> en cada uno.',
     'En el <b>Inicio</b> revise los <b>Seguimientos de hoy</b> y las <b>Tareas por vencer</b>.']))
 
 h.append('''<div class="fin"><b>¿Listo? Ya puede trabajar.</b> Para ideas, comisiones de proveedores, portal del cliente, día del evento, invitados con QR, reportes y todo lo demás,
-vea el <b>Manual de TuPlanner</b>.<br><br>¿Cómo se hace algo? En <b>Más → Ayuda</b> escriba su pregunta y toque <b>Preguntar</b>: le respondemos al instante con el manual.<br>¿Dudas? Escríbanos por <b>WhatsApp 098 366 2181</b> · info@tukansoftware.com · tukansoftware.com</div>''')
+vea el <b>Manual de TuPlanner</b>.<br><br>¿Cómo se hace algo? En <b>Menú → Ayuda</b> escriba su pregunta y toque <b>Preguntar</b>: le respondemos al instante con el manual.<br>¿Dudas? Escríbanos por <b>WhatsApp 098 366 2181</b> · info@tukansoftware.com · tukansoftware.com</div>''')
 
 html = f'<!doctype html><html lang="es"><head><meta charset="utf-8"><style>{css}</style></head><body>{"".join(h)}</body></html>'
 open(f'{D}/primeros_pasos.html', 'w').write(html)

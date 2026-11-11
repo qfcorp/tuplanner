@@ -1,39 +1,39 @@
 <?php
 use TuPlanner\{PanelTukan, WhatsApp};
 /** @var array $negocios @var string $filtro @var string $buscar @var string $plan @var array $listaPlanes */ ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div><h1>Negocios (<?= count($negocios) ?>)</h1>
         <p>Todos los organizadores y agencias de eventos que usan TuPlanner.</p></div>
-    <a class="boton" href="<?= e(url('admin_nuevo')) ?>">+ Nueva demo</a>
+    <a class="boton tk-boton" href="<?= e(url('admin_nuevo')) ?>">+ Nueva demo</a>
 </div>
 
-<form method="get" class="bloque filtros-admin" style="grid-template-columns:unset">
+<form method="get" class="bloque tk-tarjeta filtros-admin" style="grid-template-columns:unset">
     <input type="hidden" name="r" value="admin_negocios">
     <div class="fila-campos" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
-        <div class="campo"><label for="q">Buscar</label>
+        <div class="campo tk-campo"><label for="q">Buscar</label>
             <input type="search" id="q" name="q" value="<?= e($buscar) ?>" placeholder="Nombre, dueño, correo, celular, ciudad o RUC"></div>
-        <div class="campo"><label for="f">Estado</label>
+        <div class="campo tk-campo"><label for="f">Estado</label>
             <select id="f" name="f" data-autoenviar>
                 <option value="">Todos</option>
                 <?php foreach (PanelTukan::ESTADOS as $k => $txt): ?><option value="<?= $k ?>" <?= $filtro === $k ? 'selected' : '' ?>><?= $txt ?></option><?php endforeach; ?>
                 <option value="papelera" <?= $filtro === 'papelera' ? 'selected' : '' ?>>Papelera (borrados)</option>
             </select></div>
-        <div class="campo"><label for="plan">Plan</label>
+        <div class="campo tk-campo"><label for="plan">Plan</label>
             <select id="plan" name="plan" data-autoenviar>
                 <option value="">Todos</option>
                 <?php foreach ($listaPlanes as $p): ?><option value="<?= e($p['codigo']) ?>" <?= $plan === $p['codigo'] ? 'selected' : '' ?>><?= e($p['nombre']) ?></option><?php endforeach; ?>
             </select></div>
     </div>
-    <div class="acciones"><button class="boton" type="submit">Buscar</button>
-        <?php if ($buscar !== '' || $filtro !== '' || $plan !== ''): ?><a class="boton boton-claro" href="<?= e(url('admin_negocios')) ?>">Quitar filtros</a><?php endif; ?></div>
+    <div class="acciones tk-acciones"><button data-ico="buscar" class="boton tk-boton boton-claro secundario" type="submit">Buscar</button>
+        <?php if ($buscar !== '' || $filtro !== '' || $plan !== ''): ?><a data-ico="basura" class="boton tk-boton boton-claro secundario" href="<?= e(url('admin_negocios')) ?>">Quitar filtros</a><?php endif; ?></div>
 </form>
 
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <?php if (!$negocios): ?>
-        <p class="vacio">No hay negocios<?= $buscar !== '' || $filtro !== '' || $plan !== '' ? ' con ese filtro' : ' todavía' ?>.</p>
+        <p class="vacio tk-vacio">No hay negocios<?= $buscar !== '' || $filtro !== '' || $plan !== '' ? ' con ese filtro' : ' todavía' ?>.</p>
     <?php else: ?>
         <div class="desliza">
-        <table class="tabla tabla-admin">
+        <table class="tabla tk-tabla tabla-admin">
             <thead><tr><th>Negocio</th><th>Dueño</th><th>Plan</th><th>Estado</th><th>Vence</th><th class="der">Eventos 30 días</th><th class="der">Lugares</th><th class="der">Usuarios</th><th>Última actividad</th><th></th></tr></thead>
             <tbody>
             <?php foreach ($negocios as $n):
@@ -51,7 +51,7 @@ use TuPlanner\{PanelTukan, WhatsApp};
                     <td class="der"><?= (int) $n['espacios'] ?></td>
                     <td class="der"><?= (int) $n['usuarios'] ?></td>
                     <td><?= $n['ultima_actividad'] ? date('d/m/Y', strtotime($n['ultima_actividad'])) : '—' ?></td>
-                    <td class="der"><?php if ($wa): ?><a class="boton boton-wa boton-chico" href="<?= e($wa) ?>" target="_blank" rel="noopener">WhatsApp</a><?php endif; ?></td>
+                    <td class="der"><?php if ($wa): ?><a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($wa) ?>" target="_blank" rel="noopener">WhatsApp</a><?php endif; ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

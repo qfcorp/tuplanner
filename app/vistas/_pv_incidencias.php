@@ -33,24 +33,24 @@ $comprasSel ??= [];
                 <input type="hidden" name="accion" value="actualizar"><input type="hidden" name="incidencia_id" value="<?= (int) $i['id'] ?>">
                 <input type="hidden" name="volver" value="<?= e($volverA) ?>"><input type="hidden" name="volver_id" value="<?= (int) $volverId ?>">
                 <div class="fila-campos">
-                    <div class="campo"><label for="ie<?= (int) $i['id'] ?>">Estado</label><select id="ie<?= (int) $i['id'] ?>" name="estado">
+                    <div class="campo tk-campo"><label for="ie<?= (int) $i['id'] ?>">Estado</label><select id="ie<?= (int) $i['id'] ?>" name="estado">
                         <?php foreach (Incidencias::ESTADOS as $k => $t): ?><option value="<?= e($k) ?>" <?= $i['estado'] === $k ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?></select></div>
-                    <div class="campo"><label for="ig<?= (int) $i['id'] ?>">Gravedad</label><select id="ig<?= (int) $i['id'] ?>" name="gravedad">
+                    <div class="campo tk-campo"><label for="ig<?= (int) $i['id'] ?>">Gravedad</label><select id="ig<?= (int) $i['id'] ?>" name="gravedad">
                         <?php foreach (Incidencias::GRAVEDADES as $k => $t): ?><option value="<?= e($k) ?>" <?= $i['gravedad'] === $k ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?></select></div>
                 </div>
-                <div class="campo"><label for="ir<?= (int) $i['id'] ?>">Cómo se resolvió</label><textarea id="ir<?= (int) $i['id'] ?>" name="resolucion" rows="2" maxlength="3000"><?= e($i['resolucion']) ?></textarea></div>
-                <div class="campo"><label for="ip<?= (int) $i['id'] ?>">Quién lo resuelve</label><input type="text" id="ip<?= (int) $i['id'] ?>" name="responsable" value="<?= e($i['responsable']) ?>" maxlength="120"></div>
+                <div class="campo tk-campo"><label for="ir<?= (int) $i['id'] ?>">Cómo se resolvió</label><textarea id="ir<?= (int) $i['id'] ?>" name="resolucion" rows="2" maxlength="3000"><?= e($i['resolucion']) ?></textarea></div>
+                <div class="campo tk-campo"><label for="ip<?= (int) $i['id'] ?>">Quién lo resuelve</label><input type="text" id="ip<?= (int) $i['id'] ?>" name="responsable" value="<?= e($i['responsable']) ?>" maxlength="120"></div>
                 <?php if ($conDinero): ?>
                 <div class="fila-campos">
-                    <div class="campo"><label for="ic<?= (int) $i['id'] ?>">Costo ($)</label><input type="text" id="ic<?= (int) $i['id'] ?>" name="costo" inputmode="decimal" value="<?= (float) $i['costo'] > 0 ? e(number_format((float) $i['costo'], 2, ',', '')) : '' ?>"></div>
-                    <div class="campo"><label for="id<?= (int) $i['id'] ?>">Descuento al proveedor ($)</label><input type="text" id="id<?= (int) $i['id'] ?>" name="descuento" inputmode="decimal" value="<?= (float) $i['descuento'] > 0 ? e(number_format((float) $i['descuento'], 2, ',', '')) : '' ?>"></div>
+                    <div class="campo tk-campo"><label for="ic<?= (int) $i['id'] ?>">Costo ($)</label><input type="text" id="ic<?= (int) $i['id'] ?>" name="costo" inputmode="decimal" value="<?= (float) $i['costo'] > 0 ? e(number_format((float) $i['costo'], 2, ',', '')) : '' ?>"></div>
+                    <div class="campo tk-campo"><label for="id<?= (int) $i['id'] ?>">Descuento al proveedor ($)</label><input type="text" id="id<?= (int) $i['id'] ?>" name="descuento" inputmode="decimal" value="<?= (float) $i['descuento'] > 0 ? e(number_format((float) $i['descuento'], 2, ',', '')) : '' ?>"></div>
                 </div>
-                <div class="campo"><label for="ico<?= (int) $i['id'] ?>">Compra</label><select id="ico<?= (int) $i['id'] ?>" name="compra_id"><option value="0">— Ninguna —</option>
+                <div class="campo tk-campo"><label for="ico<?= (int) $i['id'] ?>">Compra</label><select id="ico<?= (int) $i['id'] ?>" name="compra_id"><option value="0">— Ninguna —</option>
                     <?php $ya = false; foreach ($comprasSel as $c): if ($i['proveedor_id'] && (int) $c['proveedor_id'] !== (int) $i['proveedor_id']) continue; $ya = $ya || (int) $c['id'] === (int) $i['compra_id']; ?>
                         <option value="<?= (int) $c['id'] ?>" <?= (int) $c['id'] === (int) $i['compra_id'] ? 'selected' : '' ?>><?= e($c['codigo']) ?> · <?= e($c['proveedor']) ?> · saldo <?= e(dinero($c['saldo'])) ?></option><?php endforeach; ?>
                     <?php if ($i['compra_id'] && !$ya): ?><option value="<?= (int) $i['compra_id'] ?>" selected><?= e(Compras::codigo($i['compra_numero'])) ?></option><?php endif; ?></select></div>
                 <?php endif; ?>
-                <button class="boton boton-chico" type="submit">Guardar</button>
+                <button data-ico="guardar" class="boton tk-boton boton-chico chico" type="submit">Guardar</button>
             </form>
         </details>
         <?php endif; ?>

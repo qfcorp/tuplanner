@@ -11,12 +11,12 @@ foreach ($todas['vendedores'] as $vid => $porMes) foreach ($porMes as $mes => $f
 usort($vendedorMes, fn($a, $b) => strcmp($b['mes'], $a['mes']));
 $nombreDe = array_column($vendedores, 'nombre', 'id');
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <h1>Metas de ventas</h1>
         <p>Cuánto quieres vender cada mes. Se compara con lo vendido (igual que en Reportes: eventos que se separaron o confirmaron ese mes) y con el mismo mes del año anterior.</p>
     </div>
-    <a class="boton boton-claro" href="<?= e(url('reportes', ['p' => 'anio'])) ?>#metas">Ver cómo vamos</a>
+    <a data-ico="ojo" class="boton tk-boton boton-claro secundario" href="<?= e(url('reportes', ['p' => 'anio'])) ?>#metas">Ver cómo vamos</a>
 </div>
 
 <nav class="mt-anios" aria-label="Año">
@@ -25,18 +25,18 @@ $nombreDe = array_column($vendedores, 'nombre', 'id');
     <a href="<?= e(url('metas', ['anio' => $anio + 1])) ?>" aria-label="Año <?= $anio + 1 ?>"><?= $anio + 1 ?> →</a>
 </nav>
 
-<form method="post" class="bloque" action="<?= e(url('metas', ['anio' => $anio])) ?>">
+<form method="post" class="bloque tk-tarjeta" action="<?= e(url('metas', ['anio' => $anio])) ?>">
     <?= campo_csrf() ?><input type="hidden" name="accion" value="local"><input type="hidden" name="anio" value="<?= $anio ?>">
     <h2>Meta del negocio</h2>
     <div class="mt-general">
-        <div class="campo"><label for="mt-monto">Meta de todos los meses <small>(vendido, en dólares con IVA)</small></label>
+        <div class="campo tk-campo"><label for="mt-monto">Meta de todos los meses <small>(vendido, en dólares con IVA)</small></label>
             <input type="text" inputmode="decimal" id="mt-monto" name="monto" value="<?= e($monto($general)) ?>" placeholder="Ej. 15000"></div>
-        <div class="campo"><label for="mt-eventos">Eventos por mes <small>(opcional)</small></label>
+        <div class="campo tk-campo"><label for="mt-eventos">Eventos por mes <small>(opcional)</small></label>
             <input type="number" min="0" max="10000" id="mt-eventos" name="eventos" value="<?= e($evs($general)) ?>" placeholder="Ej. 6"></div>
     </div>
     <p class="suave" style="font-size:.92rem">¿Un mes vendes más (diciembre, temporada de bodas)? Ponle una meta distinta abajo. Vacío = usa la meta de todos los meses.</p>
     <div class="tabla-scroll">
-        <table class="tabla mt-tabla">
+        <table class="tabla tk-tabla mt-tabla">
             <thead><tr><th>Mes</th><th>Meta del mes</th><th>Eventos</th><th class="num">Vendido</th><th class="num">Año anterior</th></tr></thead>
             <tbody>
             <?php for ($m = 1; $m <= 12; $m++): $mes = sprintf('%04d-%02d', $anio, $m); $f = $todas['local'][$mes] ?? null; $r = $rep['meses'][$mes]; ?>
@@ -53,11 +53,11 @@ $nombreDe = array_column($vendedores, 'nombre', 'id');
             </tbody>
         </table>
     </div>
-    <button class="boton" type="submit">Guardar metas del negocio</button>
+    <button data-ico="guardar" class="boton tk-boton" type="submit">Guardar metas del negocio</button>
 </form>
 
 <?php if ($vendedores): ?>
-<form method="post" class="bloque" action="<?= e(url('metas', ['anio' => $anio])) ?>">
+<form method="post" class="bloque tk-tarjeta" action="<?= e(url('metas', ['anio' => $anio])) ?>">
     <?= campo_csrf() ?><input type="hidden" name="accion" value="vendedores"><input type="hidden" name="anio" value="<?= $anio ?>">
     <h2>Meta de cada vendedor <small class="suave">(opcional)</small></h2>
     <p class="suave" style="font-size:.92rem">Cada vendedor ve su meta en el Inicio. Cuenta lo que vende como "vendedor" del evento.</p>
@@ -72,19 +72,19 @@ $nombreDe = array_column($vendedores, 'nombre', 'id');
         </li>
         <?php endforeach; ?>
     </ul>
-    <button class="boton" type="submit">Guardar metas de los vendedores</button>
+    <button data-ico="guardar" class="boton tk-boton" type="submit">Guardar metas de los vendedores</button>
 </form>
 
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <h2>Un mes distinto para un vendedor</h2>
     <form method="post" class="mt-vmes" action="<?= e(url('metas', ['anio' => $anio])) ?>">
         <?= campo_csrf() ?><input type="hidden" name="accion" value="vendedor_mes"><input type="hidden" name="anio" value="<?= $anio ?>">
-        <div class="campo"><label for="vm-v">Vendedor</label><select id="vm-v" name="vendedor_id" required>
+        <div class="campo tk-campo"><label for="vm-v">Vendedor</label><select id="vm-v" name="vendedor_id" required>
             <?php foreach ($vendedores as $v): ?><option value="<?= (int) $v['id'] ?>"><?= e($v['nombre']) ?></option><?php endforeach; ?></select></div>
-        <div class="campo"><label for="vm-mes">Mes</label><input type="month" id="vm-mes" name="mes" required value="<?= e($anio === (int) $hoy->format('Y') ? $mesActual : $anio . '-01') ?>"></div>
-        <div class="campo"><label for="vm-monto">Meta</label><input type="text" inputmode="decimal" id="vm-monto" name="monto" placeholder="Ej. 8000"></div>
-        <div class="campo"><label for="vm-ev">Eventos</label><input type="number" min="0" max="10000" id="vm-ev" name="eventos" class="mt-chico"></div>
-        <button class="boton boton-claro" type="submit">Guardar</button>
+        <div class="campo tk-campo"><label for="vm-mes">Mes</label><input type="month" id="vm-mes" name="mes" required value="<?= e($anio === (int) $hoy->format('Y') ? $mesActual : $anio . '-01') ?>"></div>
+        <div class="campo tk-campo"><label for="vm-monto">Meta</label><input type="text" inputmode="decimal" id="vm-monto" name="monto" placeholder="Ej. 8000"></div>
+        <div class="campo tk-campo"><label for="vm-ev">Eventos</label><input type="number" min="0" max="10000" id="vm-ev" name="eventos" class="mt-chico"></div>
+        <button data-ico="guardar" class="boton tk-boton boton-claro secundario" type="submit">Guardar</button>
     </form>
     <?php if ($vendedorMes): ?>
     <ul class="filas">
@@ -93,7 +93,7 @@ $nombreDe = array_column($vendedores, 'nombre', 'id');
                 <?= $f['monto'] > 0 ? dinero($f['monto']) : '' ?><?= $f['eventos'] ? ' · ' . (int) $f['eventos'] . ' eventos' : '' ?></span>
             <form method="post" class="derecha" action="<?= e(url('metas', ['anio' => $anio])) ?>"><?= campo_csrf() ?><input type="hidden" name="accion" value="quitar">
                 <input type="hidden" name="vendedor_id" value="<?= (int) $f['vendedor_id'] ?>"><input type="hidden" name="mes" value="<?= e($f['mes']) ?>"><input type="hidden" name="anio" value="<?= $anio ?>">
-                <button class="boton boton-peligro boton-chico" type="submit">Quitar</button></form></li>
+                <button data-ico="basura" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit">Quitar</button></form></li>
         <?php endforeach; ?>
     </ul>
     <?php endif; ?>

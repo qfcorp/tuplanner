@@ -22,7 +22,7 @@ if ($pausada) {   // Anexo A: cuenta pausada por Tukán, con el motivo (genéric
     $wa = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola, mi cuenta de TuPlanner está pausada (' . $u['negocio'] . ', ' . $u['email'] . '). ¿Me ayudan a reactivarla?');
 }
 ?>
-<section class="bloque" style="max-width:600px">
+<section class="bloque tk-tarjeta" style="max-width:600px">
     <h1><?= e($titulo) ?></h1>
     <?php if ($pausada): ?>
         <p class="aviso-pausa"><strong>Motivo:</strong> <?= e($texto) ?></p>
@@ -38,13 +38,13 @@ if ($pausada) {   // Anexo A: cuenta pausada por Tukán, con el motivo (genéric
     <?php if ($enApp): ?>
         <p class="suave">Cuando la cuenta vuelva a estar activa, entras aquí mismo con tu correo y tu contraseña.</p>
     <?php elseif ($pausada): ?>
-        <div class="acciones">
-            <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Escribir a Tukán por WhatsApp (+<?= e(whatsapp_ventas()) ?>)</a>
+        <div class="acciones tk-acciones">
+            <a class="boton tk-boton boton-wa ok" href="<?= e($wa) ?>" target="_blank" rel="noopener">Escribir a Tukán por WhatsApp (+<?= e(whatsapp_ventas()) ?>)</a>
         </div>
     <?php elseif (es_admin_total($u)): ?>
-        <div class="acciones">
-            <a class="boton boton-wa" href="<?= e($wa) ?>" target="_blank" rel="noopener">Contáctanos para contratar</a>
-            <a class="boton boton-claro" href="<?= e(url('planes')) ?>">Ver mi plan y pedir cotización</a>
+        <div class="acciones tk-acciones">
+            <a class="boton tk-boton boton-wa ok" href="<?= e($wa) ?>" target="_blank" rel="noopener">Contáctanos para contratar</a>
+            <a data-ico="ojo" class="boton tk-boton boton-claro secundario" href="<?= e(url('planes')) ?>">Ver mi plan y pedir cotización</a>
         </div>
     <?php else: ?>
         <p>Pídele al dueño del negocio que renueve el plan.</p>

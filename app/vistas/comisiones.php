@@ -8,7 +8,7 @@ $hoy = date('Y-m-d');
 $num = fn(float $v) => number_format($v, 2, ',', '');
 $puede = puede_editar($u);
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div><h1>Comisiones</h1>
         <p>Lo que te pagan los proveedores por llevarles clientes. Se anota en cada partida del presupuesto del evento.</p></div>
 </div>
@@ -19,7 +19,7 @@ $puede = puede_editar($u);
 <?php if ($ver === 'cobradas'): ?>
 <nav class="pn-periodos" aria-label="Periodo">
     <?php foreach (['mes' => 'Este mes', 'mes_pasado' => 'Mes pasado', 'anio' => 'Este año'] as $k => $t): ?>
-        <a class="boton boton-chico <?= $periodo['clave'] === $k ? '' : 'boton-claro' ?>" href="<?= e(url('comisiones', ['ver' => 'cobradas', 'periodo' => $k])) ?>"><?= e($t) ?></a>
+        <a class="boton tk-boton boton-chico chico <?= $periodo['clave'] === $k ? '' : 'boton-claro secundario' ?>" href="<?= e(url('comisiones', ['ver' => 'cobradas', 'periodo' => $k])) ?>"><?= e($t) ?></a>
     <?php endforeach; ?>
 </nav>
 <?php endif; ?>
@@ -28,16 +28,16 @@ $puede = puede_editar($u);
 </section>
 
 <?php if (!$porProveedor): ?>
-    <p class="vacio bloque"><?= $ver === 'cobradas' ? 'No cobraste comisiones en este periodo.' : 'No tienes comisiones por cobrar. Se calculan cuando una partida del presupuesto queda "Contratado" con un porcentaje o valor de comisión.' ?></p>
+    <p class="vacio tk-vacio bloque tk-tarjeta"><?= $ver === 'cobradas' ? 'No cobraste comisiones en este periodo.' : 'No tienes comisiones por cobrar. Se calculan cuando una partida del presupuesto queda "Contratado" con un porcentaje o valor de comisión.' ?></p>
 <?php endif; ?>
 
 <?php foreach ($porProveedor as $g): ?>
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <h2><?= e($g['nombre']) ?> <small class="suave"><?= dinero($g['total']) ?></small></h2>
     <?php if ($ver === 'por_cobrar' && $g['telefono']):
         $txt = "Hola, te escribo por las comisiones pendientes:\n" . implode("\n", array_map(fn($r) => '• ' . $r['evento'] . ' (' . fecha_corta($r['evento_fecha']) . '): ' . dinero($r['comision_por_cobrar']), $g['filas']))
              . "\nTotal: " . dinero($g['total']) . ". ¡Gracias!"; ?>
-        <p><a class="boton boton-wa boton-chico" href="<?= e(WhatsApp::enlace($g['telefono'], $txt)) ?>" target="_blank" rel="noopener">Recordarle por WhatsApp</a></p>
+        <p><a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e(WhatsApp::enlace($g['telefono'], $txt)) ?>" target="_blank" rel="noopener">Recordarle por WhatsApp</a></p>
     <?php endif; ?>
     <ul class="filas">
         <?php foreach ($g['filas'] as $r): ?>
@@ -52,7 +52,7 @@ $puede = puede_editar($u);
                 <form method="post" action="<?= e(url('comisiones')) ?>" class="pn-cobrar">
                     <?= campo_csrf() ?><input type="hidden" name="accion" value="cobrar"><input type="hidden" name="partida_id" value="<?= (int) $r['id'] ?>">
                     <input type="hidden" name="monto" value="<?= e($num($r['comision_por_cobrar'])) ?>"><input type="hidden" name="fecha" value="<?= e($hoy) ?>">
-                    <button class="boton boton-claro boton-chico" type="submit">Ya me pagó</button>
+                    <button data-ico="check" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Ya me pagó</button>
                 </form>
                 <?php endif; ?>
             </span>

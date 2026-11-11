@@ -20,7 +20,7 @@ if ($mtProgreso):
     $mtAdelantado = $mtPct >= $mtP['pct_mes'];
     $mtDias = $mtP['dias_faltan'] === 0 ? 'hoy es el último día del mes' : ($mtP['dias_faltan'] === 1 ? 'queda 1 día' : 'quedan ' . $mtP['dias_faltan'] . ' días');
 ?>
-<section class="bloque mt-inicio<?= $mtCumplida ? ' mt-cumplida' : '' ?>" aria-labelledby="mt-inicio-t">
+<section class="bloque tk-tarjeta mt-inicio<?= $mtCumplida ? ' mt-cumplida' : '' ?>" aria-labelledby="mt-inicio-t">
     <div class="g-bloque-cab">
         <h2 id="mt-inicio-t"><?= $mtRol === 'vendedor' ? 'Tu meta de ' : 'Meta de ' ?><?= e($mtNombreMes) ?></h2>
         <a href="<?= e(url('reportes', ['p' => 'mes'])) ?>#metas">Ver detalle</a>

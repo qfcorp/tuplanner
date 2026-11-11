@@ -4,17 +4,17 @@ $ayer = date('Y-m-d', strtotime('-1 day'));
 $grupo = fn(string $f) => match (substr($f, 0, 10)) { $hoy => 'Hoy', $ayer => 'Ayer', default => ucfirst(fecha_corta(substr($f, 0, 10))) };
 $actual = null;
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div><h1>Avisos</h1>
         <p><?= $sinLeer ? "Tienes $sinLeer sin leer." : 'Estás al día.' ?> Aquí llegan los pagos, firmas, consultas nuevas y recordatorios.</p></div>
     <?php if ($sinLeer): ?>
         <form method="post" action="<?= e(url('notificaciones', ['accion' => 'leidas'])) ?>"><?= campo_csrf() ?>
-            <button class="boton boton-claro" type="submit">Marcar todos como leídos</button></form>
+            <button data-ico="check" class="boton tk-boton boton-claro secundario" type="submit">Marcar todos como leídos</button></form>
     <?php endif; ?>
 </div>
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <?php if (!$lista): ?>
-        <p class="vacio">Todavía no tienes avisos.<br>Cuando un cliente pague, firme o te escriba, lo verás aquí.</p>
+        <p class="vacio tk-vacio">Todavía no tienes avisos.<br>Cuando un cliente pague, firme o te escriba, lo verás aquí.</p>
     <?php else: foreach ($lista as $n):
         $g = $grupo((string) $n['creada_en']);
         if ($g !== $actual): $actual = $g; ?>

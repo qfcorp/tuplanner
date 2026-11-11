@@ -15,12 +15,12 @@ try {
 if ($plPlano):
     $plDatos = $plPlanos->datos((int) $ev['negocio_id'], (int) $plPlano['id']);
     $plPdf = $esNegocio ? url('pdf', ['tipo' => 'plano', 'id' => $plPlano['id']]) : url('portal_invitados', ['t' => $token ?? '', 'plano' => 'pdf']); ?>
-<section class="bloque pl-en-mesas" aria-labelledby="pl-en-mesas-t">
+<section class="bloque tk-tarjeta pl-en-mesas" aria-labelledby="pl-en-mesas-t">
     <div class="pl-en-mesas-cab">
         <h2 id="pl-en-mesas-t">Plano del salón</h2>
-        <div class="acciones">
-            <?php if ($esNegocio): ?><a class="boton boton-claro boton-chico" href="<?= e(url('plano', ['id' => $ev['id']])) ?>">Abrir el plano</a><?php endif; ?>
-            <a class="boton boton-claro boton-chico" href="<?= e($plPdf) ?>" target="_blank" rel="noopener">PDF</a>
+        <div class="acciones tk-acciones">
+            <?php if ($esNegocio): ?><a data-ico="ojo" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('plano', ['id' => $ev['id']])) ?>">Abrir el plano</a><?php endif; ?>
+            <a data-ico="descargar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e($plPdf) ?>" target="_blank" rel="noopener">PDF</a>
         </div>
     </div>
     <?= Planos::svg($plDatos, ['id' => 'mesas' . $plPlano['id'], 'ocupacion' => true, 'clase' => 'pl-svg-fijo']) ?>

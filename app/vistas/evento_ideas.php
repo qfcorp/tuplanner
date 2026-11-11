@@ -11,7 +11,7 @@ $sugeridos = ['#ffffff', '#f5e6d3', '#d4a857', '#a0526d', '#6b8f71', '#1f3a5f'];
 $aprobadas = count(array_filter($ideas, fn($i) => $i['aprobada'] === true));
 $delCliente = count(array_filter($ideas, fn($i) => $i['origen'] === 'cliente'));
 ?>
-<section class="bloque" id="estilo" aria-labelledby="id-t-estilo">
+<section class="bloque tk-tarjeta" id="estilo" aria-labelledby="id-t-estilo">
     <h2 id="id-t-estilo">Temática y colores</h2>
     <?php if ($ev['tematica'] || $paleta): ?>
         <p class="id-tematica"><?= $ev['tematica'] ? e($ev['tematica']) : '<span class="suave">Sin temática escrita</span>' ?></p>
@@ -24,7 +24,7 @@ $delCliente = count(array_filter($ideas, fn($i) => $i['origen'] === 'cliente'));
         <summary>Cambiar temática y colores</summary>
         <form method="post" action="<?= e(url('evento_ideas', ['id' => $ev['id']])) ?>">
             <?= campo_csrf() ?><input type="hidden" name="accion" value="estilo">
-            <div class="campo">
+            <div class="campo tk-campo">
                 <label for="id-tem">Temática</label>
                 <input type="text" id="id-tem" name="tematica" value="<?= e((string) $ev['tematica']) ?>" maxlength="150" placeholder="Ej. Jardín romántico, tonos rosa antiguo y dorado">
             </div>
@@ -37,27 +37,27 @@ $delCliente = count(array_filter($ideas, fn($i) => $i['origen'] === 'cliente'));
                     </label>
                 <?php endforeach; ?>
             </fieldset>
-            <button class="boton" type="submit">Guardar</button>
+            <button data-ico="guardar" class="boton tk-boton" type="submit">Guardar</button>
         </form>
     </details>
     <?php endif; ?>
 </section>
 
-<section class="bloque" id="ideas" aria-labelledby="id-t-ideas">
+<section class="bloque tk-tarjeta" id="ideas" aria-labelledby="id-t-ideas">
     <h2 id="id-t-ideas">Tablero de ideas <small class="suave"><?= count($ideas) ?> fotos<?= $aprobadas ? " · $aprobadas aprobadas" : '' ?><?= $delCliente ? " · $delCliente del cliente" : '' ?></small></h2>
     <p class="suave">Fotos de decoración, flores, vestido, pastel… Las ve el cliente en su portal y también puede subir las suyas y marcar ❤️ las que le encantan.</p>
     <?php if ($puede): ?>
     <form method="post" action="<?= e(url('evento_ideas', ['id' => $ev['id']])) ?>" enctype="multipart/form-data" class="pn-en-linea">
         <?= campo_csrf() ?><input type="hidden" name="accion" value="subir">
-        <div class="campo"><label for="id-fotos">Fotos <small>(hasta 12 a la vez)</small></label><input type="file" id="id-fotos" name="fotos[]" accept="image/*" multiple required></div>
-        <div class="campo"><label for="id-cat">Categoría</label>
+        <div class="campo tk-campo"><label for="id-fotos">Fotos <small>(hasta 12 a la vez)</small></label><input type="file" id="id-fotos" name="fotos[]" accept="image/*" multiple required></div>
+        <div class="campo tk-campo"><label for="id-cat">Categoría</label>
             <select id="id-cat" name="categoria"><?php foreach (Cotizaciones::CATEGORIAS as $k => $t): if ($k === 'honorarios') continue; ?><option value="<?= e($k) ?>" <?= $k === 'decoracion' ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?></select></div>
-        <div class="campo"><label for="id-nota">Nota <small>(opcional)</small></label><input type="text" id="id-nota" name="nota" maxlength="300" placeholder="Ej. Centro de mesa así, pero en blanco"></div>
-        <button class="boton" type="submit">Subir</button>
+        <div class="campo tk-campo"><label for="id-nota">Nota <small>(opcional)</small></label><input type="text" id="id-nota" name="nota" maxlength="300" placeholder="Ej. Centro de mesa así, pero en blanco"></div>
+        <button data-ico="adjunto" class="boton tk-boton" type="submit">Subir</button>
     </form>
     <?php endif; ?>
     <?php if (!$ideas): ?>
-        <p class="vacio">Todavía no hay fotos.</p>
+        <p class="vacio tk-vacio">Todavía no hay fotos.</p>
     <?php else: ?>
     <ul class="id-tablero">
         <?php foreach ($ideas as $i): $iid = (int) $i['id']; ?>
@@ -75,7 +75,7 @@ $delCliente = count(array_filter($ideas, fn($i) => $i['origen'] === 'cliente'));
                         $actual = $i['aprobada'] === true ? 'si' : ($i['aprobada'] === false ? 'no' : ''); if ($val === $actual) continue; ?>
                     <form method="post" action="<?= e(url('evento_ideas', ['id' => $ev['id']])) ?>">
                         <?= campo_csrf() ?><input type="hidden" name="accion" value="marcar"><input type="hidden" name="idea_id" value="<?= $iid ?>"><input type="hidden" name="valor" value="<?= e($val) ?>">
-                        <button class="boton boton-claro boton-chico" type="submit"><?= e($txt) ?></button>
+                        <button class="boton tk-boton boton-claro secundario boton-chico chico" type="submit"><?= e($txt) ?></button>
                     </form>
                     <?php endforeach; ?>
                 </div>
@@ -83,13 +83,13 @@ $delCliente = count(array_filter($ideas, fn($i) => $i['origen'] === 'cliente'));
                     <summary>Nota o borrar</summary>
                     <form method="post" action="<?= e(url('evento_ideas', ['id' => $ev['id']])) ?>">
                         <?= campo_csrf() ?><input type="hidden" name="accion" value="nota"><input type="hidden" name="idea_id" value="<?= $iid ?>">
-                        <div class="campo"><label for="in-<?= $iid ?>">Nota</label><input type="text" id="in-<?= $iid ?>" name="nota" value="<?= e((string) $i['nota']) ?>" maxlength="300"></div>
-                        <div class="campo"><label for="ic-<?= $iid ?>">Categoría</label><select id="ic-<?= $iid ?>" name="categoria"><?php foreach (Cotizaciones::CATEGORIAS as $k => $t): if ($k === 'honorarios') continue; ?><option value="<?= e($k) ?>" <?= $i['categoria'] === $k ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?></select></div>
-                        <button class="boton boton-claro boton-chico" type="submit">Guardar</button>
+                        <div class="campo tk-campo"><label for="in-<?= $iid ?>">Nota</label><input type="text" id="in-<?= $iid ?>" name="nota" value="<?= e((string) $i['nota']) ?>" maxlength="300"></div>
+                        <div class="campo tk-campo"><label for="ic-<?= $iid ?>">Categoría</label><select id="ic-<?= $iid ?>" name="categoria"><?php foreach (Cotizaciones::CATEGORIAS as $k => $t): if ($k === 'honorarios') continue; ?><option value="<?= e($k) ?>" <?= $i['categoria'] === $k ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?></select></div>
+                        <button data-ico="guardar" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Guardar</button>
                     </form>
                     <form method="post" action="<?= e(url('evento_ideas', ['id' => $ev['id']])) ?>">
                         <?= campo_csrf() ?><input type="hidden" name="accion" value="borrar"><input type="hidden" name="idea_id" value="<?= $iid ?>">
-                        <button class="boton boton-peligro boton-chico" type="submit">Borrar foto</button>
+                        <button data-ico="basura" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit">Borrar foto</button>
                     </form>
                 </details>
                 <?php endif; ?>

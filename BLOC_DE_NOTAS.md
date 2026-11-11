@@ -2,6 +2,16 @@
 
 Última actualización: 6 de noviembre de 2026
 
+## 10 nov 2026 — Identidad gráfica común Tukán (decisión de Dimitry: todos los programas iguales, modelo el ERP)
+- TuPlanner usa el **kit común** `public/assets/tukan-ui.css` + `tukan-ui.js` (idénticos en todos los programas; no se editan aquí).
+  Lo único propio es el color: rosa antiguo `#8A3F5C` (línea `<style>` en `app/vistas/_diseno.php`).
+- Barra de arriba del color del programa (logo del negocio, nombre, usuario, Salir); menú izquierdo azul noche con TODO a la
+  vista, en grupos (Principal, Ventas, Dinero, Operación, Configuración) y con emoji; en el celular se abre con ☰ (ya no hay
+  barra de botones abajo; la pantalla «Más» sigue existiendo en `/?r=mas`).
+- Inicio nuevo: saludo, avisos, **primeros pasos** hasta completarlos, cifras, tarjetas del día y accesos rápidos.
+- No cambió ninguna función ni ningún dato. El portal público del cliente, los PDF y los correos no se tocaron.
+- Detalle: `docs/LINEA_GRAFICA.md`. Manual: «Más → …» ahora dice «Menú → …».
+
 ## 6 nov 2026 — Precios nuevos para todos los programas Tukán (decisión de Dimitry)
 - **Básico $12 + IVA** con 3 módulos a elegir; **cada módulo más $5 + IVA**; **Completo $25 + IVA** con todo y el Asistente IA.
 - **Asistente IA $3 + IVA en Básico, uso limitado** (tope sugerido del mes **$1,50**, antes $4). «Varias sedes» y los módulos gratis no cambian.

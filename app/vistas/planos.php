@@ -6,7 +6,7 @@ $porEspacio = [];
 foreach ($lista as $p) $porEspacio[(int) $p['espacio_id']][] = $p;
 $pv = fn(string $k, string $def = '') => e($previo[$k] ?? $def);
 ?>
-<div class="cabecera">
+<div class="cabecera tk-titulo-pagina">
     <div>
         <h1>Planos del salón</h1>
         <p>Arma una vez cómo se acomoda cada lugar (boda con mesas redondas, corporativo en escuela…) y úsalo en cada evento.</p>
@@ -14,25 +14,25 @@ $pv = fn(string $k, string $def = '') => e($previo[$k] ?? $def);
 </div>
 
 <?php if (!$espacios): ?>
-    <section class="bloque vacio"><p>Primero crea tus lugares en <a href="<?= e(url('espacios')) ?>">Lugares</a>.</p></section>
+    <section class="bloque tk-tarjeta vacio tk-vacio"><p>Primero crea tus lugares en <a href="<?= e(url('espacios')) ?>">Lugares</a>.</p></section>
 <?php else: ?>
 
 <?php if ($editaPlantillas): ?>
-<details class="bloque pl-plegable" id="nueva" <?= $espacioElegido || !$lista || $previo ? 'open' : '' ?>>
+<details class="bloque tk-tarjeta pl-plegable" id="nueva" <?= $espacioElegido || !$lista || $previo ? 'open' : '' ?>>
     <summary><h2>Nueva distribución</h2></summary>
     <form method="post" action="<?= e(url('plano')) ?>">
         <?= campo_csrf() ?><input type="hidden" name="accion" value="crear_plantilla">
         <div class="rejilla-form">
-            <div class="campo"><label for="pn-espacio">Lugar</label>
+            <div class="campo tk-campo"><label for="pn-espacio">Lugar</label>
                 <select id="pn-espacio" name="espacio_id" required>
                     <?php foreach ($espacios as $es): ?><option value="<?= (int) $es['id'] ?>" <?= $espacioElegido === (int) $es['id'] ? 'selected' : '' ?>><?= e($es['nombre']) ?></option><?php endforeach; ?>
                 </select></div>
-            <div class="campo"><label for="pn-nombre">Nombre</label>
+            <div class="campo tk-campo"><label for="pn-nombre">Nombre</label>
                 <input type="text" id="pn-nombre" name="nombre" maxlength="80" required value="<?= $pv('nombre') ?>" placeholder="Boda 150 en mesas redondas"></div>
-            <div class="campo"><label for="pn-ancho">Ancho del salón (m)</label><input type="text" inputmode="decimal" id="pn-ancho" name="ancho" required value="<?= $pv('ancho', '20') ?>"></div>
-            <div class="campo"><label for="pn-largo">Largo del salón (m)</label><input type="text" inputmode="decimal" id="pn-largo" name="largo" required value="<?= $pv('largo', '30') ?>"></div>
+            <div class="campo tk-campo"><label for="pn-ancho">Ancho del salón (m)</label><input type="text" inputmode="decimal" id="pn-ancho" name="ancho" required value="<?= $pv('ancho', '20') ?>"></div>
+            <div class="campo tk-campo"><label for="pn-largo">Largo del salón (m)</label><input type="text" inputmode="decimal" id="pn-largo" name="largo" required value="<?= $pv('largo', '30') ?>"></div>
         </div>
-        <fieldset class="campo pl-ejemplos">
+        <fieldset class="campo tk-campo pl-ejemplos">
             <legend class="etiqueta">¿Cómo empiezas?</legend>
             <div class="opciones">
                 <?php foreach (Planos::EJEMPLOS as $k => $txt): ?>
@@ -40,16 +40,16 @@ $pv = fn(string $k, string $def = '') => e($previo[$k] ?? $def);
                 <?php endforeach; ?>
             </div>
         </fieldset>
-        <button class="boton" type="submit">Crear distribución</button>
+        <button data-ico="mas" class="boton tk-boton" type="submit">Crear distribución</button>
     </form>
 </details>
 <?php endif; ?>
 
 <?php foreach ($espacios as $es): $suyas = $porEspacio[(int) $es['id']] ?? []; ?>
-<section class="bloque" id="esp-<?= (int) $es['id'] ?>">
+<section class="bloque tk-tarjeta" id="esp-<?= (int) $es['id'] ?>">
     <h2><span class="pl-punto" style="background:<?= e($es['color']) ?>" aria-hidden="true"></span><?= e($es['nombre']) ?></h2>
     <?php if (!$suyas): ?>
-        <p class="vacio">Todavía no tiene distribuciones.<?php if ($editaPlantillas): ?> <a href="<?= e(url('plano', ['espacio' => $es['id']])) ?>#nueva">Crear la primera</a><?php endif; ?></p>
+        <p class="vacio tk-vacio">Todavía no tiene distribuciones.<?php if ($editaPlantillas): ?> <a href="<?= e(url('plano', ['espacio' => $es['id']])) ?>#nueva">Crear la primera</a><?php endif; ?></p>
     <?php else: ?>
     <div class="pl-tarjetas">
         <?php foreach ($suyas as $p): ?>

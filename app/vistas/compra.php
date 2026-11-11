@@ -42,28 +42,28 @@ $sugerido = $c['anticipo_pendiente'] > 0 ? min($c['anticipo_pendiente'], $c['sal
     <?php endif; ?>
 </div>
 
-<div class="acciones pv-barra">
-    <a class="boton boton-wa boton-chico" href="<?= e($wa) ?>" target="_blank" rel="noopener"><?= $esPrecio ? 'Pedir el precio por WhatsApp' : 'Enviar por WhatsApp' ?></a>
-    <a class="boton boton-claro boton-chico" href="<?= e(url('pdf', ['tipo' => 'orden_compra', 'id' => $id])) ?>" target="_blank" rel="noopener">PDF</a>
-    <?php if ($portal && !$esPrecio): ?><button type="button" class="boton boton-claro boton-chico" data-copiar="<?= e($portal) ?>">Copiar enlace del portal</button><?php endif; ?>
+<div class="acciones tk-acciones pv-barra">
+    <a class="boton tk-boton boton-wa ok boton-chico chico" href="<?= e($wa) ?>" target="_blank" rel="noopener"><?= $esPrecio ? 'Pedir el precio por WhatsApp' : 'Enviar por WhatsApp' ?></a>
+    <a data-ico="descargar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('pdf', ['tipo' => 'orden_compra', 'id' => $id])) ?>" target="_blank" rel="noopener">PDF</a>
+    <?php if ($portal && !$esPrecio): ?><button data-ico="copiar" type="button" class="boton tk-boton boton-claro secundario boton-chico chico" data-copiar="<?= e($portal) ?>">Copiar enlace del portal</button><?php endif; ?>
     <?php if ($puede): foreach (Compras::PASOS[$c['estado']] as $paso): if ($paso === 'cancelada') continue; [$txt, $cls] = $botonesEstado[$paso]; ?>
         <form method="post"><?= campo_csrf() ?><input type="hidden" name="accion" value="estado"><input type="hidden" name="nuevo" value="<?= e($paso) ?>">
-            <button class="boton boton-chico <?= e($cls) ?>" type="submit"><?= e($txt) ?></button></form>
+            <button class="boton tk-boton boton-chico chico <?= e($cls) ?>" type="submit"><?= e($txt) ?></button></form>
     <?php endforeach; endif; ?>
 </div>
 <?php if ($puede && in_array('cancelada', Compras::PASOS[$c['estado']], true)): ?>
 <details class="pv-detalles pv-cancelar"><summary>Cancelar <?= $esPrecio ? 'el pedido de precio' : 'la compra' ?></summary>
     <form method="post" class="dia-form-bloque"><?= campo_csrf() ?><input type="hidden" name="accion" value="estado"><input type="hidden" name="nuevo" value="cancelada">
-        <div class="campo"><label for="cmot">¿Por qué se cancela?</label><input type="text" id="cmot" name="motivo" maxlength="300" required minlength="3" placeholder="El cliente cambió el menú"></div>
-        <button class="boton boton-peligro boton-chico" type="submit">Cancelar</button>
+        <div class="campo tk-campo"><label for="cmot">¿Por qué se cancela?</label><input type="text" id="cmot" name="motivo" maxlength="300" required minlength="3" placeholder="El cliente cambió el menú"></div>
+        <button data-ico="cruz" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit">Cancelar</button>
     </form>
 </details>
 <?php endif; ?>
 
 <div class="rejilla rejilla-2">
-<section class="bloque" id="detalle">
+<section class="bloque tk-tarjeta" id="detalle">
     <h2>Detalle</h2>
-    <?php if (!$items): ?><p class="vacio">Sin ítems.</p><?php else: ?>
+    <?php if (!$items): ?><p class="vacio tk-vacio">Sin ítems.</p><?php else: ?>
     <ul class="filas pv-items-lista">
         <?php foreach ($items as $it): ?>
         <li><div><strong><?= e(rtrim(rtrim(number_format((float) $it['cantidad'], 2, ',', '.'), '0'), ',')) ?> ×</strong> <?= e($it['descripcion']) ?>
@@ -89,16 +89,16 @@ $sugerido = $c['anticipo_pendiente'] > 0 ? min($c['anticipo_pendiente'], $c['sal
                     <select name="items[<?= $i ?>][con_iva]" aria-label="IVA"><option value="1" <?= $it['con_iva'] ? 'selected' : '' ?>><?= e($ivaTxt) ?> %</option><option value="0" <?= !$it['con_iva'] ? 'selected' : '' ?>>0 %</option></select>
                 </div>
                 <?php endforeach; ?>
-                <button type="button" class="boton boton-claro boton-chico" data-pv-agregar-item>+ Otra línea</button>
+                <button type="button" class="boton tk-boton boton-claro secundario boton-chico chico" data-pv-agregar-item>+ Otra línea</button>
                 <p class="pv-total-vivo" data-pv-total hidden></p>
             </fieldset>
-            <button class="boton boton-chico" type="submit">Guardar detalle</button>
+            <button data-ico="guardar" class="boton tk-boton boton-chico chico" type="submit">Guardar detalle</button>
         </form>
     </details>
     <?php endif; ?>
 </section>
 
-<section class="bloque" id="condiciones">
+<section class="bloque tk-tarjeta" id="condiciones">
     <h2>Condiciones</h2>
     <dl class="ficha-datos">
         <dt>Crédito del proveedor</dt><dd><?= e(ProveedoresFicha::textoCredito((int) $c['credito_dias']) === 'contado' ? 'De contado' : ProveedoresFicha::textoCredito((int) $c['credito_dias'])) ?></dd>
@@ -114,22 +114,22 @@ $sugerido = $c['anticipo_pendiente'] > 0 ? min($c['anticipo_pendiente'], $c['sal
     <?php if ($puede && $c['estado'] !== 'cancelada'): ?>
     <details class="pv-detalles"><summary>Cambiar condiciones o evento</summary>
         <form method="post" class="dia-form-bloque"><?= campo_csrf() ?><input type="hidden" name="accion" value="editar">
-            <div class="campo"><label for="eev">Evento</label>
+            <div class="campo tk-campo"><label for="eev">Evento</label>
                 <select id="eev" name="evento_id"><option value="0">— Compra general del negocio —</option>
                     <?php foreach ($eventosSel as $x): ?><option value="<?= (int) $x['id'] ?>" <?= (int) $c['evento_id'] === (int) $x['id'] ? 'selected' : '' ?>><?= e(fecha_corta($x['fecha'])) ?> · <?= e($x['nombre']) ?></option><?php endforeach; ?>
                 </select></div>
             <div class="fila-campos">
-                <div class="campo"><label for="ecat">Rubro</label><select id="ecat" name="categoria">
+                <div class="campo tk-campo"><label for="ecat">Rubro</label><select id="ecat" name="categoria">
                     <?php foreach (Cotizaciones::CATEGORIAS as $k => $t): ?><option value="<?= e($k) ?>" <?= $c['categoria'] === $k ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?></select></div>
-                <div class="campo"><label for="efec">Fecha</label><input type="date" id="efec" name="fecha" value="<?= e($c['fecha']) ?>"></div>
+                <div class="campo tk-campo"><label for="efec">Fecha</label><input type="date" id="efec" name="fecha" value="<?= e($c['fecha']) ?>"></div>
             </div>
             <div class="fila-campos">
-                <div class="campo"><label for="even">Pagar hasta <small>(vacío = según su crédito)</small></label><input type="date" id="even" name="vence" value="<?= e($c['vence_manual'] ? $c['vence'] : '') ?>"></div>
-                <div class="campo"><label for="eant">Anticipo pactado ($)</label><input type="text" id="eant" name="anticipo" inputmode="decimal" value="<?= e($num($c['anticipo'])) ?>"></div>
+                <div class="campo tk-campo"><label for="even">Pagar hasta <small>(vacío = según su crédito)</small></label><input type="date" id="even" name="vence" value="<?= e($c['vence_manual'] ? $c['vence'] : '') ?>"></div>
+                <div class="campo tk-campo"><label for="eant">Anticipo pactado ($)</label><input type="text" id="eant" name="anticipo" inputmode="decimal" value="<?= e($num($c['anticipo'])) ?>"></div>
             </div>
-            <div class="campo"><label for="eret">Retención ($) <small>(lo que le retienes; baja lo que le pagas)</small></label><input type="text" id="eret" name="retencion" inputmode="decimal" value="<?= e($num($c['retencion'])) ?>"></div>
-            <div class="campo"><label for="enot">Notas</label><textarea id="enot" name="notas" rows="2" maxlength="2000"><?= e($c['notas']) ?></textarea></div>
-            <button class="boton boton-chico" type="submit">Guardar</button>
+            <div class="campo tk-campo"><label for="eret">Retención ($) <small>(lo que le retienes; baja lo que le pagas)</small></label><input type="text" id="eret" name="retencion" inputmode="decimal" value="<?= e($num($c['retencion'])) ?>"></div>
+            <div class="campo tk-campo"><label for="enot">Notas</label><textarea id="enot" name="notas" rows="2" maxlength="2000"><?= e($c['notas']) ?></textarea></div>
+            <button data-ico="guardar" class="boton tk-boton boton-chico chico" type="submit">Guardar</button>
         </form>
     </details>
     <?php endif; ?>
@@ -137,7 +137,7 @@ $sugerido = $c['anticipo_pendiente'] > 0 ? min($c['anticipo_pendiente'], $c['sal
 </div>
 
 <?php if (!$esPrecio): ?>
-<section class="bloque" id="factura">
+<section class="bloque tk-tarjeta" id="factura">
     <h2>Factura del proveedor</h2>
     <?php if ($c['factura_numero'] || $c['factura_archivo'] || $c['factura_xml']): ?>
         <dl class="ficha-datos">
@@ -147,9 +147,9 @@ $sugerido = $c['anticipo_pendiente'] > 0 ? min($c['anticipo_pendiente'], $c['sal
             <?php if ($c['factura_clave']): ?><dt>Clave de acceso</dt><dd class="pv-clave"><?= e($c['factura_clave']) ?></dd><?php endif; ?>
             <dt>La subió</dt><dd><?= $c['factura_origen'] === 'proveedor' ? 'El proveedor (desde su portal)' : 'Tu equipo' ?></dd>
         </dl>
-        <div class="acciones">
-            <?php if ($c['factura_archivo']): ?><a class="boton boton-claro boton-chico" href="<?= e(url('proveedor_archivo', ['tipo' => 'factura', 'id' => $id])) ?>" target="_blank" rel="noopener">Ver <?= Adjuntos::esPdf($c['factura_archivo']) ? 'PDF' : 'foto' ?></a><?php endif; ?>
-            <?php if ($c['factura_xml']): ?><a class="boton boton-claro boton-chico" href="<?= e(url('proveedor_archivo', ['tipo' => 'xml', 'id' => $id])) ?>">Descargar XML</a><?php endif; ?>
+        <div class="acciones tk-acciones">
+            <?php if ($c['factura_archivo']): ?><a data-ico="ojo" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('proveedor_archivo', ['tipo' => 'factura', 'id' => $id])) ?>" target="_blank" rel="noopener">Ver <?= Adjuntos::esPdf($c['factura_archivo']) ? 'PDF' : 'foto' ?></a><?php endif; ?>
+            <?php if ($c['factura_xml']): ?><a data-ico="descargar" class="boton tk-boton boton-claro secundario boton-chico chico" href="<?= e(url('proveedor_archivo', ['tipo' => 'xml', 'id' => $id])) ?>">Descargar XML</a><?php endif; ?>
         </div>
     <?php else: ?>
         <p class="suave">Todavía no hay factura.<?= $portal ? ' El proveedor también la puede subir desde su portal.' : '' ?></p>
@@ -159,18 +159,18 @@ $sugerido = $c['anticipo_pendiente'] > 0 ? min($c['anticipo_pendiente'], $c['sal
         <form method="post" enctype="multipart/form-data" class="pv-caja"><?= campo_csrf() ?><input type="hidden" name="accion" value="xml">
             <h3>Con el XML (lo más fácil)</h3>
             <p class="suave"><small>Se llenan solos el número, la fecha y el total. Revisa que el RUC sea el del proveedor.</small></p>
-            <div class="campo"><label for="fxml">Archivo XML</label><input type="file" id="fxml" name="xml" accept=".xml,text/xml,application/xml" required></div>
-            <button class="boton boton-chico" type="submit">Leer XML</button>
+            <div class="campo tk-campo"><label for="fxml">Archivo XML</label><input type="file" id="fxml" name="xml" accept=".xml,text/xml,application/xml" required></div>
+            <button data-ico="ojo" class="boton tk-boton boton-chico chico" type="submit">Leer XML</button>
         </form>
         <form method="post" enctype="multipart/form-data" class="pv-caja"><?= campo_csrf() ?><input type="hidden" name="accion" value="factura">
             <h3>A mano</h3>
-            <div class="campo"><label for="fnum">Número</label><input type="text" id="fnum" name="factura_numero" value="<?= e($c['factura_numero']) ?>" placeholder="001-001-000000123" maxlength="17"></div>
+            <div class="campo tk-campo"><label for="fnum">Número</label><input type="text" id="fnum" name="factura_numero" value="<?= e($c['factura_numero']) ?>" placeholder="001-001-000000123" maxlength="17"></div>
             <div class="fila-campos">
-                <div class="campo"><label for="ffec">Fecha</label><input type="date" id="ffec" name="factura_fecha" value="<?= e($c['factura_fecha']) ?>"></div>
-                <div class="campo"><label for="ftot">Total ($)</label><input type="text" id="ftot" name="factura_total" inputmode="decimal" value="<?= e($num($c['factura_total'])) ?>" placeholder="<?= e($num($c['total'])) ?>"></div>
+                <div class="campo tk-campo"><label for="ffec">Fecha</label><input type="date" id="ffec" name="factura_fecha" value="<?= e($c['factura_fecha']) ?>"></div>
+                <div class="campo tk-campo"><label for="ftot">Total ($)</label><input type="text" id="ftot" name="factura_total" inputmode="decimal" value="<?= e($num($c['factura_total'])) ?>" placeholder="<?= e($num($c['total'])) ?>"></div>
             </div>
-            <div class="campo"><label for="farc">PDF o foto <small>(opcional)</small></label><input type="file" id="farc" name="archivo" accept="image/*,application/pdf"></div>
-            <button class="boton boton-claro boton-chico" type="submit">Guardar factura</button>
+            <div class="campo tk-campo"><label for="farc">PDF o foto <small>(opcional)</small></label><input type="file" id="farc" name="archivo" accept="image/*,application/pdf"></div>
+            <button data-ico="guardar" class="boton tk-boton boton-claro secundario boton-chico chico" type="submit">Guardar factura</button>
         </form>
     </div>
     <?php endif; ?>
@@ -178,9 +178,9 @@ $sugerido = $c['anticipo_pendiente'] > 0 ? min($c['anticipo_pendiente'], $c['sal
 <?php endif; ?>
 
 <?php if ($activa || $pagos): ?>
-<section class="bloque" id="pagos">
+<section class="bloque tk-tarjeta" id="pagos">
     <h2>Pagos al proveedor</h2>
-    <?php if (!$pagos): ?><p class="vacio">Todavía no le has pagado.</p><?php else: ?>
+    <?php if (!$pagos): ?><p class="vacio tk-vacio">Todavía no le has pagado.</p><?php else: ?>
     <ul class="filas pv-pagos">
         <?php foreach ($pagos as $x): ?>
         <li class="<?= $x['estado'] === 'anulado' ? 'pv-anulado' : '' ?>">
@@ -189,14 +189,14 @@ $sugerido = $c['anticipo_pendiente'] > 0 ? min($c['anticipo_pendiente'], $c['sal
                     <?= $x['registrado'] ? ' · ' . e($x['registrado']) : '' ?><?= $x['notas'] ? ' · ' . e($x['notas']) : '' ?></small>
                 <?php if ($x['estado'] === 'anulado'): ?><br><small class="cb-rojo">ANULADO<?= $x['anulado_nombre'] ? ' por ' . e($x['anulado_nombre']) : '' ?>: <?= e($x['anulado_motivo']) ?></small><?php endif; ?>
             </div>
-            <div class="derecha acciones">
+            <div class="derecha acciones tk-acciones">
                 <?php if ($x['comprobante']): ?><a class="enlace-chico" href="<?= e(url('proveedor_archivo', ['tipo' => 'comprobante', 'id' => $x['id']])) ?>" target="_blank" rel="noopener">Comprobante</a><?php endif; ?>
                 <?php if ($puede && $x['estado'] === 'valido'): ?>
                 <details class="pv-anular"><summary>Anular</summary>
                     <form method="post"><?= campo_csrf() ?><input type="hidden" name="accion" value="anular_pago"><input type="hidden" name="pago_id" value="<?= (int) $x['id'] ?>">
                         <label class="sr-only" for="am<?= (int) $x['id'] ?>">Motivo</label>
                         <input type="text" id="am<?= (int) $x['id'] ?>" name="motivo" required minlength="3" maxlength="300" placeholder="¿Por qué se anula?">
-                        <button class="boton boton-peligro boton-chico" type="submit">Anular pago</button></form>
+                        <button data-ico="cruz" class="boton tk-boton boton-peligro peligro boton-chico chico" type="submit">Anular pago</button></form>
                 </details>
                 <?php endif; ?>
             </div>
@@ -207,15 +207,15 @@ $sugerido = $c['anticipo_pendiente'] > 0 ? min($c['anticipo_pendiente'], $c['sal
     <?php if ($puede && $activa && $c['saldo'] > 0): ?>
     <form method="post" enctype="multipart/form-data" class="rejilla-form pv-form-pago"><?= campo_csrf() ?><input type="hidden" name="accion" value="pago">
         <h3 class="ancho">Registrar un pago</h3>
-        <div class="campo"><label for="pmon">Valor ($) <small>(saldo <?= dinero($c['saldo']) ?>)</small></label><input type="text" id="pmon" name="monto" inputmode="decimal" required value="<?= e($num($sugerido)) ?>"></div>
-        <div class="campo"><label for="pfec">Fecha</label><input type="date" id="pfec" name="fecha" value="<?= e($hoyTxt) ?>" max="<?= e($hoyTxt) ?>"></div>
-        <div class="campo"><label for="pmet">Forma de pago</label>
+        <div class="campo tk-campo"><label for="pmon">Valor ($) <small>(saldo <?= dinero($c['saldo']) ?>)</small></label><input type="text" id="pmon" name="monto" inputmode="decimal" required value="<?= e($num($sugerido)) ?>"></div>
+        <div class="campo tk-campo"><label for="pfec">Fecha</label><input type="date" id="pfec" name="fecha" value="<?= e($hoyTxt) ?>" max="<?= e($hoyTxt) ?>"></div>
+        <div class="campo tk-campo"><label for="pmet">Forma de pago</label>
             <select id="pmet" name="metodo" data-mostrar="pv-cheque"><?php foreach (Compras::METODOS as $k => $t): ?><option value="<?= e($k) ?>"><?= e($t) ?></option><?php endforeach; ?></select></div>
-        <div class="campo"><label for="pref">Referencia <small>(n.º de transferencia o de cheque)</small></label><input type="text" id="pref" name="referencia" maxlength="120"></div>
-        <div class="campo pv-cheque" data-si="cheque" hidden><label for="pche">Cheque para el <small>(si es posfechado)</small></label><input type="date" id="pche" name="cheque_fecha"></div>
-        <div class="campo"><label for="pcom">Comprobante <small>(foto o PDF, opcional)</small></label><input type="file" id="pcom" name="comprobante" accept="image/*,application/pdf"></div>
-        <div class="campo ancho"><label for="pnot">Notas <small>(opcional)</small></label><input type="text" id="pnot" name="notas" maxlength="300"></div>
-        <div class="ancho"><button class="boton" type="submit">Guardar pago</button></div>
+        <div class="campo tk-campo"><label for="pref">Referencia <small>(n.º de transferencia o de cheque)</small></label><input type="text" id="pref" name="referencia" maxlength="120"></div>
+        <div class="campo tk-campo pv-cheque" data-si="cheque" hidden><label for="pche">Cheque para el <small>(si es posfechado)</small></label><input type="date" id="pche" name="cheque_fecha"></div>
+        <div class="campo tk-campo"><label for="pcom">Comprobante <small>(foto o PDF, opcional)</small></label><input type="file" id="pcom" name="comprobante" accept="image/*,application/pdf"></div>
+        <div class="campo tk-campo ancho"><label for="pnot">Notas <small>(opcional)</small></label><input type="text" id="pnot" name="notas" maxlength="300"></div>
+        <div class="ancho"><button data-ico="guardar" class="boton tk-boton" type="submit">Guardar pago</button></div>
     </form>
     <?php elseif ($activa && $c['saldo'] <= 0 && $c['base'] > 0): ?>
         <p class="aviso aviso-ok">✓ Esta compra está pagada por completo.</p>
@@ -224,7 +224,7 @@ $sugerido = $c['anticipo_pendiente'] > 0 ? min($c['anticipo_pendiente'], $c['sal
 <?php endif; ?>
 
 <?php if ($incidenciasCompra): ?>
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <h2>Problemas con esta compra</h2>
     <ul class="filas">
         <?php foreach ($incidenciasCompra as $i): ?>
@@ -235,9 +235,9 @@ $sugerido = $c['anticipo_pendiente'] > 0 ? min($c['anticipo_pendiente'], $c['sal
 </section>
 <?php endif; ?>
 
-<section class="bloque">
+<section class="bloque tk-tarjeta">
     <h2>Historia de la compra</h2>
-    <?php if (!$historia): ?><p class="vacio">Sin movimientos.</p><?php else: ?>
+    <?php if (!$historia): ?><p class="vacio tk-vacio">Sin movimientos.</p><?php else: ?>
     <ol class="pv-linea">
         <?php foreach ($historia as $m): ?>
         <li class="pv-mov-<?= e($m['tipo']) ?>"><span class="pv-linea-punto" aria-hidden="true"></span>

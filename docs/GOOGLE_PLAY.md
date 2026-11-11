@@ -12,7 +12,7 @@ Todo lo que se cambia en el sistema web se ve en la app al instante (no hay que 
 | Huella de «Firma de apps de Google Play» | `config/.env` → `TUPLANNER_ANDROID_HUELLAS` (la pone `deploy/app_android.sh HUELLA`; el instalador la conserva) |
 | Modo app | `?app=play` deja la cookie `tp_app` (1 año); `en_app_android()` en `app/bootstrap.php`. `?app=web` la quita |
 | Política de privacidad (pública) | https://tuplanner.tukanec.com/privacidad.php (también `/?r=privacidad`), sección `#borrar-cuenta` |
-| Borrar la cuenta desde la app | **Más → Mi cuenta → Borrar mi cuenta** (pedido por correo a info@tukansoftware.com) |
+| Borrar la cuenta desde la app | **Menú → Mi cuenta → Borrar mi cuenta** (pedido por correo a info@tukansoftware.com) |
 | Cuenta para el revisor de Google | `deploy/demo_google.php crear | borrar` y `src/DemoGoogle.php` |
 | Pruebas | `tests/logica_120_app_android.php` y `tests/web_120_app_android.sh` |
 
@@ -28,7 +28,7 @@ Dentro de la app (`en_app_android()`) **no** se ve nada para comprar o pagar el 
 | Franja «Tu plan vence…» | con **Renovar** | sin Renovar |
 | Demo terminada / plan vencido / cuenta pausada | WhatsApp de Tukán y «Ver mi plan y pedir cotización» | Texto neutro, sin enlaces |
 | Límite de lugares o usuarios | «cambia de plan (el plan Completo no tiene límite)» | «desactiva uno» |
-| Más → Mi plan | «Tus módulos, lo que pagas y lo que puedes agregar» | «Tu plan y tus módulos» |
+| Menú → Mi plan | «Tus módulos, lo que pagas y lo que puedes agregar» | «Tu plan y tus módulos» |
 
 **Lo que se queda igual en la app** (y por qué): lo que el **organizador cobra a sus propios clientes** — plan de cuotas, pagos y recibos,
 comprobantes de transferencia o DeUna, Payphone del portal del cliente, garantía, extras del portal. Son pagos de **servicios reales
