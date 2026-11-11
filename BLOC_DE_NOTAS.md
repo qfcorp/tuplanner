@@ -252,3 +252,16 @@ Dimitry: «Yo no pedí eso: debe cobrarse. Debe tener un método de pago válido
 - **Tukán** sigue pudiendo cambiar el plan desde el Panel o desde el panel interno; con suscripción pagada se manda `cambiar` como ya estaba.
 - Se quitaron el pedido con nota, el cambio sin pagar, su mensaje («Desde tu próxima renovación pagas…»), su registro y sus pruebas. Pruebas nuevas en `web_114` (sección 12) y `logica_114`.
 - También se actualizó `src/tukan_correo.php` a la versión 2 de la librería común del Panel (con `adjuntos`), copiada tal cual.
+
+## 10 nov 2026 (18:26) — Subir al Completo sin suscripción con tarjeta: prorrateo con tarjeta o «Enviar por WhatsApp»
+Dimitry: «Si pagó con transferencia igual paga. Si quiere pagar con tarjeta debe cobrarse el prorrateo y de ahí seguir normal. Si quiere pagar por transferencia el cambio, debes calcular todo y poner un botón "Enviar por WhatsApp".»
+- **Para quién:** cliente (no demo) con el período pagado vigente, en el Básico, sin precio acordado y sin suscripción con tarjeta pagada.
+- **La cuenta** (`PagoPlan::mejora`): (Completo al mes − lo que paga hoy al mes) × días que faltan ÷ 30, sin IVA. Si su período es de 6 meses o 1 año: la diferencia × meses que pagó ÷ días del período × días que faltan. Nunca negativa. Con IVA = × 1,15.
+- **En Mi plan:** bloque «Pasar al Completo» con «te faltan N días (hasta el dd/mm/aaaa). Diferencia: $X + IVA = $Y.» y dos botones: **Pagar $Y con tarjeta** (solo si el cobro con tarjeta está prendido) y **Enviar por WhatsApp** (siempre, menos en la app), con el texto «Hola, soy … (TuPlanner). Quiero pasar al plan Completo pagando por transferencia. Me faltan N días (hasta el …). Valor del cambio: $Y con IVA.»
+- **Con tarjeta:** pide al Panel `accion: "mejora"` (plan, plan_nombre, subtotal sin IVA, hasta, comprador, fiscal, volver) y manda al cliente a pagar. El plan cambia solo cuando Mi plan ve en `estado` ese cobro con `origen: "mejora"` y `estado: "pagado"` (`PagoPlan::aplicarMejoras`), una sola vez (tabla `plan_mejoras`, migración 117). El vencimiento no cambia y no se registra pago de suscripción. Queda en el registro que ve Tukán.
+- **Menos de $1** (el Panel contesta 422 `minimo`): no se cobra y el plan cambia («La diferencia es menor a $1: no se cobra»).
+- **Por WhatsApp:** el plan NO cambia; lo cambia Tukán cuando registra la transferencia, como hoy.
+- **Sin cobro con tarjeta:** sale igual la cuenta y solo «Enviar por WhatsApp».
+- **Demo o período vencido:** sin prorrateo; pagan el Completo entero en «Pagar con tarjeta». El cliente al día ya no puede pagar el Completo entero (se le regalarían los días que faltan): el servidor lo rechaza.
+- Archivos: `src/PagoPlan.php`, `app/paginas/planes.php`, `app/vistas/planes.php`, `db/migraciones/117_mejora_plan.sql`, `tests/panel_simulado.php` (acción `mejora` y `origen`), `logica_114` (130) y `web_114` (200).
+- **Falta / para saber:** el plan pagado con tarjeta se aplica al abrir Mi plan en la web (el regreso del pago cae ahí); dentro de la app de Google Play no se consulta al Panel. Si Dimitry quiere, se puede aplicar también desde las tareas de cada hora.

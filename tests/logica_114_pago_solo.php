@@ -13,7 +13,7 @@ $hoy = new DateTimeImmutable('today');
 $valor = fn(string $sql) => $db->query($sql)->fetchColumn();
 
 /** Panel simulado: $panel['modo'] = caido | apagado | activo; guarda los pedidos en $panel['pedidos'] y los cobros en $panel['cobros']. */
-$panel = new ArrayObject(['modo' => 'activo', 'pruebas' => true, 'pedidos' => [], 'cobros' => [], 'crear' => null, 'cambiar' => null]);
+$panel = new ArrayObject(['modo' => 'activo', 'pruebas' => true, 'pedidos' => [], 'cobros' => [], 'crear' => null, 'cambiar' => null, 'mejora' => null]);
 $llamar = function (array $d, string $email = '') use ($panel): array {
     $panel['pedidos'] = array_merge($panel['pedidos'], [$d + ['_email' => $email]]);
     if ($panel['modo'] === 'caido') return [0, null];
@@ -46,6 +46,15 @@ $llamar = function (array $d, string $email = '') use ($panel): array {
             return [200, ['ok' => true, 'cambio' => true, 'proporcional' => $prop]];
         }
         return [404, ['ok' => false, 'codigo' => 'no_encontrado', 'error' => 'Esa suscripción no existe.']];
+    }
+    if ($d['accion'] === 'mejora') {
+        if ($panel['mejora'] !== null) return $panel['mejora'];
+        if ($d['subtotal'] < 1) return [422, ['ok' => false, 'codigo' => 'minimo', 'error' => 'Menos de $1 no se cobra con tarjeta: el plan se cambia sin cobro.']];
+        $id = count($panel['cobros']) + 1;
+        $c = ['id' => $id, 'cliente_id' => $d['cliente_id'], 'tipo' => 'cobro', 'origen' => 'mejora', 'estado' => 'pendiente', 'estado_texto' => 'Esperando el pago', 'descripcion' => 'Cambio al plan ' . $d['plan_nombre'] . ': prorrateo',
+              'plan' => $d['plan'], 'periodo' => null, 'subtotal' => $d['subtotal'], 'total' => round($d['subtotal'] * 1.15, 2), 'url_pago' => 'https://pagos.prueba.ec/p/' . $id];
+        $panel['cobros'] = array_merge($panel['cobros'], [$c]);
+        return [201, ['ok' => true, 'cobro' => $c]];
     }
     if ($panel['crear'] !== null) return $panel['crear'];
     foreach ($mios as $c) if ($d['tipo'] === 'suscripcion' && $c['tipo'] === 'suscripcion' && in_array($c['estado'], PagoPlan::VIVAS, true)) return [409, ['ok' => false, 'codigo' => 'ya_tiene', 'error' => 'Ya tiene una suscripción con tarjeta (Esperando el pago).']];
@@ -304,5 +313,72 @@ $panel['modo'] = 'caido';
 $x = $pp();
 check('Panel caído al subir: aviso rojo', false, ($x->ajustar($m, $sus) !== null) && $x->ultimoOk);
 $panel['modo'] = 'activo';
+
+titulo('10. Subir al Completo con el período pagado y sin suscripción: el prorrateo (fechas fijas)');
+[$j] = negocio_prueba($db, 'esencial', 'Local Prorrateo');
+$uj = $usuarioDe($j);
+$f = fn(string $d) => new DateTimeImmutable($d);
+check('Demo: no hay prorrateo (paga el plan nuevo completo)', null, $pp()->mejora($j, $f('2026-12-08')));
+$db->prepare("UPDATE negocios SET estado = 'activo', activo_hasta = '2026-12-20', modulos_extra = 'paquetes,contratos,portal_cliente,plano,asistente_ia' WHERE id = ?")->execute([$j]);
+$mj = $pp()->mejora($j, $f('2026-12-08'));
+check('Paga $20,99 y el Completo vale $25: faltan 12 días hasta el 20/12', ['quinta', 'Completo', 12, '2026-12-20', 20.99, 25.0], [$mj['plan'], $mj['plan_nombre'], $mj['dias'], $mj['hasta'], $mj['actual'], $mj['nuevo']]);
+check('Prorrateo: $4,01 × 12 ÷ 30 = $1,60 sin IVA y $1,84 con IVA', [1.60, 1.84], [$mj['subtotal'], $mj['total']]);
+check('Con 30 días por delante: la diferencia entera, $4,01 y $4,61 con IVA', [4.01, 4.61], [($x = $pp()->mejora($j, $f('2026-11-20')))['subtotal'], $x['total']]);
+check('El último día: faltan 0 días, $0', [0, 0.0], [($x = $pp()->mejora($j, $f('2026-12-20')))['dias'], $x['subtotal']]);
+check('Período vencido: no hay prorrateo', null, $pp()->mejora($j, $f('2026-12-21')));
+check('Texto para WhatsApp', 'Hola, soy Local Prorrateo (TuPlanner). Quiero pasar al plan Completo pagando por transferencia. Me faltan 12 días (hasta el 20/12/2026). Valor del cambio: $1,84 con IVA.',
+      PagoPlan::textoWhatsAppMejora($mj, 'Local Prorrateo'));
+$db->prepare('UPDATE negocios SET precio_acordado = 15 WHERE id = ?')->execute([$j]);
+check('Con precio acordado: no se ofrece', null, $pp()->mejora($j, $f('2026-12-08')));
+$db->prepare('UPDATE negocios SET precio_acordado = NULL WHERE id = ?')->execute([$j]);
+check('Quien ya tiene el Completo: no aplica', null, $pp()->mejora($a));
+// Período de 6 meses (pagó 5): 1 jul al 31 dic 2026 = 184 días. El 1 dic faltan 30 días
+$db->prepare("INSERT INTO suscripciones (negocio_id, plan_codigo, periodo, meses_pagados, meses_recibidos, monto, inicio, fin, metodo_pago) VALUES (?, 'esencial', 'semestral', 5, 6, 104.95, '2026-07-01', '2026-12-31', 'transferencia')")->execute([$j]);
+$db->prepare("UPDATE negocios SET activo_hasta = '2026-12-31' WHERE id = ?")->execute([$j]);
+$mj = $pp()->mejora($j, $f('2026-12-01'));
+check('Semestral: $4,01 × 5 meses ÷ 184 días × 30 días = $3,27 sin IVA y $3,76 con IVA', [30, 3.27, 3.76], [$mj['dias'], $mj['subtotal'], $mj['total']]);
+check('Lo que paga hoy está por encima del Completo: diferencia $0 (nunca negativa)', 0.0, (function () use ($db, $pp, $j, $f) {
+    $db->prepare("UPDATE negocios SET modulos_extra = 'paquetes,contratos,portal_cliente,plano,asistente_ia,invitados' WHERE id = ?")->execute([$j]);
+    $r = $pp()->mejora($j, $f('2026-12-01'))['subtotal'];
+    $db->prepare("UPDATE negocios SET modulos_extra = 'paquetes,contratos,portal_cliente,plano,asistente_ia' WHERE id = ?")->execute([$j]);
+    return $r; })());
+
+titulo('11. Pagar el prorrateo con tarjeta: pedido «mejora» y el plan se pone cuando queda pagado (una sola vez)');
+$r = $pp()->pedirMejora($uj, $VOLVER, $f('2026-12-01'));
+$p = $ultimo();
+check('Devuelve la página de pago', true, str_starts_with($r['url_pago'] ?? '', 'https://pagos.prueba.ec/p/'));
+check('Pedido «mejora»: plan nuevo, prorrateo sin IVA y hasta cuándo', ['mejora', (string) $j, 'quinta', 'Completo', 3.27, '2026-12-31'], [$p['accion'], $p['cliente_id'], $p['plan'], $p['plan_nombre'], $p['subtotal'], $p['hasta']]);
+check('… con quién paga, el RUC para la factura y adónde vuelve', [$uj['email'], '1790000000001', $VOLVER], [$p['comprador']['correo'], $p['fiscal']['identificacion'], $p['volver']]);
+check('Antes de pagar el plan NO cambia', 'esencial', $valor("SELECT plan_codigo FROM negocios WHERE id = $j"));
+check('Con el cobro esperando: nada que aplicar', null, $pp()->aplicarMejoras($j));
+$idM = count($panel['cobros']);
+$todos = $panel['cobros']; $todos[$idM - 1]['estado'] = 'pagado'; $panel['cobros'] = $todos;
+check('Pagado: se pone el plan Completo', 'Completo', $pp()->aplicarMejoras($j));
+check('… el vencimiento no cambia y no hay pago de suscripción nuevo', ['quinta', '2026-12-31', 1], [$valor("SELECT plan_codigo FROM negocios WHERE id = $j"), $valor("SELECT activo_hasta FROM negocios WHERE id = $j"), (int) $valor("SELECT count(*) FROM suscripciones WHERE negocio_id = $j")]);
+check('… queda anotado el cobro aplicado y en el registro que ve Tukán', [1, '3.27', 1], [(int) $valor("SELECT count(*) FROM plan_mejoras WHERE negocio_id = $j AND cobro_id = $idM"), $valor("SELECT monto FROM plan_mejoras WHERE negocio_id = $j"),
+      (int) $valor("SELECT count(*) FROM registro_admin WHERE negocio_id = $j AND accion LIKE 'El dueño pasó al plan quinta desde Mi plan: pagó el prorrateo con tarjeta%'")]);
+$db->prepare("UPDATE negocios SET plan_codigo = 'esencial' WHERE id = ?")->execute([$j]);   // Tukán lo devuelve al Básico
+check('Una sola vez: ese cobro no se vuelve a aplicar', [null, 'esencial'], [$pp()->aplicarMejoras($j), $valor("SELECT plan_codigo FROM negocios WHERE id = $j")]);
+$todos = $panel['cobros']; $todos[] = ['id' => 300, 'cliente_id' => (string) $j, 'tipo' => 'cobro', 'origen' => 'programa', 'estado' => 'pagado', 'plan' => 'quinta', 'subtotal' => 25.0, 'descripcion' => 'x'];
+$todos[] = ['id' => 301, 'cliente_id' => (string) $j, 'tipo' => 'cobro', 'origen' => 'mejora', 'estado' => 'pagado', 'plan' => 'esencial', 'subtotal' => 2.0, 'descripcion' => 'x']; $panel['cobros'] = $todos;
+check('Un pago normal del plan o una «mejora» que no es al Completo no cambian el plan aquí', [null, 'esencial'], [$pp()->aplicarMejoras($j), $valor("SELECT plan_codigo FROM negocios WHERE id = $j")]);
+// Menos de $1: el Panel contesta «minimo», no se cobra y el plan cambia
+$db->prepare("UPDATE negocios SET activo_hasta = '2026-12-31' WHERE id = ?")->execute([$j]);
+$r = $pp()->pedirMejora($uj, $VOLVER, $f('2026-12-30'));
+check('Falta 1 día ($0,11): el Panel dice «minimo» → sin cobro', ['sin_cobro' => true], $r);
+check('… y el plan cambia sin cobro, con el mismo vencimiento', ['quinta', '2026-12-31'], [$valor("SELECT plan_codigo FROM negocios WHERE id = $j"), $valor("SELECT activo_hasta FROM negocios WHERE id = $j")]);
+check('… anotado en el registro', 1, (int) $valor("SELECT count(*) FROM registro_admin WHERE negocio_id = $j AND accion LIKE '%la diferencia era menor a $1 y no se cobró'"));
+$db->prepare("UPDATE negocios SET plan_codigo = 'esencial' WHERE id = ?")->execute([$j]);
+$panel['mejora'] = [409, ['ok' => false, 'codigo' => 'ya_tiene', 'error' => 'Ya tiene una suscripción con tarjeta: el cambio de plan se ajusta en ella.']];
+check_error('409 ya_tiene: mensaje claro y el plan no cambia', 'Ya tiene una suscripción con tarjeta: el cambio de plan se ajusta en ella. Tu plan sigue igual.', fn() => $pp()->pedirMejora($uj, $VOLVER, $f('2026-12-01')));
+$panel['mejora'] = [0, null];
+check_error('Panel caído al pedir: el plan no cambia', 'Tu plan sigue igual', fn() => $pp()->pedirMejora($uj, $VOLVER, $f('2026-12-01')));
+$panel['mejora'] = [201, ['ok' => true, 'cobro' => ['id' => 5, 'url_pago' => 'ftp://raro']]];
+check_error('Dirección de pago rara: no se usa', 'no devolvió la página de pago', fn() => $pp()->pedirMejora($uj, $VOLVER, $f('2026-12-01')));
+check('… y sigue en el Básico', 'esencial', $valor("SELECT plan_codigo FROM negocios WHERE id = $j"));
+$panel['mejora'] = null;
+check_error('Demo o vencido no piden prorrateo', 'se paga completo', fn() => $pp()->pedirMejora($uj, $VOLVER, $f('2027-02-01')));
+$db->prepare("UPDATE negocios SET activo_hasta = CURRENT_DATE + 20 WHERE id = ?")->execute([$j]);
+check_error('Cliente al día no puede pagar el Completo entero (se le regalarían los días que faltan)', 'pagas solo la diferencia', fn() => $pp()->crear($uj, 'quinta', 'mensual', true, $VOLVER));
 
 putenv('TUKAN_CENTRAL_ID'); putenv('TUKAN_CENTRAL_SECRET'); putenv('TUKAN_CENTRAL_URL');

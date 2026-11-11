@@ -5,7 +5,7 @@ declare(strict_types=1);
  * Panel Tukán Central SIMULADO para probar «Pagar con tarjeta» de Mi plan (php -S 127.0.0.1:PUERTO tests/panel_simulado.php).
  * Imita plux_api.php del Panel (tukan-central/public/plux_api.php y PagosPlux::atenderPrograma): revisa el token v2 de tipo
  * «plux» (firma con TUKAN_CENTRAL_SECRET, programa TUKAN_CENTRAL_ID y «bh» = sha256 del cuerpo) y contesta estado, crear,
- * cancelar, cambiar (como PagosPlux «cambiar»: sube con proporcional, pasa_a_completo aunque baje, 409 no_baja, 409 sin_pagar, igual) y cancelar_plan. No cobra nada: no habla con Plux ni con nadie.
+ * cancelar, cambiar (como PagosPlux «cambiar»: sube con proporcional, pasa_a_completo aunque baje, mejora (prorrateo por subir de plan sin suscripción), 409 no_baja, 409 sin_pagar, igual) y cancelar_plan. No cobra nada: no habla con Plux ni con nadie.
  *  - PANEL_SIM_DIR/config.json: {"activo": true|false, "pruebas": true|false, "caido": true|false} (lo cambian las pruebas).
  *  - PANEL_SIM_DIR/cobros.json: los cobros creados (las pruebas leen y cambian su estado, p. ej. a «activa»).
  *  - PANEL_SIM_DIR/pedidos.log: una línea JSON por cada pedido recibido con firma buena.
@@ -43,6 +43,7 @@ $textos = ['pendiente' => 'Esperando el pago', 'rechazado' => 'Tarjeta rechazada
 $publico = function (array $f) use ($textos): array {
     $f['estado_texto'] = $textos[$f['estado']] ?? $f['estado'];
     if (!in_array($f['estado'], ['pendiente', 'rechazado'], true)) $f['url_pago'] = null;
+    $f['origen'] = $f['origen'] ?? 'programa';
     unset($f['cliente_id']);
     return $f;
 };
@@ -104,6 +105,27 @@ if ($accion === 'cambiar') {   // como PagosPlux::atenderPrograma «cambiar» + 
     }
     $guardar();
     $json(200, ['ok' => true, 'cambio' => true, 'cambiado_en_plux' => true, 'mensaje' => 'Suscripción cambiada.', 'proporcional' => $prop ? $publico($prop) : null, 'cobro' => $publico($cobros[$i])]);
+}
+if ($accion === 'mejora') {   // como PagosPlux «mejora»: prorrateo de UNA vez por subir de plan sin suscripción; no manda registrar_pago
+    if ($viva()) $json(409, ['ok' => false, 'codigo' => 'ya_tiene', 'error' => 'Ya tiene una suscripción con tarjeta: el cambio de plan se ajusta en ella.']);
+    $plan = trim((string) ($b['plan'] ?? '')); $planNombre = trim((string) ($b['plan_nombre'] ?? ''));
+    if ($plan === '' || $planNombre === '') $json(422, ['ok' => false, 'codigo' => 'invalido', 'error' => 'Falta el plan nuevo.']);
+    $subtotal = round((float) ($b['subtotal'] ?? 0), 2);
+    foreach ($cobros as $i => $f) {   // una mejora a la vez: si hay una igual esperando, se devuelve esa; si es otra, se anula
+        if ($f['cliente_id'] !== $cid || ($f['origen'] ?? '') !== 'mejora' || !in_array($f['estado'], ['pendiente', 'rechazado'], true)) continue;
+        if ($f['plan'] === $plan && abs($f['subtotal'] - $subtotal) < 0.01) $json(200, ['ok' => true, 'repetido' => true, 'cobro' => $publico($f)]);
+        $cobros[$i]['estado'] = 'anulado';
+    }
+    if ($subtotal < 1) { $guardar(); $json(422, ['ok' => false, 'codigo' => 'minimo', 'error' => 'Menos de $1 no se cobra con tarjeta: el plan se cambia sin cobro.']); }
+    $id = count($cobros) + 1;
+    $hasta = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($b['hasta'] ?? '')) ? ' hasta el ' . date('d/m/Y', strtotime((string) $b['hasta'])) : '';
+    $f = ['id' => $id, 'cliente_id' => $cid, 'tipo' => 'cobro', 'estado' => 'pendiente', 'descripcion' => mb_substr('Cambio al plan ' . $planNombre . ': prorrateo' . $hasta, 0, 90), 'plan' => $plan,
+          'periodo' => null, 'meses' => 1, 'subtotal' => $subtotal, 'total' => round($subtotal * 1.15, 2), 'url_pago' => 'http://' . ($_SERVER['HTTP_HOST'] ?? '127.0.0.1') . '/pagar/' . $id,
+          'cobra_sola' => false, 'pagado_hasta' => null, 'cuotas' => 0, 'pruebas' => (bool) $cfg['pruebas'], 'creado' => date('c'), 'cancelar_hasta' => null, 'cancelacion_programada' => null,
+          'volver' => $b['volver'] ?? null, 'origen' => 'mejora'];
+    $cobros[] = $f;
+    $guardar();
+    $json(201, ['ok' => true, 'cobro' => $publico($f)]);
 }
 if ($accion !== 'crear') $json(400, ['ok' => false, 'codigo' => 'invalido', 'error' => 'Acción no válida (crear, estado, cancelar o cambiar).']);
 $tipo = (string) ($b['tipo'] ?? 'cobro');

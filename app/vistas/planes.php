@@ -2,6 +2,7 @@
 use TuPlanner\{Modulos, PanelTukan, Planes};
 /** Mi plan (Anexo B). @var array $estadoMod @var array $catalogo @var array $planesMod @var array $precios @var string $estadoCuenta
  *  @var array $pagos @var array $pedidos @var array $pedidosPendientes @var array $uso @var array $listaPlanes
+ *  @var ?array $mejora pasar al Completo pagando el prorrateo (PagoPlan::mejora; null = no aplica)
  *  @var ?array $sugerencia «te sugerimos el Completo» (PagoPlan::sugerenciaCompleto) @var array $sugerenciaModulo
  *  @var ?array $tarjeta pago con tarjeta por el Panel (null = apagado, el Panel no contesta o app de Google Play: no se muestra nada) */
 $me = $estadoMod;
@@ -20,7 +21,7 @@ $encendidos = count($me['pagados']);
 // Se ve el plan, su estado, los módulos encendidos y se pueden elegir los módulos incluidos en el plan (no cuesta nada más).
 $enApp = en_app_android();
 // «Te sugerimos el Completo» (10 nov 2026, tercera parte, Dimitry: «queremos que más gente vaya al Completo»). Nunca en la app.
-$avisoCompleto = function (string $donde) use ($sugerencia, $tarjeta, $u): string {
+$avisoCompleto = function (string $donde) use ($sugerencia, $tarjeta, $u, $mejora): string {
     if (!$sugerencia || en_app_android()) return '';
     $s = $sugerencia;
     $pagas = ($u['estado'] === 'prueba' ? 'pagarías ' : 'pagas ') . dinero($s['actual']) . ' + IVA al mes';
@@ -31,7 +32,10 @@ $avisoCompleto = function (string $donde) use ($sugerencia, $tarjeta, $u): strin
           . ' más tienes el plan Completo</strong> con todos los módulos y el Asistente IA.';
     // El botón: pagar el Completo con tarjeta · pasarse ya pagando (suscripción pagada) · sin cobro con tarjeta NO cambia: WhatsApp de Tukán
     $sus = $tarjeta['suscripcion'] ?? null;
-    if ($tarjeta && !$sus && !empty($tarjeta['opciones'][$s['plan']])) {
+    if ($mejora) {
+        // Cliente con el período pagado vigente y sin suscripción: paga solo la diferencia (bloque «Pasar al Completo», más abajo)
+        $h .= ' <a class="boton boton-chico" href="#pasar-completo">Pasarme al Completo</a>';
+    } elseif ($tarjeta && !$sus && !empty($tarjeta['opciones'][$s['plan']])) {
         $h .= ' <a class="boton boton-chico" href="' . e(url('planes', ['pagar' => $s['plan']])) . '#pagar-' . e($s['plan']) . '">Pasarme al Completo</a>';
     } elseif (!$tarjeta && $u['estado'] === 'prueba') {
         // Demo sin cobro con tarjeta: sin botón (la demo ya tiene todo encendido; el plan se elige al contratar)
@@ -82,6 +86,23 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
     <?php if (!$enApp): ?><a class="boton boton-wa" href="<?= e($wa('Hola, tengo una pregunta sobre mi plan de TuPlanner')) ?>" target="_blank" rel="noopener">Preguntar por WhatsApp</a><?php endif; ?>
 </section>
 <?= $avisoCompleto('arriba') ?>
+<?php if ($mejora && !$enApp): /* (10 nov 2026, 18:26) subir al Completo con el período pagado: el cálculo siempre a la vista y dos formas de pagar */
+    $mjSus = $tarjeta['suscripcion'] ?? null; $mjTarjeta = $tarjeta && !$mjSus; ?>
+<section class="bloque" id="pasar-completo" aria-labelledby="mp-t-mejora">
+    <h2 id="mp-t-mejora">Pasar al Completo</h2>
+    <p id="mejora-calculo"><strong>Pasar al Completo:</strong> te faltan <?= (int) $mejora['dias'] ?> <?= $mejora['dias'] === 1 ? 'día' : 'días' ?> (hasta el <?= e(date('d/m/Y', strtotime($mejora['hasta']))) ?>).
+        Diferencia: <?= dinero($mejora['subtotal']) ?> + IVA = <strong><?= dinero($mejora['total']) ?></strong>.</p>
+    <p class="g-nota">Pagas solo la diferencia por los días que te faltan. Tu fecha de vencimiento no cambia; en la renovación pagas el plan Completo.<?= $mejora['subtotal'] < 1 ? ' <strong>La diferencia es menor a $1: no se cobra.</strong>' : '' ?></p>
+    <div class="acciones">
+        <?php if ($mjTarjeta): ?>
+            <form method="post" action="<?= e(url('planes')) ?>" style="display:inline"><?= campo_csrf() ?><input type="hidden" name="accion" value="pasar_completo">
+                <button class="boton" type="submit"><?= $mejora['subtotal'] < 1 ? 'Pasarme al Completo' : 'Pagar ' . dinero($mejora['total']) . ' con tarjeta' ?></button></form>
+        <?php endif; ?>
+        <a class="boton boton-wa" href="<?= e('https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode(TuPlanner\PagoPlan::textoWhatsAppMejora($mejora, (string) $u['negocio']))) ?>" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+    </div>
+    <p class="g-nota" style="margin-top:8px"><?= $mjTarjeta ? 'Con tarjeta, tu plan cambia apenas se aprueba el pago. ' : ($mjSus ? 'Tienes un pago con tarjeta sin terminar: termínalo o cancélalo abajo para pagar este cambio con tarjeta. ' : '') ?>Por WhatsApp pagas por transferencia: tu plan cambia cuando Tukán registra tu pago.</p>
+</section>
+<?php endif; ?>
 <?php if ($me['demo']): ?>
     <p class="aviso aviso-alerta">Estás en tu demo: <?= $me['demo_todos'] ? 'tienes todos los módulos encendidos para que veas todo' : 'tienes encendidos los módulos que elegimos contigo' ?>.
         <?= $enApp ? 'Nada de lo que cargues se pierde.' : 'Al contratar te quedas con los módulos de tu plan y los que agregues; nada de lo que cargaste se pierde.' ?></p>
@@ -243,6 +264,9 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
                        : ($pm['modulos_elegir'] > 0 ? 'La base + ' . ($pm['modulos'] ? count($pm['modulos']) . ' módulos + ' : '') . $pm['modulos_elegir'] . ' módulos que tú eliges' : count($pm['modulos']) . ' módulos') ?><?= $pl['codigo'] === $u['plan_codigo'] || $conTarjeta($pl['codigo']) ? '' : ' · precio por cotización' ?></p>
                 <p><?= $pl['max_espacios'] ? 'Hasta ' . (int) $pl['max_espacios'] . ' espacios' : 'Espacios sin límite' ?> · <?= $pl['max_usuarios'] ? 'hasta ' . (int) $pl['max_usuarios'] . ' usuarios' : 'usuarios sin límite' ?></p>
                 <p><?= e($pl['descripcion'] ?? '') ?></p>
+                <?php if ($mejora && $pl['codigo'] === $mejora['plan']): ?>
+                    <p><a class="boton boton-chico" href="#pasar-completo">Pasar a este plan</a></p>
+                <?php endif; ?>
                 <?php if ($pl['codigo'] !== $u['plan_codigo'] && $conTarjeta($pl['codigo'])): ?>
                     <p><a class="boton boton-chico" href="#pagar-<?= e($pl['codigo']) ?>">Elegir este plan y pagar con tarjeta</a></p>
                 <?php endif; ?>

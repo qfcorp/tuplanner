@@ -63,6 +63,19 @@ if (es_post() && ($_POST['accion'] ?? '') === 'pasar_completo') {
         if (!$sus) {
             // Con cobro con tarjeta y sin suscripción pagada: va a pagar el Completo (queda marcado). El plan cambia al aprobarse el pago.
             if ($pagoPlan->suscripcion($nid)) throw new RuntimeException('Tienes un pago con tarjeta sin terminar: termínalo o cancélalo y vuelve a tocar «Pasarme al Completo».');
+            // (10 nov 2026, 18:26) Cliente con el período pagado vigente y sin suscripción: paga con tarjeta solo el PRORRATEO de los
+            // días que le faltan. El plan cambia cuando el Panel dice que quedó pagado (PagoPlan::aplicarMejoras, más abajo).
+            if ($pagoPlan->mejora($nid)) {
+                $r = $pagoPlan->pedirMejora($u, url_completa('planes'));
+                if (!empty($r['sin_cobro'])) {
+                    aviso('Listo: ya tienes el plan Completo. La diferencia es menor a $1: no se cobra. Tu vencimiento no cambia.');
+                    header('Location: ' . url('planes'));
+                } else {
+                    header('Location: ' . $r['url_pago']);
+                }
+                exit;
+            }
+            // Demo o período vencido: paga el Completo entero (queda marcado)
             header('Location: ' . url('planes', ['pagar' => $codCompleto]) . '#pagar-' . rawurlencode($codCompleto));
             exit;
         }
@@ -108,6 +121,12 @@ if (es_post() && in_array($_POST['accion'] ?? '', ['pagar_tarjeta', 'cancelar_ta
         aviso($e->getMessage(), 'error');
     }
     header('Location: ' . url('planes') . '#pagar-tarjeta');
+    exit;
+}
+// (10 nov 2026, 18:26) ¿Ya quedó pagado el prorrateo de un cambio de plan? Se pone el plan nuevo, una sola vez.
+if (!es_post() && $pagoPlan && ($planPuesto = $pagoPlan->aplicarMejoras($nid, (string) $u['email']))) {
+    aviso('¡Pago recibido! Ya tienes el plan ' . $planPuesto . ' con todos los módulos. Tu vencimiento no cambia: en la renovación pagas el plan ' . $planPuesto . '.');
+    header('Location: ' . url('planes'));
     exit;
 }
 if (!es_post()) TukanCancelarPlan::reintentar(db(), (string) $nid, (string) $u['email']);
@@ -177,6 +196,11 @@ if ($pagoPlan && $pagoPlan->activo($nid, (string) $u['email'])) {
                 'planes' => $planesPago, 'opciones' => array_filter($opcionesPago),
                 'incluye' => $incluyePago, 'vuelta' => (string) ($_GET['plux'] ?? '')];
 }
+// (10 nov 2026, 18:26) Subir al Completo con el período pagado vigente: se paga solo el prorrateo (con tarjeta o por WhatsApp).
+// No aplica si ya tiene una suscripción con tarjeta pagada (esa se ajusta sola con «cambiar»).
+$mejora = $pagoPlan ? $pagoPlan->mejora($nid) : null;
+if ($mejora && $tarjeta && $tarjeta['suscripcion'] && in_array($tarjeta['suscripcion']['estado'], ['activa', 'en_gracia'], true)) $mejora = null;
+if ($mejora && $tarjeta) unset($tarjeta['opciones'][$mejora['plan']]);   // el Completo no se paga entero: se paga la diferencia
 // «Te sugerimos el Completo» (10 nov 2026, tercera parte): solo fuera de la app, para el Básico sin precio acordado
 $sugerencia = $pagoPlan ? $pagoPlan->sugerenciaCompleto($nid) : null;
 $sugerenciaModulo = [];   // módulo => lo que pagaría con él, si iguala o pasa al Completo (se avisa antes de pedirlo)
@@ -187,5 +211,5 @@ if ($pagoPlan && $estadoMod['precio_acordado'] === null && empty($planesMod[$u['
         if ($sm && $sm['tipo'] === 'mayor') $sugerenciaModulo[$mid] = $sm;
     }
 }
-vista('planes', compact('cancelacion', 'estadoMod', 'catalogo', 'planesMod', 'precios', 'estadoCuenta', 'pagos', 'pedidos', 'pedidosPendientes', 'uso', 'listaPlanes', 'tarjeta', 'sugerencia', 'sugerenciaModulo'),
+vista('planes', compact('cancelacion', 'estadoMod', 'catalogo', 'planesMod', 'precios', 'estadoCuenta', 'pagos', 'pedidos', 'pedidosPendientes', 'uso', 'listaPlanes', 'tarjeta', 'sugerencia', 'sugerenciaModulo', 'mejora'),
       'Mi plan · TuPlanner');

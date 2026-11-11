@@ -82,18 +82,17 @@ contiene "Cada mes \$20,99 + IVA, marcado por defecto" "$TMP/pag.html" 'value="e
 contiene "… con su precio" "$TMP/pag.html" "<strong>Cada mes</strong>: \$20,99 + IVA"
 contiene "Cada 6 meses \$104,95 + IVA (paga 5, recibe 6)" "$TMP/pag.html" "<strong>Cada 6 meses</strong>: \$104,95 + IVA <small class=\"suave\">(paga 5, recibe 6)</small>"
 contiene "Cada año \$209,90 + IVA (paga 10, recibe 12)" "$TMP/pag.html" "<strong>Cada año</strong>: \$209,90 + IVA <small class=\"suave\">(paga 10, recibe 12 + dominio propio)</small>"
-# (10 nov 2026, Dimitry: «prefiero que vea los dos precios») el Completo con su precio, de entrada, en la misma sección
-contiene "El Completo se ve de entrada en la sección de pago" "$TMP/pag.html" "<legend><strong>Plan Completo</strong></legend>"
-contiene "… con todos los módulos y el Asistente IA" "$TMP/pag.html" "Todos los módulos, con el Asistente IA."
-contiene "… \$25 + IVA al mes" "$TMP/pag.html" 'value="quinta|mensual" required>'
-contiene "… \$125 por 6 meses" "$TMP/pag.html" "<strong>Cada 6 meses</strong>: \$125,00 + IVA"
-contiene "… \$250 al año" "$TMP/pag.html" "<strong>Cada año</strong>: \$250,00 + IVA"
-no_contiene "Ya no hay que tocar el plan para ver su precio" "$TMP/pag.html" "plan=quinta"
+# (10 nov 2026, 18:26) Cliente con el período pagado: el Completo no se paga entero, se paga la diferencia de los días que faltan
+no_contiene "El Completo no sale para pagarlo entero (se le regalarían los días que faltan)" "$TMP/pag.html" 'value="quinta|mensual"'
+contiene "Bloque «Pasar al Completo» con el cálculo a la vista" "$TMP/pag.html" "<strong>Pasar al Completo:</strong> te faltan 30 días (hasta el $(date -d '+30 days' +%d/%m/%Y))."
+contiene "… diferencia \$4,01 + IVA = \$4,61" "$TMP/pag.html" "Diferencia: \$4,01 + IVA = <strong>\$4,61</strong>."
+contiene "… botón «Pagar \$4,61 con tarjeta»" "$TMP/pag.html" '<button class="boton" type="submit">Pagar \$4,61 con tarjeta</button>'
+contiene "… y «Enviar por WhatsApp»" "$TMP/pag.html" 'rel="noopener">Enviar por WhatsApp</a>'
 contiene "Suscripción marcada por defecto y dice que se cobra sola" "$TMP/pag.html" 'name="forma" value="suscripcion" checked'
 contiene "… con el texto claro" "$TMP/pag.html" "se cobra sola a tu tarjeta cada período que elegiste (ese valor + IVA)"
 contiene "También puede pagar solo esta vez" "$TMP/pag.html" 'name="forma" value="una_vez"'
 contiene "Botón «Pagar con tarjeta»" "$TMP/pag.html" '<button class="boton" type="submit">Pagar con tarjeta</button>'
-contiene "Desde la lista de planes lleva al Completo de la sección de pago" "$TMP/pag.html" 'href="#pagar-quinta">Elegir este plan y pagar con tarjeta'
+contiene "Desde la lista de planes lleva a «Pasar al Completo»" "$TMP/pag.html" 'href="#pasar-completo">Pasar a este plan'
 contiene "Sigue «Cancelar mi plan»" "$TMP/pag.html" 'id="cancelar-plan"'
 r=$(post "r=planes" -d accion=pagar_tarjeta --data-urlencode "opcion=platino|mensual")
 check "Un plan que no existe: no crea nada" "0" "$(ps_crear)"
@@ -290,9 +289,7 @@ registrar esencial "Local Casi Completo $RANDOM"; pagar_plan esencial; NK=$NID
 sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia' WHERE id=$NK" > /dev/null
 get "r=planes" > /dev/null
 contiene "Cerca (\$20,99 contra \$25): aviso suave «por \$4,01 más»" "$TMP/pag.html" 'data-sugerencia="cerca">Con tus módulos pagas \$20,99 + IVA al mes. <strong>Por \$4,01 más tienes el plan Completo</strong>'
-contiene "… sin suscripción, «Pasarme al Completo» lleva a pagar el Completo con tarjeta" "$TMP/pag.html" 'href="/?r=planes&amp;pagar=quinta#pagar-quinta">Pasarme al Completo</a>'
-get "r=planes&pagar=quinta" > /dev/null
-contiene "… y deja marcado el Completo, cada mes" "$TMP/pag.html" 'value="quinta|mensual" checked required>'
+contiene "… sin suscripción, «Pasarme al Completo» lleva al bloque del prorrateo" "$TMP/pag.html" 'href="#pasar-completo">Pasarme al Completo</a>'
 contiene "Invitados (lo pasaría al Completo): aviso antes de pedirlo" "$TMP/pag.html" "Con este módulo pagarías \$25,99 + IVA al mes. El plan Completo cuesta \$25,00 + IVA"
 contiene "… y pide confirmar al tocar «Pedir cotización»" "$TMP/pag.html" 'onsubmit="return confirm(&quot;Con este módulo pagarías \$25,99'
 sql "UPDATE negocios SET modulos_extra='paquetes' WHERE id=$NK" > /dev/null
@@ -314,33 +311,81 @@ post "r=planes" -d accion=pasar_completo > /dev/null
 check "… y desde la app el servidor no cambia el plan" "esencial" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NK")"
 get "r=inicio&app=web" > /dev/null
 
-echo "12. «Pasarme al Completo» SIEMPRE pagando: sin cobro con tarjeta disponible el plan NO cambia (y no hay pedido)"
-get "r=planes" > /dev/null
-contiene "Explica que necesita pagar con tarjeta y que ahora no está disponible" "$TMP/pag.html" "Para pasarte al Completo necesitas pagar con tarjeta. En este momento el pago con tarjeta no está disponible: escríbenos y te ayudamos."
-contiene "… con el botón de WhatsApp de Tukán" "$TMP/pag.html" 'class="boton boton-wa boton-chico" href="https://wa.me/593983662181?text=Hola%2C%20quiero%20pasarme%20al%20plan%20Completo'
+echo "12. Subir al Completo con el período pagado y SIN suscripción: prorrateo con tarjeta o «Enviar por WhatsApp»"
+sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia' WHERE id=$NK" > /dev/null
 VENCE=$(sql "SELECT activo_hasta FROM negocios WHERE id=$NK")
+get "r=planes" > /dev/null
+contiene "Sin cobro con tarjeta: igual sale el cálculo" "$TMP/pag.html" "Diferencia: \$4,01 + IVA = <strong>\$4,61</strong>."
+no_contiene "… sin el botón de tarjeta" "$TMP/pag.html" "con tarjeta</button>"
+contiene "… con «Enviar por WhatsApp» y el texto listo: quién es y qué quiere" "$TMP/pag.html" 'href="https://wa.me/593983662181?text=Hola%2C%20soy%20Local%20Casi%20Completo%20[0-9]*%20%28TuPlanner%29.%20Quiero%20pasar%20al%20plan%20Completo%20pagando%20por%20transferencia.'
+contiene "… los días que faltan y hasta cuándo" "$TMP/pag.html" "Me%20faltan%2030%20d%C3%ADas%20%28hasta%20el%20$(date -d "$VENCE" +%d)%2F$(date -d "$VENCE" +%m)%2F$(date -d "$VENCE" +%Y)%29."
+contiene "… y el valor con IVA" "$TMP/pag.html" 'Valor%20del%20cambio%3A%20%244%2C61%20con%20IVA.'
 REG=$(sql "SELECT count(*) FROM registro_admin WHERE negocio_id=$NK")
 post "r=planes" -d accion=pasar_completo > /dev/null
-check "Si igual llega el pedido al servidor: el plan NO cambia" "esencial|activo|$VENCE" "$(sql "SELECT plan_codigo||'|'||estado||'|'||activo_hasta FROM negocios WHERE id=$NK")"
+check "Si igual llega el pedido al servidor sin cobro con tarjeta: el plan NO cambia" "esencial|activo|$VENCE" "$(sql "SELECT plan_codigo||'|'||estado||'|'||activo_hasta FROM negocios WHERE id=$NK")"
 check "… sin solicitud nueva para Tukán" "$ANTES" "$(sql "SELECT count(*) FROM modulos_solicitudes WHERE negocio_id=$NK")"
 check "… sin pago ni registro nuevos" "0|$REG" "$(sql "SELECT count(*) FROM suscripciones WHERE negocio_id=$NK")|$(sql "SELECT count(*) FROM registro_admin WHERE negocio_id=$NK")"
 get "r=planes" > /dev/null
-contiene "… y sale el mismo mensaje" "$TMP/pag.html" 'role="status">Para pasarte al Completo necesitas pagar con tarjeta. En este momento el pago con tarjeta no está disponible: escríbenos y te ayudamos.'
+contiene "… y explica que el pago con tarjeta no está disponible" "$TMP/pag.html" 'role="status">Para pasarte al Completo necesitas pagar con tarjeta. En este momento el pago con tarjeta no está disponible: escríbenos y te ayudamos.'
 panel_modo true true true
 post "r=planes" -d accion=pasar_completo > /dev/null
 check "Panel caído: tampoco cambia" "esencial" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NK")"
 BASE_12=$BASE; BASE=$BASE_DE_SIEMPRE; entrar "$(sql "SELECT email FROM usuarios WHERE negocio_id=$NK AND rol='dueno'")" claveSegura1
 post "r=planes" -d accion=pasar_completo > /dev/null
 check "Programa con un Panel que no existe: tampoco cambia" "esencial" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NK")"
+get "r=planes" > /dev/null
+contiene "… pero tiene el cálculo y «Enviar por WhatsApp»" "$TMP/pag.html" 'rel="noopener">Enviar por WhatsApp</a>'
 BASE=$BASE_12; entrar "$(sql "SELECT email FROM usuarios WHERE negocio_id=$NK AND rol='dueno'")" claveSegura1
 panel_modo true
+get "r=planes" > /dev/null
+contiene "Con cobro con tarjeta: botón «Pagar \$4,61 con tarjeta»" "$TMP/pag.html" '<button class="boton" type="submit">Pagar \$4,61 con tarjeta</button>'
 r=$(post "r=planes" -d accion=pasar_completo)
-check "Con cobro con tarjeta y sin suscripción: lo lleva a pagar el Completo; el plan no cambia hasta que pague" "302 $BASE/?r=planes&pagar=quinta#pagar-quinta|esencial" "$r|$(sql "SELECT plan_codigo FROM negocios WHERE id=$NK")"
-check "Plux aprobó el Completo: registrar_pago" "200" "$(ps_registrar $NK quinta mensual 25)"
-check "… recién ahí tiene el Completo" "quinta" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NK")"
+IDM=$(php -r '$c = json_decode((string) file_get_contents($argv[1]), true); echo end($c)["id"];' "$PSIM/cobros.json")
+check "Lo lleva a pagar el prorrateo" "302 http://127.0.0.1:$PP/pagar/$IDM" "$r"
+check "El Panel recibió «mejora»: plan nuevo, prorrateo sin IVA y hasta cuándo" "mejora|$NK|quinta|Completo|4.01|$VENCE" "$(ps_pedido accion)|$(ps_pedido cliente_id)|$(ps_pedido plan)|$(ps_pedido plan_nombre)|$(ps_pedido subtotal)|$(ps_pedido hasta)"
+check "… con quién paga y adónde vuelve" "$(sql "SELECT email FROM usuarios WHERE negocio_id=$NK AND rol='dueno'")|http://127.0.0.1:$PSITIO/?r=planes" "$(ps_pedido comprador.correo)|$(ps_pedido volver)"
+check "Antes de pagar el plan NO cambia" "esencial" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NK")"
+get "r=planes" > /dev/null
+contiene "Mi plan muestra el pago esperando, con «Pagar ahora»" "$TMP/pag.html" "Cambio al plan Completo: prorrateo"
+check "… y sigue en el Básico" "esencial" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NK")"
+r=$(post "r=planes" -d accion=pasar_completo)
+check "Tocar otra vez: el mismo cobro (no crea otro)" "302 http://127.0.0.1:$PP/pagar/$IDM" "$r"
+r=$(post "r=planes" -d accion=pagar_tarjeta --data-urlencode "opcion=quinta|mensual")
+check "Pagar el Completo entero estando al día: no se acepta (va por el prorrateo)" "$IDM" "$(php -r '$c = json_decode((string) file_get_contents($argv[1]), true); echo end($c)["id"];' "$PSIM/cobros.json")"
+ps_estado $IDM pagado
+check "Plux aprobó: al abrir Mi plan se aplica el plan" "302" "$(get "r=planes")"
+check "Ya tiene el Completo y el vencimiento NO cambió" "quinta|$VENCE" "$(sql "SELECT plan_codigo||'|'||activo_hasta FROM negocios WHERE id=$NK")"
+check "Anotado una vez: cobro aplicado, sin pago de suscripción nuevo" "1|4.01|0" "$(sql "SELECT count(*)||'|'||max(monto) FROM plan_mejoras WHERE negocio_id=$NK AND cobro_id=$IDM")|$(sql "SELECT count(*) FROM suscripciones WHERE negocio_id=$NK")"
+check "… y en el registro que ve Tukán" "1" "$(sql "SELECT count(*) FROM registro_admin WHERE negocio_id=$NK AND accion LIKE 'El dueño pasó al plan quinta desde Mi plan: pagó el prorrateo con tarjeta, cobro N.º $IDM%'")"
+get "r=planes" > /dev/null
+contiene "Aviso: pago recibido y ya tiene el Completo" "$TMP/pag.html" "¡Pago recibido! Ya tienes el plan Completo con todos los módulos. Tu vencimiento no cambia"
+contiene "… Plan Completo" "$TMP/pag.html" "Plan <strong>Completo</strong>"
+no_contiene "… ya sin el bloque «Pasar al Completo»" "$TMP/pag.html" 'id="pasar-completo"'
 rm -f "$JAR"; post "r=admin_entrar" --data-urlencode "email=$ADM" --data-urlencode "clave=ClaveDelPanel123" > /dev/null
 post_desde "r=admin_negocio&id=$NK" "r=admin_negocio&id=$NK&accion=plan" -d plan=esencial > /dev/null
-check "Tukán sí puede cambiar el plan desde su panel cuando no hay suscripción con tarjeta (es su decisión)" "esencial" "$(sql "SELECT plan_codigo FROM negocios WHERE id=$NK")"
+entrar "$(sql "SELECT email FROM usuarios WHERE negocio_id=$NK AND rol='dueno'")" claveSegura1
+check "Se aplica UNA sola vez: si Tukán lo vuelve al Básico, abrir Mi plan no lo cambia otra vez" "200|esencial|1" "$(get "r=planes")|$(sql "SELECT plan_codigo FROM negocios WHERE id=$NK")|$(sql "SELECT count(*) FROM plan_mejoras WHERE negocio_id=$NK")"
+# Menos de $1 (aquí el Completo cuesta menos que lo que paga): no se cobra y el plan cambia
+registrar esencial "Local Minimo $RANDOM"; pagar_plan esencial; NMI=$NID
+sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia,invitados' WHERE id=$NMI" > /dev/null
+get "r=planes" > /dev/null
+contiene "Diferencia menor a \$1: lo dice" "$TMP/pag.html" "La diferencia es menor a \$1: no se cobra."
+CREADOS=$(wc -l < "$PSIM/cobros.json"); NCOB=$(php -r 'echo count(json_decode((string) file_get_contents($argv[1]), true));' "$PSIM/cobros.json")
+r=$(post "r=planes" -d accion=pasar_completo)
+check "El Panel contesta «minimo»: vuelve a Mi plan, sin cobro nuevo" "302 $BASE/?r=planes|$NCOB" "$r|$(php -r 'echo count(json_decode((string) file_get_contents($argv[1]), true));' "$PSIM/cobros.json")"
+check "… y el plan cambia sin cobro, con el mismo vencimiento" "quinta|$(date -d '+30 days' +%F)" "$(sql "SELECT plan_codigo||'|'||activo_hasta FROM negocios WHERE id=$NMI")"
+get "r=planes" > /dev/null
+contiene "… y lo dice" "$TMP/pag.html" "Listo: ya tienes el plan Completo. La diferencia es menor a \$1: no se cobra. Tu vencimiento no cambia."
+# Período vencido: no hay prorrateo; paga el Completo entero
+registrar esencial "Local Vencido $RANDOM"; pagar_plan esencial; NVE=$NID
+sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia', activo_hasta=CURRENT_DATE - 1 WHERE id=$NVE" > /dev/null
+get "r=planes" > /dev/null
+no_contiene "Vencido: sin el bloque del prorrateo" "$TMP/pag.html" 'id="pasar-completo"'
+contiene "… puede pagar el Completo entero" "$TMP/pag.html" 'value="quinta|mensual"'
+r=$(post "r=planes" -d accion=pasar_completo)
+check "… y «Pasarme al Completo» lo lleva a pagarlo entero" "302 $BASE/?r=planes&pagar=quinta#pagar-quinta|esencial" "$r|$(sql "SELECT plan_codigo FROM negocios WHERE id=$NVE")"
+get "r=planes&pagar=quinta" > /dev/null
+contiene "… con el Completo marcado, cada mes" "$TMP/pag.html" 'value="quinta|mensual" checked required>'
 # Con suscripción pagada y el Completo MÁS caro (está cerca): cambia ya y el prorrateo se cobra aparte
 registrar esencial "Local Sube Completo $RANDOM"; pagar_plan esencial; NSC=$NID
 sql "UPDATE negocios SET modulos_extra='paquetes,contratos,portal_cliente,plano,asistente_ia' WHERE id=$NSC" > /dev/null

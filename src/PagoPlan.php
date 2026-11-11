@@ -128,6 +128,7 @@ final class PagoPlan
         if ($auto && $this->suscripcion($nid)) throw new RuntimeException('Ya tienes una suscripción con tarjeta. Para cambiarla, primero cancela la que tienes.');
         $c = $this->opciones($nid, $plan)[$periodo] ?? null;
         if (!$c) throw new RuntimeException('Elige el plan y cada cuánto quieres pagar.');
+        if (($mj = $this->mejora($nid)) && $mj['plan'] === $plan) throw new RuntimeException('Para pasarte al plan ' . $mj['plan_nombre'] . ' pagas solo la diferencia de los días que te faltan: usa «Pasar al Completo» en esta página.');
         $nombrePlan = $this->planes($nid)[$plan];
         $st = $this->db->prepare('SELECT nombre, razon_social, ruc, telefono FROM negocios WHERE id = ?');
         $st->execute([$nid]);
@@ -267,6 +268,122 @@ final class PagoPlan
         $dif = round($precioCompleto - $actual, 2);
         if ($dif > self::CERCA_DEL_COMPLETO + 0.004) return null;
         return ['tipo' => $dif <= 0.004 ? 'mayor' : 'cerca', 'actual' => $actual, 'completo' => $precioCompleto, 'diferencia' => max(0.0, $dif), 'plan' => $completo];
+    }
+
+    // ------------------------------------------------------------------
+    // Subir de plan SIN suscripción con tarjeta: se paga el prorrateo (10 nov 2026, 18:26, decisión de Dimitry)
+    // ------------------------------------------------------------------
+
+    /** IVA que se suma al prorrateo para mostrarlo (el cobro lo hace Tukán Pagos con el suyo). */
+    public const IVA_PCT = 15;
+
+    /**
+     * Lo que le cuesta a un CLIENTE con el período pagado vigente pasar al plan Completo hoy: solo la diferencia por los días
+     * que le faltan. null = no aplica (demo, período vencido, ya tiene el Completo o tiene precio acordado): esos pagan el
+     * plan nuevo completo, como siempre.
+     * Prorrateo sin IVA = (Completo al mes − lo que paga hoy al mes) × días que faltan ÷ 30. Si su período es de 6 meses o
+     * 1 año, se usa lo que vale ese período ÷ los días del período (paga 5 de 6 o 10 de 12).
+     * Devuelve ['plan', 'plan_nombre', 'dias', 'hasta', 'actual', 'nuevo', 'subtotal', 'total'].
+     */
+    public function mejora(int $negocioId, ?\DateTimeImmutable $hoy = null): ?array
+    {
+        $hoy ??= new \DateTimeImmutable('today');
+        $st = $this->db->prepare('SELECT plan_codigo, estado, activo_hasta, precio_acordado FROM negocios WHERE id = ?');
+        $st->execute([$negocioId]);
+        $n = $st->fetch();
+        if (!$n || $n['estado'] !== 'activo' || $n['precio_acordado'] !== null || empty($n['activo_hasta']) || $n['activo_hasta'] < $hoy->format('Y-m-d')) return null;
+        $mods = new Modulos($this->db);
+        $planes = $mods->planes();
+        if (!empty($planes[$n['plan_codigo']]['todos'])) return null;
+        $completo = null;
+        foreach ($planes as $cod => $pl) if (!empty($pl['todos'])) $completo = (string) $cod;
+        if ($completo === null) return null;
+        $actual = $mods->estado($negocioId)['mensual'];
+        $nuevo = $mods->estado($negocioId, $completo)['mensual'];
+        $dias = (int) $hoy->diff(new \DateTimeImmutable((string) $n['activo_hasta']))->days;
+        // Su período de hoy (el último pago que cubre hoy): mensual = por 30 días; 6 meses o 1 año = lo pagado ÷ los días del período
+        $st = $this->db->prepare("SELECT periodo, meses_pagados, inicio, fin FROM suscripciones WHERE negocio_id = ? AND NOT anulada AND fin >= ?::date ORDER BY inicio LIMIT 1");
+        $st->execute([$negocioId, $hoy->format('Y-m-d')]);
+        $p = $st->fetch();
+        $porDia = ($nuevo - $actual) / 30;
+        if ($p && $p['periodo'] !== 'mensual') {
+            $diasPeriodo = (int) (new \DateTimeImmutable((string) $p['inicio']))->diff(new \DateTimeImmutable((string) $p['fin']))->days + 1;
+            if ($diasPeriodo > 0) $porDia = ($nuevo - $actual) * (int) $p['meses_pagados'] / $diasPeriodo;
+        }
+        $subtotal = round(max(0, $porDia * $dias), 2);
+        return ['plan' => $completo, 'plan_nombre' => (string) $planes[$completo]['nombre'], 'dias' => $dias, 'hasta' => (string) $n['activo_hasta'],
+                'actual' => $actual, 'nuevo' => $nuevo, 'subtotal' => $subtotal, 'total' => round($subtotal * (1 + self::IVA_PCT / 100), 2)];
+    }
+
+    /** El texto que se manda por WhatsApp a Tukán para pagar el cambio por transferencia. */
+    public static function textoWhatsAppMejora(array $m, string $negocio): string
+    {
+        return 'Hola, soy ' . $negocio . ' (TuPlanner). Quiero pasar al plan ' . $m['plan_nombre'] . ' pagando por transferencia. Me faltan ' . $m['dias']
+            . ($m['dias'] === 1 ? ' día' : ' días') . ' (hasta el ' . date('d/m/Y', strtotime($m['hasta'])) . '). Valor del cambio: ' . self::dinero($m['total']) . ' con IVA.';
+    }
+
+    /**
+     * «Pagar el cambio con tarjeta»: le pide al Panel el cobro del prorrateo (acción «mejora»). Devuelve ['url_pago' => …] para
+     * mandar al cliente a pagar, o ['sin_cobro' => true] si la diferencia es menor a $1 (no se cobra: el plan ya quedó cambiado).
+     * El plan NO cambia aquí cuando hay cobro: cambia cuando el Panel dice que quedó pagado (aplicarMejoras).
+     */
+    public function pedirMejora(array $u, string $volver, ?\DateTimeImmutable $hoy = null): array
+    {
+        $nid = (int) $u['negocio_id'];
+        $m = $this->mejora($nid, $hoy) ?? throw new RuntimeException('Este cambio de plan se paga completo, no por días.');
+        $st = $this->db->prepare('SELECT nombre, razon_social, ruc, telefono FROM negocios WHERE id = ?');
+        $st->execute([$nid]);
+        $n = $st->fetch();
+        $ruc = preg_replace('/\D/', '', (string) ($n['ruc'] ?? ''));
+        [$http, $j] = ($this->llamar)([
+            'accion' => 'mejora', 'cliente_id' => (string) $nid, 'nombre' => (string) $n['nombre'], 'plan' => $m['plan'], 'plan_nombre' => $m['plan_nombre'],
+            'subtotal' => $m['subtotal'], 'hasta' => $m['hasta'],
+            'comprador' => ['nombre' => (string) ($u['nombre'] ?? ''), 'correo' => (string) ($u['email'] ?? ''), 'telefono' => (string) (($u['telefono'] ?? '') ?: ($n['telefono'] ?? ''))],
+            'fiscal' => in_array(strlen($ruc), [10, 13], true) ? ['identificacion' => $ruc, 'razon_social' => (string) (($n['razon_social'] ?? '') ?: $n['nombre']), 'correo' => (string) ($u['email'] ?? '')] : [],
+            'volver' => $volver,
+        ], (string) ($u['email'] ?? ''));
+        unset($this->estados[$nid]);
+        if ($http === 0 || !is_array($j)) throw new RuntimeException('No se pudo conectar con el sistema de pagos. Tu plan sigue igual: intenta en unos minutos o envíalo por WhatsApp.');
+        if (empty($j['ok']) && ($j['codigo'] ?? '') === 'minimo') {   // menos de $1: no se cobra y el plan cambia
+            $this->ponerPlan($nid, $m['plan'], 0, 0.0, 'la diferencia era menor a $1 y no se cobró');
+            return ['sin_cobro' => true];
+        }
+        if (empty($j['ok'])) throw new RuntimeException((string) ($j['error'] ?? 'No se pudo crear el pago.') . ' Tu plan sigue igual.');
+        $cobro = is_array($j['cobro'] ?? null) ? $j['cobro'] : [];
+        if (!is_string($cobro['url_pago'] ?? null) || !preg_match('#^https?://#', $cobro['url_pago'])) throw new RuntimeException('El sistema de pagos no devolvió la página de pago. Tu plan sigue igual: intenta otra vez.');
+        return ['url_pago' => $cobro['url_pago']];
+    }
+
+    /**
+     * Mira en el Panel si hay un cobro de cambio de plan (origen «mejora») ya PAGADO y sin aplicar, y pone ese plan. Cada cobro
+     * se aplica una sola vez (tabla plan_mejoras). El vencimiento no cambia. Devuelve el nombre del plan puesto, o null.
+     */
+    public function aplicarMejoras(int $negocioId, string $email = ''): ?string
+    {
+        $cobros = $this->estado($negocioId, $email)['cobros'] ?? [];
+        $planes = (new Modulos($this->db))->planes();
+        $puesto = null;
+        foreach (is_array($cobros) ? $cobros : [] as $c) {
+            if (!is_array($c) || ($c['origen'] ?? '') !== 'mejora' || ($c['estado'] ?? '') !== 'pagado' || (int) ($c['id'] ?? 0) < 1) continue;
+            $plan = (string) ($c['plan'] ?? '');
+            if (empty($planes[$plan]['todos'])) continue;   // solo se sube al Completo
+            if ($this->ponerPlan($negocioId, $plan, (int) $c['id'], (float) ($c['subtotal'] ?? 0), 'pagó el prorrateo con tarjeta, cobro N.º ' . (int) $c['id'])) $puesto = (string) $planes[$plan]['nombre'];
+        }
+        return $puesto;
+    }
+
+    /** Pone el plan y lo anota (una sola vez por cobro). El vencimiento y los pagos no se tocan. */
+    private function ponerPlan(int $negocioId, string $plan, int $cobroId, float $monto, string $porque): bool
+    {
+        if ($cobroId > 0) {
+            $st = $this->db->prepare('INSERT INTO plan_mejoras (negocio_id, cobro_id, plan_codigo, monto) VALUES (?,?,?,?) ON CONFLICT DO NOTHING');
+            $st->execute([$negocioId, $cobroId, $plan, round($monto, 2)]);
+            if ($st->rowCount() !== 1) return false;   // ese cobro ya se aplicó
+        }
+        $this->db->prepare('UPDATE negocios SET plan_codigo = ? WHERE id = ?')->execute([$plan, $negocioId]);
+        $this->db->prepare('INSERT INTO registro_admin (admin_id, negocio_id, accion) VALUES (NULL, ?, ?)')
+                 ->execute([$negocioId, mb_substr('El dueño pasó al plan ' . $plan . ' desde Mi plan: ' . $porque, 0, 300)]);
+        return true;
     }
 
     /** «Pasarme al Completo» sin cobro con tarjeta disponible: el plan no cambia (corrección de Dimitry, 10 nov 2026). */
