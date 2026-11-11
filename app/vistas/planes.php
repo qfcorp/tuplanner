@@ -156,15 +156,15 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
                   $marcadoDef = $codDef . '|' . array_key_first($tarjeta['opciones'][$codDef]);   // su plan (o el elegido), cada mes
                   foreach ($tarjeta['opciones'] as $cod => $ops): if (!$ops) continue;
                 $tPm = $planesMod[$cod] ?? null; $tInc = $tarjeta['incluye'][$cod]; $suyo = $cod === $u['plan_codigo']; ?>
-                <fieldset class="mp-plan <?= $suyo ? 'actual' : '' ?>" id="pagar-<?= e($cod) ?>" style="margin:0">
+                <fieldset class="mp-plan mp-plan-pagar <?= $suyo ? 'actual' : '' ?>" id="pagar-<?= e($cod) ?>">
                     <legend><strong>Plan <?= e($tarjeta['planes'][$cod]) ?></strong><?= $suyo ? ' <small class="suave">(el tuyo)</small>' : '' ?></legend>
-                    <p style="margin:0 0 4px"><?= $tPm ? ($tPm['todos'] ? 'Todos los módulos' . (in_array('asistente_ia', $tPm['modulos'], true) ? ', con el Asistente IA' : '')
+                    <p class="mp-plan-que"><?= $tPm ? ($tPm['todos'] ? 'Todos los módulos' . (in_array('asistente_ia', $tPm['modulos'], true) ? ', con el Asistente IA' : '')
                           : ($tPm['modulos_elegir'] > 0 ? 'La base + ' . (int) $tPm['modulos_elegir'] . ' módulos que tú eliges' : 'La base + ' . count($tPm['modulos']) . ' módulos')) : '' ?>.</p>
-                    <p class="suave" style="margin:0 0 6px"><?= $tInc['precio_acordado'] !== null ? 'Precio acordado con Tukán: '
+                    <p class="mp-plan-cuenta"><?= $tInc['precio_acordado'] !== null ? 'Precio acordado con Tukán: '
                         : 'Plan ' . dinero($tInc['precio_plan']) . ($tInc['precio_extra'] > 0 ? ' + tus módulos extra ' . dinero($tInc['precio_extra']) : '') . ($tInc['descuento'] > 0 ? ' − módulos quitados ' . dinero($tInc['descuento']) : '') . ' = ' ?><strong><?= dinero($tInc['mensual']) ?> + IVA al mes</strong></p>
                     <?php foreach ($ops as $per => $c): $marcar = $cod . '|' . $per === $marcadoDef; ?>
-                        <label style="display:block;margin:6px 0"><input type="radio" name="opcion" value="<?= e($cod . '|' . $per) ?>"<?= $marcar ? ' checked' : '' ?> required>
-                            <strong><?= e($nombres[$per] ?? $per) ?></strong>: <?= dinero($c['monto']) ?> + IVA<?= $per !== 'mensual' ? ' <small class="suave">(' . e(mb_strtolower(planes()->textoPeriodo($per))) . ')</small>' : '' ?></label>
+                        <label class="mp-opcion"><input type="radio" name="opcion" value="<?= e($cod . '|' . $per) ?>"<?= $marcar ? ' checked' : '' ?> required>
+                            <span class="mp-opcion-texto"><span class="mp-opcion-renglon"><?= e($nombres[$per] ?? $per) ?>: <strong><?= dinero($c['monto']) ?> + IVA</strong></span><?= $per !== 'mensual' ? '<small class="mp-opcion-nota">' . e(planes()->textoPeriodo($per)) . '</small>' : '' ?></span></label>
                     <?php endforeach; ?>
                 </fieldset>
             <?php endforeach; ?>

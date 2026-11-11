@@ -79,9 +79,9 @@ contiene "Su plan Básico, marcado como el suyo" "$TMP/pag.html" '<legend><stron
 contiene "… con lo que incluye" "$TMP/pag.html" "La base + 3 módulos que tú eliges"
 contiene "… y la cuenta: plan + módulos extra = \$20,99 + IVA al mes" "$TMP/pag.html" "Plan \$12,99 + tus módulos extra \$8,00 = <strong>\$20,99 + IVA al mes</strong>"
 contiene "Cada mes \$20,99 + IVA, marcado por defecto" "$TMP/pag.html" 'value="esencial|mensual" checked required>'
-contiene "… con su precio" "$TMP/pag.html" "<strong>Cada mes</strong>: \$20,99 + IVA"
-contiene "Cada 6 meses \$104,95 + IVA (paga 5, recibe 6)" "$TMP/pag.html" "<strong>Cada 6 meses</strong>: \$104,95 + IVA <small class=\"suave\">(paga 5, recibe 6)</small>"
-contiene "Cada año \$209,90 + IVA (paga 10, recibe 12)" "$TMP/pag.html" "<strong>Cada año</strong>: \$209,90 + IVA <small class=\"suave\">(paga 10, recibe 12 + dominio propio)</small>"
+contiene "… con su precio" "$TMP/pag.html" "Cada mes: <strong>\$20,99 + IVA</strong>"
+contiene "Cada 6 meses \$104,95 + IVA (paga 5, recibe 6)" "$TMP/pag.html" "Cada 6 meses: <strong>\$104,95 + IVA</strong></span><small class=\"mp-opcion-nota\">Paga 5, recibe 6</small>"
+contiene "Cada año \$209,90 + IVA (paga 10, recibe 12)" "$TMP/pag.html" "Cada año: <strong>\$209,90 + IVA</strong></span><small class=\"mp-opcion-nota\">Paga 10, recibe 12 + dominio propio</small>"
 # (10 nov 2026, 18:26) Cliente con el período pagado: el Completo no se paga entero, se paga la diferencia de los días que faltan
 no_contiene "El Completo no sale para pagarlo entero (se le regalarían los días que faltan)" "$TMP/pag.html" 'value="quinta|mensual"'
 contiene "Bloque «Pasar al Completo» con el cálculo a la vista" "$TMP/pag.html" "<strong>Pasar al Completo:</strong> te faltan 30 días (hasta el $(date -d '+30 days' +%d/%m/%Y))."
@@ -151,11 +151,11 @@ registrar quinta "Quinta Demo Paga $RANDOM"; ND=$NID; ED=$EMAIL
 check "Es una demo" "prueba" "$(sql "SELECT estado FROM negocios WHERE id=$ND")"
 check "Mi plan abre" "200" "$(get "r=planes")"
 contiene "La demo ve «Pagar con tarjeta»" "$TMP/pag.html" 'id="pagar-tarjeta"'
-contiene "… con su plan de la demo (Completo \$25)" "$TMP/pag.html" "<strong>Cada mes</strong>: \$25,00 + IVA"
+contiene "… con su plan de la demo (Completo \$25)" "$TMP/pag.html" "Cada mes: <strong>\$25,00 + IVA</strong>"
 contiene "… y dice que la demo pasa a ser su cuenta" "$TMP/pag.html" "tu demo pasa a ser tu cuenta: nada de lo que cargaste se pierde"
-contiene "La demo ve el Básico de entrada: \$12,99 + IVA al mes" "$TMP/pag.html" "<strong>Cada mes</strong>: \$12,99 + IVA"
-contiene "… \$64,95 por 6 meses" "$TMP/pag.html" "<strong>Cada 6 meses</strong>: \$64,95 + IVA"
-contiene "… \$129,90 por un año" "$TMP/pag.html" "<strong>Cada año</strong>: \$129,90 + IVA"
+contiene "La demo ve el Básico de entrada: \$12,99 + IVA al mes" "$TMP/pag.html" "Cada mes: <strong>\$12,99 + IVA</strong>"
+contiene "… \$64,95 por 6 meses" "$TMP/pag.html" "Cada 6 meses: <strong>\$64,95 + IVA</strong>"
+contiene "… \$129,90 por un año" "$TMP/pag.html" "Cada año: <strong>\$129,90 + IVA</strong>"
 contiene "… y viene marcado su plan de la demo (Completo, cada mes)" "$TMP/pag.html" 'value="quinta|mensual" checked required>'
 r=$(post "r=planes" -d accion=pagar_tarjeta --data-urlencode "opcion=esencial|mensual" -d forma=una_vez)
 check "Paga el Básico un mes, solo esta vez: va a la página de pago" "302 http://127.0.0.1:$PP/pagar/2" "$r"
