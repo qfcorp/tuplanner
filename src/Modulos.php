@@ -70,7 +70,7 @@ final class Modulos
         'portal_proveedor' => ['Portal del proveedor', '🔗', 'Cada proveedor ve sus eventos y el cronograma, confirma órdenes, sube su factura y ve sus pagos y saldo.', 4.0, ['proveedores'], 'gestion'],
         'incidencias' => ['Incidencias y puntaje de proveedores', '⭐', 'Problemas de cada evento con foto y cómo se resolvieron, puntualidad y puntaje de cada proveedor que tú configuras.', 3.0, ['proveedores'], 'gestion'],
         'metas' => ['Metas y reportes avanzados', '🎯', 'Metas de ventas del local y por vendedor con su avance en el Inicio, embudo y conversión, rentabilidad por evento y comisiones de vendedores.', 4.0, [], 'gestion'],
-        'telegram' => ['Avisos por Telegram', '📲', 'Pagos, firmas, consultas nuevas, cuotas por cobrar y seguimientos del día llegan solos al celular del equipo.', 3.0, [], 'conexiones'],
+        'telegram' => ['Avisos por Telegram', '📲', 'Pagos, firmas, consultas nuevas, cuotas por cobrar y seguimientos del día llegan solos al celular del equipo.', 5.0, [], 'conexiones'],
         'exportar' => ['Exportar a Excel y Google Calendar', '📤', 'Descarga eventos, cobros y reportes para Excel y ve tus eventos en Google Calendar.', 3.0, [], 'conexiones'],
         'facturacion' => ['Factura electrónica con TuFactura', '🧾', 'Próximamente. TuFactura (facturación electrónica del SRI): cada pago del evento saldrá como factura electrónica autorizada por el SRI, a nombre de tu cliente, con un toque o sola al registrarlo, y le llegará por correo con el PDF y el XML.', 0.0, [], 'gestion'],
         // Incluido en Completo. En Básico es un extra de $3 al mes que no cuenta entre los 3 módulos a elegir (migración 112).
