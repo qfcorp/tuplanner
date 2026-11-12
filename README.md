@@ -64,7 +64,7 @@ en Mi plan solo ve el precio de lo que ya paga). Se cambian en Panel Tukán → 
 | **Básico** (`esencial`) | $12,99 + IVA al mes (desde el 10 nov 2026) | lugares sin límite, 1 usuario más el dueño | La base + **3 módulos que el cliente elige**; cada módulo más **$5** al mes |
 | **Completo** (`quinta`) | $25 + IVA al mes | sin límite | Todos, **incluido el Asistente IA** (con su tope de uso) |
 
-- El **Asistente IA** en Básico es un extra de **$5** al mes que **no cuenta** entre los 3 elegidos (`Modulos::FUERA_DEL_CUPO`).
+- El **Asistente IA** en Básico es un extra de **$3** al mes que **no cuenta** entre los 3 elegidos (`Modulos::FUERA_DEL_CUPO`).
 - Columnas `planes.modulos_elegir` (cuántos extra van incluidos) y `planes.precio_modulo_extra` (cada uno más; vacío = precio del catálogo).
   Los primeros N extra **en el orden del catálogo** van incluidos (`Modulos::estado()` devuelve `elegidos`, `por_elegir` y `precio_por_extra`).
   Ej.: Comisiones trae Presupuesto y Planificación (dependencias) y los tres cuentan como los 3 elegidos.
@@ -95,9 +95,9 @@ en Mi plan solo ve el precio de lo que ya paga). Se cambian en Panel Tukán → 
 | Presupuesto por proveedor | Partidas por proveedor, pagos directos del cliente, honorarios, dinero del evento | Planificación |
 | Comisiones de proveedores | Comisiones por cobrar y cobradas, recordatorio por WhatsApp | Presupuesto por proveedor |
 | Ideas e inspiración | Tablero de fotos con el cliente, temática y paleta de colores | — |
-| **Asistente IA** (**incluido en Completo**; en Básico, extra de $5 que no cuenta entre los 3) | Evento y cotización desde el mensaje de WhatsApp del cliente; leer la cotización (foto o PDF) de un proveedor → partidas del presupuesto | — |
+| **Asistente IA** (**incluido en Completo**; en Básico, extra de $3 que no cuenta entre los 3) | Evento y cotización desde el mensaje de WhatsApp del cliente; leer la cotización (foto o PDF) de un proveedor → partidas del presupuesto | — |
 
-- **Precio al mes** de cada cliente = plan + módulos extra (los primeros 3 del Básico, incluidos; los demás $5; el Asistente IA $5) − módulos quitados (o un **precio acordado** fijo). Es el que sugiere
+- **Precio al mes** de cada cliente = plan + módulos extra (los primeros 3 del Básico, incluidos; los demás $5; el Asistente IA $3) − módulos quitados (o un **precio acordado** fijo). Es el que sugiere
   "Registrar pago", el `cotizar` y el `mensual_estimado` del Panel Central. Precios, descripciones y qué trae cada plan se cambian en
   Panel Tukán → **Planes y precios → Catálogo de módulos**.
 - **Mi plan** (dueño y administradores): ve sus módulos encendidos y lo que paga por su plan (su contrato). Los módulos y planes que no tiene

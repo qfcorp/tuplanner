@@ -26,7 +26,7 @@ titulo('1. Catálogo y dependencias');
 check('21 módulos (16 + 4 del organizador + Asistente IA de $5, migración 112), cada uno con nombre, ícono, descripción, precio, dependencias y grupo', 21, count(array_filter(Modulos::CATALOGO,
     fn($m, $id) => count($m) === 6 && $m[0] !== '' && $m[1] !== '' && mb_strlen($m[2]) > 30 && $m[3] > 0
                    && is_array($m[4]) && isset(Modulos::GRUPOS[$m[5]]), ARRAY_FILTER_USE_BOTH)));
-check('Asistente IA y factura electrónica: solo a pedido, fuera de "*"; la IA $5 al mes (migración 112)', [['asistente_ia', 'facturacion'], false, 5.0],
+check('Asistente IA y factura electrónica: solo a pedido, fuera de "*"; la IA $3 al mes (hoja oficial 12 nov 2026)', [['asistente_ia', 'facturacion'], false, 3.0],
       [Modulos::SOLO_A_PEDIDO, in_array('asistente_ia', Modulos::parse('*'), true), Modulos::CATALOGO['asistente_ia'][3]]);
 check('Los 4 del organizador con sus dependencias', [['planificacion'], ['presupuesto'], [], []],
       [Modulos::CATALOGO['presupuesto'][4], Modulos::CATALOGO['comisiones'][4], Modulos::CATALOGO['planificacion'][4], Modulos::CATALOGO['ideas'][4]]);

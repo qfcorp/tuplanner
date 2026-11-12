@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es-EC">
+<head>
+<meta charset="utf-8">
+<title>TuPlanner · Presentación</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root { --marino: #14213D; --marino-2: #1D2C50; --amarillo: #629BD0; --naranja: #3678B4; --tinta: #1C2333; --suave: #5B6478; --fondo: #F4F5F8; }
+@page { size: 1920px 1080px; margin: 0; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font-family: "DM Sans", sans-serif; color: var(--tinta); }
+section.diapo { width: 1920px; height: 1080px; position: relative; overflow: hidden; padding: 96px 120px; break-after: page; background: #fff; display: flex; flex-direction: column; }
+section.diapo.oscura { background: var(--marino); color: #fff; }
+h1, h2 { font-family: "Space Grotesk", sans-serif; margin: 0; line-height: 1.05; letter-spacing: -1.5px; }
+h2 { font-size: 72px; color: var(--marino); max-width: 1300px; }
+.oscura h2 { color: #fff; }
+h2 em, h1 em { font-style: normal; color: var(--amarillo); }
+.diapo:not(.oscura) h2 em { color: var(--marino); background: linear-gradient(transparent 62%, var(--amarillo) 62%); }
+.etiqueta { font-family: "Space Grotesk"; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 22px; color: var(--naranja); margin-bottom: 22px; }
+.marca { font-family: "Space Grotesk"; font-weight: 700; font-size: 34px; }
+.marca i { color: var(--amarillo); font-style: normal; }
+.pie { position: absolute; left: 120px; right: 120px; bottom: 44px; display: flex; justify-content: space-between; font-size: 20px; color: var(--suave); }
+.oscura .pie { color: rgba(255,255,255,.6); }
+.franja { position: absolute; left: 0; right: 0; bottom: 0; height: 14px; background: linear-gradient(90deg, var(--amarillo) 0 72%, var(--naranja) 72%); }
+p.grande { font-size: 32px; line-height: 1.45; max-width: 980px; margin: 28px 0 0; }
+.oscura p.grande { color: rgba(255,255,255,.9); }
+.dos { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; flex: 1; }
+.dos.ancha { grid-template-columns: 640px 1fr; }
+ul.puntos { list-style: none; padding: 0; margin: 40px 0 0; font-size: 30px; line-height: 1.4; }
+ul.puntos li { padding-left: 52px; position: relative; margin-bottom: 22px; }
+ul.puntos li::before { content: ""; position: absolute; left: 0; top: 10px; width: 26px; height: 26px; border-radius: 8px; background: var(--amarillo); }
+ul.puntos b { color: var(--marino); }
+.oscura ul.puntos b { color: var(--amarillo); }
+.compu { width: 100%; border-radius: 18px; overflow: hidden; box-shadow: 0 30px 70px rgba(20,33,61,.25); border: 1px solid #DDE1EA; background: #fff; }
+.compu .barra { height: 38px; background: #E9ECF2; display: flex; gap: 10px; align-items: center; padding: 0 16px; }
+.compu .barra span { width: 14px; height: 14px; border-radius: 50%; background: #C7CCD7; }
+.compu img { width: 100%; height: 680px; object-fit: cover; object-position: top left; display: block; }
+.cel { width: 330px; border: 12px solid #0A1530; border-radius: 48px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,.35); background: #fff; }
+.cel img { width: 100%; height: 640px; object-fit: cover; object-position: top; display: block; }
+.celes { display: flex; gap: 50px; justify-content: center; align-items: flex-end; }
+.celes .cel:nth-child(2) { transform: translateY(-40px); }
+.portada h1 { font-size: 150px; color: #fff; margin-top: 120px; }
+.portada .bajada { font-size: 40px; max-width: 900px; line-height: 1.35; margin-top: 30px; color: rgba(255,255,255,.92); }
+.portada .celes { position: absolute; right: 120px; top: 150px; }
+.tarjetas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; margin-top: 60px; }
+.tarjeta { background: var(--fondo); border-radius: 22px; padding: 34px 30px; }
+.oscura .tarjeta { background: var(--marino-2); }
+.tarjeta .ico { font-size: 52px; }
+.tarjeta h3 { font-family: "Space Grotesk"; font-size: 30px; margin: 16px 0 10px; color: var(--marino); }
+.oscura .tarjeta h3 { color: var(--amarillo); }
+.tarjeta p { font-size: 22px; line-height: 1.4; margin: 0; color: var(--suave); }
+.oscura .tarjeta p { color: rgba(255,255,255,.8); }
+.modulos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 48px; }
+.modulo { background: var(--marino-2); border-radius: 16px; padding: 20px 22px; font-size: 23px; display: flex; gap: 14px; align-items: center; color: #fff; }
+.modulo span { font-size: 32px; }
+.planes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; margin-top: 60px; }
+.planc { border-radius: 26px; padding: 44px 40px; background: var(--fondo); }
+.planc.dest { background: var(--marino); color: #fff; }
+.planc h3 { font-family: "Space Grotesk"; font-size: 46px; margin: 0 0 10px; color: var(--marino); }
+.planc.dest h3 { color: var(--amarillo); }
+.planc p { font-size: 25px; line-height: 1.45; margin: 0; }
+.cierre { align-items: center; justify-content: center; text-align: center; }
+.cierre h2 { font-size: 130px; max-width: none; }
+.cierre .wa { margin-top: 50px; display: inline-flex; gap: 24px; align-items: center; background: var(--amarillo); color: var(--marino); font-family: "Space Grotesk"; font-weight: 700; font-size: 60px; padding: 26px 60px; border-radius: 999px; }
+.cierre .lema { font-size: 38px; margin-top: 56px; max-width: 1200px; line-height: 1.4; color: rgba(255,255,255,.92); }
+.cierre .lema b { color: var(--amarillo); }
+.cierre .web { margin-top: 30px; font-size: 28px; color: rgba(255,255,255,.7); }
+</style>
+</head>
+<body>
+
+<section class="diapo oscura portada">
+  <div class="marca">tukán<i>.</i></div>
+  <h1>Tu<em>Planner</em></h1>
+  <p class="bajada">El sistema para organizadores de eventos, bodas y quintas de Ecuador.</p>
+  <ul class="puntos" style="max-width:860px;font-size:32px"><li>Del <b>cliente al contrato</b> en un solo lugar</li><li><b>Presupuesto</b> por proveedor, siempre claro</li><li>Tu cliente ve su evento en su <b>portal</b></li></ul>
+  <div class="celes"><div class="cel"><img src="../manual/capturas/03_inicio_celular.png" alt=""></div><div class="cel"><img src="../manual/capturas/24_firmar_celular.png" alt=""></div></div>
+  <div class="pie"><span>tuplanner.tukanec.com</span><span>Tukán Software</span></div>
+  <div class="franja"></div>
+</section>
+
+<section class="diapo">
+  <div class="etiqueta">El día a día de un organizador</div>
+  <h2>¿Te suena <em>alguno</em> de estos problemas?</h2>
+  <div class="tarjetas"><div class="tarjeta"><div class="ico">📒</div><h3>Todo en WhatsApp</h3><p>Cotizaciones, fotos y pagos perdidos entre chats y hojas de Excel.</p></div><div class="tarjeta"><div class="ico">📄</div><h3>Contratos sueltos</h3><p>Contratos en papel, firmas que se demoran y nadie sabe cuál es la última versión.</p></div><div class="tarjeta"><div class="ico">🧩</div><h3>Proveedores sin seguimiento</h3><p>Quién confirmó, quién falta pagar y qué entregó cada uno, todo en la cabeza.</p></div><div class="tarjeta"><div class="ico">💸</div><h3>No sabes cuánto ganaste</h3><p>Fin de mes sacando cuentas: cuánto dejó cada evento y qué comisión toca.</p></div></div>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>2</span></div>
+</section>
+
+<section class="diapo">
+  <div class="etiqueta">Tus eventos</div>
+  <div class="dos ancha">
+    <div>
+      <h2>Todos tus eventos en <em>un calendario</em>.</h2>
+      <ul class="puntos"><li>Cada evento con su <b>fecha, lugar y estado</b></li><li>Estados claros: consulta, cotizado, separado, confirmado y realizado</li><li>Al cotizar, la <b>fecha queda retenida</b>; al pagar la reserva, el lugar queda <b>bloqueado</b></li></ul>
+    </div>
+    <div class="compu"><div class="barra"><span></span><span></span><span></span></div><img src="../manual/capturas/10_calendario.png" alt=""></div>
+  </div>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>3</span></div>
+</section>
+
+<section class="diapo oscura">
+  <div class="etiqueta">Planificación</div>
+  <div class="dos ancha">
+    <div>
+      <h2>El plan de cada evento, <em>paso a paso</em>.</h2>
+      <ul class="puntos"><li>Tareas con <b>responsable y fecha</b></li><li>La lista de tareas de siempre se copia sola a cada evento</li><li>Todo el equipo ve lo suyo, <b>también desde el celular</b></li></ul>
+    </div>
+    <div class="compu"><div class="barra"><span></span><span></span><span></span></div><img src="../manual/capturas/17_plan_tareas.png" alt=""></div>
+  </div>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>4</span></div>
+</section>
+
+<section class="diapo">
+  <div class="etiqueta">Presupuesto</div>
+  <div class="dos ancha">
+    <div>
+      <h2>Presupuesto <em>por proveedor</em>.</h2>
+      <ul class="puntos"><li>Cada partida con su proveedor, su costo y lo que ya se pagó</li><li>Sabes en vivo <b>cuánto queda por pagar</b></li><li>Lee la cotización de un proveedor desde una foto o PDF (con el Asistente IA)</li></ul>
+    </div>
+    <div class="compu"><div class="barra"><span></span><span></span><span></span></div><img src="../manual/capturas/15_plan_presupuesto.png" alt=""></div>
+  </div>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>5</span></div>
+</section>
+
+<section class="diapo oscura">
+  <div class="etiqueta">Cotización y contrato</div>
+  <div class="dos ancha">
+    <div>
+      <h2>Cotiza, firma y <em>cobra</em>.</h2>
+      <ul class="puntos"><li>Cotización con <b>PDF</b>, desde un paquete o copiando la anterior</li><li>El cliente <b>firma con el dedo</b> desde su celular</li><li>Al aceptar, se arma el <b>plan de pagos</b></li></ul>
+    </div>
+    <div class="compu"><div class="barra"><span></span><span></span><span></span></div><img src="../manual/capturas/23_contrato.png" alt=""></div>
+  </div>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>6</span></div>
+</section>
+
+<section class="diapo">
+  <div class="etiqueta">Portal del cliente</div>
+  <div class="dos">
+    <div>
+      <h2>Tu cliente ve <em>su evento</em>.</h2>
+      <ul class="puntos"><li>Un enlace donde ve el plan, los pagos y lo que falta</li><li>Ve sus documentos y pagos <b>sin claves</b></li><li>Menos mensajes de «¿cómo vamos?»</li></ul>
+    </div>
+    <div class="celes"><div class="cel"><img src="../manual/capturas/26_portal.png" alt=""></div><div class="cel"><img src="../manual/capturas/27_portal_plan.png" alt=""></div></div>
+  </div>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>7</span></div>
+</section>
+
+<section class="diapo">
+  <div class="etiqueta">Dinero claro</div>
+  <div class="dos ancha">
+    <div>
+      <h2>Cobros y <em>comisiones</em>.</h2>
+      <ul class="puntos"><li>Cuotas por cobrar y comprobantes en un solo lugar</li><li>Comisiones de <b>vendedores y proveedores</b> (módulos)</li><li>Reportes: ventas, cobrado, por cobrar y ocupación</li></ul>
+    </div>
+    <div class="compu"><div class="barra"><span></span><span></span><span></span></div><img src="../manual/capturas/28_cobros.png" alt=""></div>
+  </div>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>8</span></div>
+</section>
+
+<section class="diapo oscura">
+  <div class="etiqueta">Día del evento</div>
+  <div class="dos ancha">
+    <div>
+      <h2>El día D, <em>sin sorpresas</em>.</h2>
+      <ul class="puntos"><li>Lo que toca hacer ese día, para todo el equipo</li><li>Invitados con <b>código QR</b> en la puerta</li><li>Plano del salón y mobiliario</li></ul>
+    </div>
+    <div class="compu"><div class="barra"><span></span><span></span><span></span></div><img src="../manual/capturas/32_dia_evento.png" alt=""></div>
+  </div>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>9</span></div>
+</section>
+
+<section class="diapo">
+  <div class="etiqueta">Todo tu equipo</div>
+  <h2>Cada uno ve <em>lo suyo</em>.</h2>
+  <div class="tarjetas"><div class="tarjeta"><div class="ico">👤</div><h3>Vendedores</h3><p>Ven sus consultas, cotizaciones y metas.</p></div><div class="tarjeta"><div class="ico">🧑‍💼</div><h3>Coordinadores</h3><p>Llevan el plan y las tareas de cada evento.</p></div><div class="tarjeta"><div class="ico">🛡️</div><h3>Hasta 4 administradores</h3><p>Con tu mismo nivel, y no cuentan como personas del plan.</p></div><div class="tarjeta"><div class="ico">📲</div><h3>Avisos en el celular</h3><p>Pagos, firmas y seguimientos llegan solos por Telegram.</p></div></div>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>10</span></div>
+</section>
+
+<section class="diapo">
+  <div class="etiqueta">Ayuda e IA</div>
+  <div class="dos ancha">
+    <div>
+      <h2>Una ayuda que <em>responde</em>.</h2>
+      <ul class="puntos"><li><b>Ayuda</b> en todos los planes: pregunta «¿cómo hago…?» y responde con el manual</li><li><b>Asistente IA</b> (incluido en Completo): arma la cotización con el mensaje de WhatsApp del cliente</li><li>Lo importante siempre lo confirma una persona</li></ul>
+    </div>
+    <div class="compu"><div class="barra"><span></span><span></span><span></span></div><img src="../manual/capturas/37_ayuda.png" alt=""></div>
+  </div>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>11</span></div>
+</section>
+
+<section class="diapo oscura">
+  <div class="etiqueta">Por módulos</div>
+  <h2>Enciendes solo lo que <em>usas</em>.</h2>
+  <div class="modulos"><div class="modulo"><span>🗓️</span>Planificación</div><div class="modulo"><span>💰</span>Presupuesto por proveedor</div><div class="modulo"><span>🤝</span>Comisiones de proveedores</div><div class="modulo"><span>💡</span>Ideas e inspiración</div><div class="modulo"><span>🎁</span>Paquetes y simulador</div><div class="modulo"><span>✍️</span>Contratos con firma</div><div class="modulo"><span>📱</span>Portal del cliente</div><div class="modulo"><span>💳</span>Cobros en línea</div><div class="modulo"><span>📝</span>Formulario, extras y encuesta</div><div class="modulo"><span>⏱️</span>Día del evento</div><div class="modulo"><span>🎟️</span>Invitados con QR</div><div class="modulo"><span>🗺️</span>Plano del salón</div><div class="modulo"><span>🪑</span>Mobiliario y menaje</div><div class="modulo"><span>🎥</span>Boda en vivo</div><div class="modulo"><span>🚚</span>Proveedores y compras</div><div class="modulo"><span>🔗</span>Portal del proveedor</div><div class="modulo"><span>⭐</span>Puntaje de proveedores</div><div class="modulo"><span>🎯</span>Metas y reportes</div><div class="modulo"><span>📲</span>Avisos por Telegram</div><div class="modulo"><span>📤</span>Exportar a Excel y Calendar</div></div>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>12</span></div>
+</section>
+
+<section class="diapo">
+  <div class="etiqueta">Planes</div>
+  <h2>Empieza donde está <em>tu negocio</em>.</h2>
+  <ul class="puntos"><li><b>Básico:</b> la base de TuPlanner (eventos, clientes, calendario, cobros) y <b>3 módulos que tú eliges</b></li><li><b>Completo:</b> todos los módulos, sin límite de lugares ni de usuarios, con el Asistente IA</li><li>En el Básico puedes sumar más módulos. Pide tu cotización. Apagar un módulo nunca borra tus datos.</li></ul>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>13</span></div>
+</section>
+
+<section class="diapo">
+  <div class="etiqueta">Factura electrónica</div>
+  <h2>Factura del SRI con <em>TuFactura</em> · Próximamente</h2>
+  <ul class="puntos"><li>Cada pago del evento saldrá como factura autorizada por el SRI</li><li>Con un toque o sola al cobrar, y le llegará al cliente por correo</li><li>TuFactura (facturación electrónica del SRI): Próximamente</li></ul>
+  <div class="pie"><span>TuPlanner · Tukán Software</span><span>14</span></div>
+</section>
+
+<section class="diapo oscura cierre">
+  <div class="marca">tukán<i>.</i></div>
+  <h2 style="margin-top:40px">Pida su <em>demo</em></h2>
+  <div class="wa">WhatsApp 098 366 2181</div>
+  <p class="lema"><b>Todo es por módulos:</b> usted elige los módulos que necesita y paga solo por eso. Se cotiza según lo que use y sin permanencia.</p>
+  <p class="web">tuplanner.tukanec.com · tukansoftware.com · info@tukansoftware.com</p>
+  <p class="web" style="margin-top:12px">Grupo de ayuda en Telegram: https://t.me/+dQfU0W9yvo85MzRh</p>
+  <div class="franja"></div>
+</section>
+
+</body>
+</html>

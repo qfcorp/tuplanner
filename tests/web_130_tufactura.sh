@@ -15,8 +15,8 @@ pagar_plan quinta
 get "r=mas" > /dev/null
 contiene "Más tiene «Factura electrónica»" "$TMP/pag.html" "r=tufactura"
 check "Apagado: la pantalla abre" "200" "$(get 'r=tufactura')"
-contiene "Apagado: explica TuFactura y deja pedirlo" "$TMP/pag.html" "Quiero facturar con TuFactura"
-contiene "… el pedido va a Mi plan" "$TMP/pag.html" "modulo=facturacion"
+contiene "Apagado: explica TuFactura y dice Próximamente" "$TMP/pag.html" "TuFactura (facturación electrónica del SRI): Próximamente."
+no_contiene "… ya no deja pedirlo ni muestra precio" "$TMP/pag.html" "Quiero facturar con TuFactura"
 
 echo "2. Encendido: conectar y facturar un pago"
 sql "UPDATE negocios SET modulos_extra = CASE WHEN COALESCE(modulos_extra, '') = '' THEN 'facturacion' ELSE modulos_extra || ',facturacion' END WHERE id = $NID" > /dev/null

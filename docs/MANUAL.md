@@ -1,6 +1,6 @@
 # Manual de TuPlanner (por módulo)
 
-Versión completa con capturas: [Manual_TuPlanner.pdf](Manual_TuPlanner.pdf) (38 páginas). Las capturas están en [manual/capturas](manual/capturas) y salen del negocio de ejemplo «Planner Demo Tukanec».
+Versión completa con capturas: [Manual_TuPlanner.pdf](Manual_TuPlanner.pdf) (45 páginas). Las capturas están en [manual/capturas](manual/capturas) y salen del negocio de ejemplo «Planner Demo Tukanec».
 Entrar: **tuplanner.tukanec.com** con tu correo y tu contraseña. Ayuda: WhatsApp 098 366 2181 · info@tukansoftware.com · tukansoftware.com.
 
 Cada parte dice si es de la **base** (la tienen todos) o de un **módulo** (se enciende en Mi plan). Si un módulo no está en tu plan, su pantalla dice «Este módulo no está en tu plan» con el botón **Ver Mi plan**. Apagar un módulo no borra nada.
@@ -99,15 +99,14 @@ Paquetes y simulador · Contratos con firma (firma con el dedo, QR de verificaci
   - Si no se puede leer automáticamente: «En este momento no pudimos procesar … automáticamente; puede hacerlo a mano aquí» con el enlace.
 - Para Tukán: la IA se configura una vez en el servidor (`/etc/tukan-ia.env`, `bash deploy/configurar_ia.sh` del Panel Tukán Central). Sin ese archivo la Ayuda responde con las preguntas guardadas y el manual. Gasto por negocio y mes con tope (4,00 USD con el módulo, incluido o comprado aparte; 0,50 USD sin él; una demo, 0,50 USD en total aunque tenga todos los módulos; Tukán lo cambia desde el Panel con «Tope de IA»). Preguntas guardadas: Panel de TuPlanner → **Preguntas IA**.
 
-## Factura electrónica con TuFactura (módulo aparte, viene apagado)
+## Factura electrónica con TuFactura (módulo aparte, viene apagado) — Próximamente
 *9 nov 2026*
 
 Con este módulo, cada pago confirmado de un evento sale como **factura electrónica autorizada por el SRI** y le llega al cliente por correo.
 
 **Cómo se consigue**
-- **TuFactura cuesta $30 + IVA al año** y este enlace va incluido. En TuPlanner el módulo cuesta $0.
-- Pídelo a Tukán Software. Tukán crea tu cuenta de TuFactura y enciende el módulo desde el Panel Tukán Central.
-- No viene en ningún plan ni en la demo.
+- **TuFactura (facturación electrónica del SRI): Próximamente.** Todavía no se puede pedir.
+- Cuando esté disponible, Tukán Software te avisará. No viene en ningún plan ni en la demo.
 
 **Conectar tu cuenta** (una sola vez, el administrador)
 1. En TuFactura, abre **Configuración → Conexiones** y crea una clave para el punto de emisión que vas a usar. La clave empieza con `tf_`.

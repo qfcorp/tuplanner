@@ -213,11 +213,11 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
                                 <button data-ico="flecha" class="boton tk-boton boton-chico chico" type="submit">Elegir este módulo</button></form>
                         <?php endif; ?>
                         <?php else: ?>
-                        <span class="mp-mod-precio"><?= !$on ? ($elegible ? 'Puedes elegirlo en tu plan' : (in_array($id, Modulos::SOLO_A_PEDIDO, true) || $aPedido ? 'Pídalo y le cotizamos' : 'Precio por cotización'))
+                        <span class="mp-mod-precio"><?= !$on ? ($id === 'facturacion' ? 'Próximamente' : ($elegible ? 'Puedes elegirlo en tu plan' : (in_array($id, Modulos::SOLO_A_PEDIDO, true) || $aPedido ? 'Pídalo y le cotizamos' : 'Precio por cotización')))
                             : (in_array($id, $me['del_plan'], true) ? 'Incluido en tu plan'
                                : (in_array($id, $me['elegidos'] ?? [], true) ? 'Incluido · lo elegiste'
                                   : ($aPedido ? 'Agregado a tu plan' : 'Extra · ' . dinero($me['precio_por_extra'][$id] ?? $m['precio_mensual']) . ' + IVA al mes'))) ?></span>
-                        <?php if (!$on && !$pedido): $sm = $sugerenciaModulo[$id] ?? null; ?>
+                        <?php if (!$on && !$pedido && $id !== 'facturacion'): /* (12 nov 2026) TuFactura: Próximamente, no se pide */ $sm = $sugerenciaModulo[$id] ?? null; ?>
                             <?php if ($sm): /* (10 nov 2026) con este módulo igualaría o pasaría al Completo: se avisa antes de pedirlo */ ?>
                                 <p class="aviso aviso-alerta mp-sugerencia-mod" style="margin:6px 0">Con este módulo pagarías <?= dinero($sm['actual']) ?> + IVA al mes. El plan Completo cuesta <?= dinero($sm['completo']) ?> + IVA y trae todos los módulos y el Asistente IA: te sugerimos el Completo.</p>
                             <?php endif; ?>
