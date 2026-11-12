@@ -92,7 +92,7 @@ Paquetes y simulador · Contratos con firma (firma con el dedo, QR de verificaci
 - El valor del programa siempre es por cotización según los módulos: WhatsApp 098 366 2181.
 
 ## Ayuda e inteligencia artificial
-- **Ayuda (base, todos los planes y cargos):** **Menú → Ayuda** → cuadro **¿Qué necesita hacer?** (hasta 500 letras) → **Preguntar**. Responde al instante y paso a paso con el manual. Las preguntas ya hechas quedan guardadas (Tukán las revisa) y salen de inmediato. Hasta 10 preguntas por minuto. Si no sirvió: **WhatsApp 098 366 2181**.
+- **Ayuda (base, todos los planes y cargos):** **Menú → Ayuda** → cuadro **¿Qué necesita hacer?** (hasta 500 letras) → **Preguntar**. Responde al instante y paso a paso con el manual. Las preguntas ya hechas quedan guardadas (Tukán las revisa) y salen de inmediato. Hasta 10 preguntas por minuto. Si no sirvió: **WhatsApp 098 366 2181**. Grupo de ayuda en Telegram: https://t.me/+dQfU0W9yvo85MzRh
 - **Asistente IA (incluido en el plan Completo; en el Básico, «Pídalo y le cotizamos»):**
   - **Eventos** o **Nuevo evento** → **✨ Desde un mensaje de WhatsApp** → pega el mensaje del cliente → **Proponer la cotización** → borrador con cliente, tipo, fecha, invitados, lugar (o por definir), paquete y servicios de **tu catálogo** → **Guardar evento y cotización** (evento en Consulta, cotización en borrador; no se envía nada).
   - **Planificación → Presupuesto** → **✨ Leer cotización de proveedor** → sube la foto o el PDF de la proforma (y una nota) → **Leer la cotización** → marca las partidas → **Agregar al presupuesto** (quedan «Pidiendo precios», el cliente le paga directo).
