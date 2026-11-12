@@ -8,12 +8,30 @@ use PDO;
 /**
  * Avisos por Telegram con el bot de TuPlanner (mismo sistema que TuSalón).
  * config/.env: TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_USERNAME, TELEGRAM_WEBHOOK_SECRET, (pruebas) TELEGRAM_API_BASE.
+ * TELEGRAM_PREFIJO=tn (opcional) = se usa el bot GENÉRICO «Tukán Software» (uno solo para todos los programas Tukán): el token y
+ * el usuario del bot son los de ese bot, el enlace de /start lleva el prefijo «tn» y el Panel Tukán Central (src/BotTukan.php)
+ * reenvía aquí lo que le toca. Vacío = el bot propio de siempre. Siempre se aceptan las dos formas.
  * Cada usuario conecta su Telegram con un enlace de un solo uso (/start <código>).
  * Si Telegram no está configurado, todo sigue funcionando sin él.
  */
 final class Telegram
 {
+    /** Prefijo de este programa en el bot genérico de Tukán Software. */
+    public const PREFIJO = 'tn';
+
     public function __construct(private PDO $db) {}
+
+    /** ¿Se usa el bot genérico «Tukán Software»? (TELEGRAM_PREFIJO=tn). */
+    public static function botGenerico(): bool
+    {
+        return strtolower(trim((string) getenv('TELEGRAM_PREFIJO'))) === self::PREFIJO;
+    }
+
+    /** Parámetro del /start: con el bot genérico lleva el prefijo del programa (tn_código). */
+    public static function inicio(string $codigo): string
+    {
+        return self::botGenerico() ? self::PREFIJO . '_' . $codigo : $codigo;
+    }
 
     public static function configurado(): bool
     {
@@ -46,7 +64,7 @@ final class Telegram
         if (!self::configurado()) return null;
         $codigo = bin2hex(random_bytes(12));
         $this->db->prepare('UPDATE usuarios SET telegram_codigo = ? WHERE id = ?')->execute([$codigo, $usuarioId]);
-        return 'https://t.me/' . getenv('TELEGRAM_BOT_USERNAME') . '?start=' . $codigo;
+        return 'https://t.me/' . getenv('TELEGRAM_BOT_USERNAME') . '?start=' . self::inicio($codigo);
     }
 
     public function desconectar(int $usuarioId): void
@@ -82,7 +100,7 @@ final class Telegram
         if (!$msg || !isset($msg['chat']['id'])) return;
         $texto = trim((string) ($msg['text'] ?? ''));
         $chat = (string) $msg['chat']['id'];
-        if (preg_match('/^\/start\s+([a-f0-9]{24})$/', $texto, $m)) {
+        if (preg_match('/^\/start\s+(?:'.self::PREFIJO.'_)?([a-f0-9]{24})$/', $texto, $m)) {
             $st = $this->db->prepare('UPDATE usuarios SET telegram_chat_id = ?, telegram_codigo = NULL WHERE telegram_codigo = ? RETURNING nombre');
             $st->execute([$chat, $m[1]]);
             $nombre = $st->fetchColumn();
