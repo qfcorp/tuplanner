@@ -44,7 +44,7 @@ final class DemoGoogle
     public function crear(?DateTimeImmutable $hoy = null): array
     {
         $hoy ??= new DateTimeImmutable('today');
-        $clave = 'Demo-' . str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $clave = (strlen((string) getenv('REVISOR_CLAVE')) >= 8 ? (string) getenv('REVISOR_CLAVE') : 'Demo-' . str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT));  // (13 nov 2026) REVISOR_CLAVE=... fija la clave
         $this->db->beginTransaction();
         try {
             $viejo = $this->negocioId();
