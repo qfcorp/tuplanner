@@ -13,7 +13,7 @@ $waTukan = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola,
     <h2>¡Recibimos tu pedido!</h2>
     <p>¡Listo! Estamos preparando tu demo: toma entre 5 y 10 minutos aproximadamente. Cuando esté lista te llega al correo tu clave, el manual y la guía de primeros pasos. Revisa también la carpeta de spam.</p>
     <p class="suave">Gracias, <?= e(explode(' ', $d['nombre'])[0]) ?>. La demo de <strong><?= e($d['nombre_comercial']) ?></strong> dura <?= (int) $diasDemo ?> días y la clave va a <strong><?= e($d['email']) ?></strong>.</p>
-    <div class="acciones tk-acciones"><a class="boton tk-boton boton-wa ok" href="<?= e($waTukan) ?>" target="_blank" rel="noopener">¿No te llegó? Escríbenos por WhatsApp</a></div>
+    <?php if (!en_app_ios()): /* iPhone (regla de Apple): sin WhatsApp de ventas */ ?><div class="acciones tk-acciones"><a class="boton tk-boton boton-wa ok" href="<?= e($waTukan) ?>" target="_blank" rel="noopener">¿No te llegó? Escríbenos por WhatsApp</a></div><?php endif; ?>
 </section>
 <p><a href="<?= e(url('login')) ?>">Volver a Entrar</a></p>
 <?php else:
@@ -80,5 +80,5 @@ $waTukan = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola,
     <div class="trampa" aria-hidden="true"><label>Sitio web <input type="text" name="sitio_web" tabindex="-1" autocomplete="off"></label></div>
     <button data-ico="enviar" class="boton tk-boton boton-ancho" type="submit">Solicitar demo</button>
 </form>
-<p>¿Ya tienes cuenta? <a href="<?= e(url('login')) ?>">Entrar</a> · <a href="<?= e($waTukan) ?>" target="_blank" rel="noopener">Pedir demo por WhatsApp</a></p>
+<p>¿Ya tienes cuenta? <a href="<?= e(url('login')) ?>">Entrar</a><?php if (!en_app_ios()): ?> · <a href="<?= e($waTukan) ?>" target="_blank" rel="noopener">Pedir demo por WhatsApp</a><?php endif; ?></p>
 <?php endif; ?>

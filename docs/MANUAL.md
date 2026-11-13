@@ -14,6 +14,7 @@ Para regenerar el manual (base de ejemplo, capturas y PDF): `bash docs/manual/ge
 ### Entrar y el Inicio
 - Correo y contraseña → **Entrar**. Menú: a la izquierda en la computadora, con todas las secciones a la vista y agrupadas (Principal, Ventas, Dinero, Operación, Configuración) y «Buscar evento o cliente…» arriba; en el celular se abre con el botón ☰ de arriba a la izquierda. En la barra de arriba: el nombre del negocio, tu nombre (lleva a Mi cuenta) y Salir.
 - **App de Android** (Google Play, «TuPlanner»): el mismo correo y la misma contraseña, a pantalla completa. En la app no se ven precios ni pagos del plan de TuPlanner (Mi plan muestra solo el plan y los módulos); lo que cobras a tus clientes funciona igual.
+- **App de iPhone** («TuPlanner»): el mismo correo y la misma contraseña. Igual que en Android, en la app no se ven precios ni pagos del plan de TuPlanner: Mi plan muestra solo tu plan, su fecha y tus módulos; lo que cobras a tus clientes funciona igual.
 - **Menú → Mi cuenta → Borrar mi cuenta**: abre un correo listo para pedir que se borre la cuenta y sus datos (máximo 15 días). Detalle en la política de privacidad.
 - El Inicio muestra comprobantes por revisar, cifras, próximos 7 días, avisos, seguimientos, tareas y cuotas.
 - Cuenta nueva: guía **Primeros pasos** (datos del negocio, logo, lugares y precios, primer evento).

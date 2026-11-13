@@ -19,10 +19,10 @@ $ahorro = function (array $c, array $mensual): int {
 $encendidos = count($me['pagados']);
 // App de Google Play (docs/GOOGLE_PLAY.md): sin precios del software, sin «Pedir cotización», sin «Pagar» ni WhatsApp de ventas.
 // Se ve el plan, su estado, los módulos encendidos y se pueden elegir los módulos incluidos en el plan (no cuesta nada más).
-$enApp = en_app_android();
+$enApp = en_app_tienda();   // Google Play o iPhone: sin precios ni cómo pagar
 // «Te sugerimos el Completo» (10 nov 2026, tercera parte, Dimitry: «queremos que más gente vaya al Completo»). Nunca en la app.
 $avisoCompleto = function (string $donde) use ($sugerencia, $tarjeta, $u, $mejora): string {
-    if (!$sugerencia || en_app_android()) return '';
+    if (!$sugerencia || en_app_tienda()) return '';
     $s = $sugerencia;
     $pagas = ($u['estado'] === 'prueba' ? 'pagarías ' : 'pagas ') . dinero($s['actual']) . ' + IVA al mes';
     $h = $s['tipo'] === 'mayor'
@@ -324,5 +324,5 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
 </section>
 <?php endif; ?>
 <?php if ($u['estado'] !== 'prueba'): /* «Cancelar mi plan» (src/TukanCancelarPlan.php) */ ?>
-<?= TukanCancelarPlan::html($cancelacion ?? null, campo_csrf(), url('planes'), $u['activo_hasta'] ?? null, en_app_android()) ?>
+<?= en_app_ios() ? '' /* iPhone (regla de Apple): sin botón para cancelar ni decir dónde se paga */ : TukanCancelarPlan::html($cancelacion ?? null, campo_csrf(), url('planes'), $u['activo_hasta'] ?? null, en_app_android()) ?>
 <?php endif; ?>

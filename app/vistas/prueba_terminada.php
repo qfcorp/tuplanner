@@ -10,7 +10,7 @@ $textos = [
 $wa = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode("Hola, $motivo de TuPlanner (" . $u['negocio'] . ', ' . $u['email'] . ') y quiero contratar un plan.');
 $pausada = $estadoCuenta === 'suspendido';
 // App de Google Play: sin enlaces para contratar o pagar el software por fuera (ni WhatsApp de ventas); textos neutros
-$enApp = en_app_android();
+$enApp = en_app_tienda();   // app de Google Play o de iPhone (regla 3.1.1 de Apple)
 if ($enApp) {
     $titulo = ['prueba_vencida' => 'Tu demo terminó', 'vencido' => 'Tu plan venció'][$estadoCuenta] ?? $titulo;
     if ($estadoCuenta === 'prueba_vencida') $texto = 'El acceso de demostración de esta cuenta terminó.';
@@ -19,6 +19,7 @@ if ($enApp) {
 }
 if ($pausada) {   // Anexo A: cuenta pausada por Tukán, con el motivo (genérico en revisión y uso indebido) y el WhatsApp de Tukán
     $texto = \TuPlanner\Papelera::textoPausa($u['pausa_tipo'] ?? null, $u['pausa_motivo'] ?? null);
+    if (en_app_ios()) $texto = 'Esta cuenta está pausada temporalmente.';   // iPhone: sin decir dónde escribir ni pagar
     $wa = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola, mi cuenta de TuPlanner está pausada (' . $u['negocio'] . ', ' . $u['email'] . '). ¿Me ayudan a reactivarla?');
 }
 ?>

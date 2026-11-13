@@ -16,7 +16,7 @@ if ($ev) require RAIZ . '/app/vistas/_evento_tabs.php';
 <section class="bloque tk-tarjeta mod-apagado" style="max-width:640px">
     <p class="mod-apagado-etq">🔒 Este módulo no está en tu plan</p>
     <p><?= e($m['descripcion']) ?></p>
-    <?php if (en_app_android()): /* app de Google Play: sin cotizaciones ni precios del software */ ?>
+    <?php if (en_app_tienda()): /* app de Google Play o de iPhone: sin cotizaciones ni precios del software */ ?>
     <p class="suave ayuda-chica">Si ya lo usaste antes, tus datos siguen guardados: al encenderlo, todo vuelve como estaba.</p>
     <?php if (es_admin_total($u)): ?><div class="acciones tk-acciones"><a data-ico="ojo" class="boton tk-boton boton-claro secundario" href="<?= e(url('planes')) ?>#mod-<?= e($modulo) ?>">Ver Mi plan</a></div><?php endif; ?>
     <?php else: ?>
