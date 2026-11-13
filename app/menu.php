@@ -48,7 +48,7 @@ function tk_menu(array $u): array
         if ($mod('cuestionarios')) $config[] = ['cuestionarios', 'Formularios del evento', '📋', 'Preguntas para el cliente por tipo de evento'];
         $config[] = ['usuarios', 'Usuarios', '🧑‍💼', 'Vendedores y coordinadores'];
         $config[] = ['tufactura', 'Factura electrónica', '🧾', 'Factura del SRI de cada pago, con TuFactura'];
-        $config[] = ['planes', 'Mi plan', '⭐', en_app_android() ? 'Tu plan y tus módulos' : 'Tus módulos, lo que pagas y lo que puedes agregar'];
+        $config[] = ['planes', 'Mi plan', '⭐', en_app_tienda() ? 'Tu plan y tus módulos' : 'Tus módulos, lo que pagas y lo que puedes agregar'];
     }
     $config[] = ['mi_cuenta', 'Mi cuenta', '👤', 'Contraseña y Telegram'];
     $config[] = ['ayuda', 'Ayuda', '❓', 'Pregunte cómo hacer algo y le respondemos al instante'];

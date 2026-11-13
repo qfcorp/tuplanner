@@ -303,3 +303,16 @@ Dimitry: «Debes indicar que el proceso de creación de demos demora entre 5 a 1
 - En el formulario, junto a «La demo dura 3 días.»: «Preparar tu demo toma entre 5 y 10 minutos aproximadamente.»
 - La página de gracias ahora dice: «¡Listo! Estamos preparando tu demo: toma entre 5 y 10 minutos aproximadamente. Cuando esté lista te llega al correo tu clave, el manual y la guía de primeros pasos. Revisa también la carpeta de spam.» (reemplaza «En unos minutos te llega…»).
 - Manual, PDF y pruebas (`web_116`) al día.
+
+## 13 nov 2026 — App de iPhone: sin precios ni pagos (regla de Apple), se reconoce por TukanIOS
+Regla SIEMPRE de Dimitry (12 nov 2026, regla 3.1.1 de la App Store): dentro de la app de iPhone no se ve ningún precio de los planes o
+módulos de Tukán, ni botones, enlaces o formularios para pagar, contratar, cotizar, mejorar o cancelar el plan, ni textos que digan dónde pagar.
+- Se reconoce por «TukanIOS» en el User-Agent o por la cookie `canal=ios` que deja `?app=ios` (u `?origen=ios`). Funciones `en_app_ios()`,
+  `en_app_tienda()` (Google Play o iPhone) y `NO_EN_APP_IOS` en `app/bootstrap.php`.
+- Todo lo que se escondía para Google Play ahora usa `en_app_tienda()`; lo propio de Google Play (cancelar en Google Play) sigue con `en_app_android()`.
+- Solo en iPhone: sin la sección «Cancelar mi plan», sin el WhatsApp de ventas en «Solicitar demo», motivo de pausa neutro. `class="tukan-ios"` en `<body>`.
+- El servidor rechaza en iPhone pedir plan/cotización, pasar al Completo, pagar o cancelar con tarjeta y cancelar/seguir con el plan.
+- Lo que el negocio cobra a sus clientes y «Borrar mi cuenta» siguen igual.
+- Archivos: `app/bootstrap.php`, `app/menu.php`, `app/paginas/planes.php`, `app/paginas/tufactura.php`, `app/vistas/_diseno.php`, `espacios.php`,
+  `modulo_apagado.php`, `planes.php`, `prueba_terminada.php`, `registro.php`, `usuarios.php`. Prueba nueva: `tests/web_121_app_iphone.sh`. Docs: `docs/GOOGLE_PLAY.md`, `docs/MANUAL.md`, manual.
+- **Falta:** regenerar el PDF del manual (`bash docs/manual/generar/generar.sh`) en una máquina con el generador.

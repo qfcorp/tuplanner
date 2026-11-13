@@ -17,7 +17,7 @@ $adminViendo = !empty($_SESSION['admin_viendo']) && superadmin();
 // (7 nov 2026) El dueño acepta los términos y la privacidad de Tukán (src/TukanLegal.php); se acepta desde Mi plan
 require_once dirname(__DIR__, 2) . '/src/TukanLegal.php';
 $pideTerminos = $u && es_admin_total($u) && !$adminViendo && !TukanLegal::aceptado(db(), (string) $u['negocio_id']);
-$enApp = en_app_android();   // app de Google Play: sin «Renovar» ni enlaces para pagar el software (docs/GOOGLE_PLAY.md)
+$enApp = en_app_tienda();   // app de Google Play o de iPhone: sin «Renovar» ni enlaces para pagar el software (docs/GOOGLE_PLAY.md)
 $modulosCss = glob(RAIZ . '/public/assets/mod_*.css') ?: [];
 $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
 ?>
@@ -41,7 +41,7 @@ $modulosJs = glob(RAIZ . '/public/assets/mod_*.js') ?: [];
 <link rel="stylesheet" href="/assets/tukan-ui.css?v=<?= filemtime(RAIZ . '/public/assets/tukan-ui.css') ?>">
 <style>:root{ --tk-color:#3678B4; --tk-color-claro:#629BD0; --tk-color-texto:#ffffff; }</style>
 </head>
-<body class="tk <?= ($u ? 'con-sesion' : 'sin-sesion') . ($enApp ? ' en-app' : '') ?>">
+<body class="tk <?= ($u ? 'con-sesion' : 'sin-sesion') . ($enApp ? ' en-app' : '') . (en_app_ios() ? ' tukan-ios' : '') ?>">
 <header class="tk-arriba no-imprimir">
     <div class="te-arriba-izq">
         <?php if ($u): ?><button class="tk-boton-menu" type="button" aria-label="Abrir el menú" aria-expanded="false" aria-controls="tk-menu">☰</button><?php endif; ?>

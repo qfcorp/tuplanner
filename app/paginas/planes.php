@@ -26,6 +26,7 @@ if (es_post() && ($_POST['accion'] ?? '') === 'aceptar_terminos_tukan') {   // a
 if (es_post() && in_array($_POST['accion'] ?? '', ['cancelar_plan', 'seguir_plan'], true)) {
     verificar_csrf();
     try {
+        if (en_app_ios()) throw new RuntimeException(NO_EN_APP_IOS);   // iPhone (regla de Apple): nada de cancelar ni decir dónde
         if (en_app_android()) throw new RuntimeException('En la app cancelas en Google Play → Pagos y suscripciones.');
         if ($_POST['accion'] === 'seguir_plan') {
             TukanCancelarPlan::seguir(db(), (string) $nid, (string) $u['negocio'], (string) $u['email']);
@@ -44,13 +45,13 @@ if (es_post() && in_array($_POST['accion'] ?? '', ['cancelar_plan', 'seguir_plan
     exit;
 }
 // Pagar el plan con tarjeta, solo (src/PagoPlan.php). En la app de Google Play no existe (regla de Google).
-$pagoPlan = en_app_android() ? null : new PagoPlan(db());
+$pagoPlan = en_app_tienda() ? null : new PagoPlan(db());   // ni en Google Play ni en iPhone
 // «Pasarme al Completo» con suscripción con tarjeta pagada (10 nov 2026, tercera parte): cambia de plan ya y el Panel cobra el
 // Completo (prorrateo aparte si sube; si baja, desde el próximo cobro). Sin suscripción va a pagar con tarjeta. Sin tarjeta, no cambia.
 if (es_post() && ($_POST['accion'] ?? '') === 'pasar_completo') {
     verificar_csrf();
     try {
-        if (!$pagoPlan) throw new RuntimeException(NO_EN_APP);
+        if (!$pagoPlan) throw new RuntimeException(en_app_ios() ? NO_EN_APP_IOS : NO_EN_APP);
         $sug = $pagoPlan->sugerenciaCompleto($nid);
         $codCompleto = $sug['plan'] ?? null;
         foreach (modulos()->planes() as $cod => $pl) if (!empty($pl['todos'])) $codCompleto ??= (string) $cod;
@@ -114,7 +115,7 @@ if (es_post() && ($_POST['accion'] ?? '') === 'pasar_completo') {
 if (es_post() && in_array($_POST['accion'] ?? '', ['pagar_tarjeta', 'cancelar_tarjeta'], true)) {
     verificar_csrf();
     try {
-        if (!$pagoPlan) throw new RuntimeException(NO_EN_APP);
+        if (!$pagoPlan) throw new RuntimeException(en_app_ios() ? NO_EN_APP_IOS : NO_EN_APP);
         if ($_POST['accion'] === 'cancelar_tarjeta') {
             $pagoPlan->cancelar($nid, (int) ($_POST['id'] ?? 0), (string) $u['email']);
             aviso('Listo: ese pago con tarjeta quedó cancelado. Ya puedes elegir otro.');
@@ -144,6 +145,7 @@ if (es_post()) {
     try {
         $accion = (string) ($_POST['accion'] ?? '');
         // App de Google Play: no se piden cotizaciones ni planes (sería comprar el software por fuera de Google Play)
+        if (en_app_ios() && $accion === 'pedir_plan') throw new RuntimeException(NO_EN_APP_IOS);
         if (en_app_android() && $accion === 'pedir_plan') throw new RuntimeException(NO_EN_APP);
         if ($accion === 'pedir_plan') {
             // Cotizar otro plan: se piden los módulos de ese plan que hoy no tiene (mismo pedido cambio_modulos del Panel Central)
@@ -163,6 +165,7 @@ if (es_post()) {
         if (!Modulos::existe($mid)) throw new RuntimeException('Ese módulo no existe.');
         // Planes de $20 y $45 (migración 112): si su plan aún tiene módulos por elegir, es uno de esos (incluido en su plan)
         $eligeIncluido = modulos()->estado($nid)['por_elegir'] > 0 && !in_array($mid, Modulos::FUERA_DEL_CUPO, true);
+        if (en_app_ios() && !$eligeIncluido) throw new RuntimeException(NO_EN_APP_IOS);   // iPhone: solo se eligen los incluidos (no se cotiza)
         if (en_app_android() && !$eligeIncluido) throw new RuntimeException(NO_EN_APP);   // en la app solo se eligen los incluidos
         modulos()->pedir($nid, (int) $u['id'], [$mid], trim(($eligeIncluido ? 'Lo elige entre los módulos incluidos en su plan. ' : '') . campo('nota')));
         aviso($eligeIncluido

@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 define('RAIZ', dirname(__DIR__));
 define('COOKIE_APP', 'tp_app');   // cookie que deja la app de Android (?app=play)
+define('COOKIE_CANAL', 'canal');  // cookie que deja la app de iPhone (?app=ios): canal=ios
 date_default_timezone_set('America/Guayaquil');
 
 // 1) Configuración: config/.env -> variables de entorno
@@ -59,6 +60,13 @@ if (PHP_SAPI !== 'cli') {
             'httponly' => true, 'samesite' => 'Lax', 'secure' => es_https()]);
         if ($play) $_COOKIE[COOKIE_APP] = 'play'; else unset($_COOKIE[COOKIE_APP]);
     }
+    // App de iPhone (App Store, 13 nov 2026): abre con ?app=ios (u ?origen=ios) y manda «TukanIOS» en el navegador.
+    // Se recuerda con la cookie canal=ios (1 año), sin depender de que el modo Google Play esté prendido.
+    if ((string) ($_GET['app'] ?? $_GET['origen'] ?? '') === 'ios') {
+        setcookie(COOKIE_CANAL, 'ios', ['expires' => time() + 60 * 60 * 24 * 365, 'path' => '/',
+            'httponly' => true, 'samesite' => 'Lax', 'secure' => es_https()]);
+        $_COOKIE[COOKIE_CANAL] = 'ios';
+    }
 }
 
 /**
@@ -71,6 +79,26 @@ function en_app_android(): bool
 {
     return ($_COOKIE[COOKIE_APP] ?? '') === 'play';
 }
+
+/**
+ * ¿Se está usando dentro de la app de iPhone (App Store)? Regla 3.1.1 de Apple (regla SIEMPRE de Dimitry, 12 nov 2026): ahí no se ve
+ * ningún precio de los planes o módulos de Tukán ni botones, enlaces o formularios para pagar, contratar, cotizar, mejorar o cancelar
+ * el plan, ni textos que digan dónde pagar. Se reconoce por «TukanIOS» en el navegador (User-Agent) o por la cookie canal=ios.
+ * Lo que el negocio cobra a SUS clientes sí se ve.
+ */
+function en_app_ios(): bool
+{
+    return str_contains((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 'TukanIOS') || ($_COOKIE[COOKIE_CANAL] ?? '') === 'ios';
+}
+
+/** ¿Dentro de una app de tienda (Google Play o iPhone)? Ahí se esconde todo lo que vende Tukán. Lo propio de Google Play usa en_app_android(). */
+function en_app_tienda(): bool
+{
+    return en_app_android() || en_app_ios();
+}
+
+/** Mensaje neutro cuando desde la app de iPhone llega una acción de pago, cancelación o cambio de plan. */
+const NO_EN_APP_IOS = 'Esta acción no está disponible en la app.';
 
 /**
  * Cobro del software con Google Play dentro de la app: APAGADO en la versión 1.0.0 (la app es solo para entrar con la cuenta que da Tukán).

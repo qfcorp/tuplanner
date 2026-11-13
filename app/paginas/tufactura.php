@@ -11,8 +11,8 @@ $activo = FacturaTukan::activo($nid);
 $admin = es_admin_total($u);
 $titulo = 'Factura electrónica · ' . FacturaTukan::PROGRAMA;
 if (!$activo) {
-    vista('tufactura', ['html' => (new \TukanFactura(db(), 'solo-para-mostrar-la-pagina', FacturaTukan::PROGRAMA))->pantalla($nid, ['modulo' => false, 'programa' => FacturaTukan::PROGRAMA, 'sin_compras' => en_app_android(),
-        'pedir' => $admin && !en_app_android() ? url('planes', ['modulo' => \TukanFactura::MODULO]) : null])], $titulo);
+    vista('tufactura', ['html' => (new \TukanFactura(db(), 'solo-para-mostrar-la-pagina', FacturaTukan::PROGRAMA))->pantalla($nid, ['modulo' => false, 'programa' => FacturaTukan::PROGRAMA, 'sin_compras' => en_app_tienda(),
+        'pedir' => $admin && !en_app_tienda() ? url('planes', ['modulo' => \TukanFactura::MODULO]) : null])], $titulo);
     return;
 }
 $tf = FacturaTukan::enlace();

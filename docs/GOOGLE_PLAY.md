@@ -108,3 +108,18 @@ Mientras esté apagado, en Play Console **no** se crean suscripciones (`tienda/t
 - En Google Play: **$15,99 / $76,99 / $152,99** (Básico) y **$28,99 / $144,99 / $289,99** (Completo; antes $29,99 / $147,99 / $294,99).
 - 10 nov 2026: Dimitry fijó Básico $15,99 y Completo $28,99; se cambia el precio en Play Console de los productos que ya existen (no se crean ni se renombran productos).
 - Si los productos ya estaban creados en Play Console con $14,99 / $70,99 / $141,99, hay que cambiarles el precio ahí.
+
+## App de iPhone (App Store): sin precios ni pagos (regla 3.1.1 de Apple, 13 nov 2026)
+
+Regla SIEMPRE de Dimitry (12 nov 2026): **App de iPhone: sin precios ni pagos (regla de Apple), se reconoce por TukanIOS.**
+
+| Qué | Cómo |
+|---|---|
+| Cómo se reconoce | El navegador de la app manda «TukanIOS» en el User-Agent (ej. `… TukanIOS/1.0.0`) y la primera página abre con `?app=ios` (u `?origen=ios`), que deja la cookie `canal=ios` (1 año). No depende del modo Google Play |
+| Funciones | `en_app_ios()` (TukanIOS o cookie `canal=ios`), `en_app_tienda()` = `en_app_android() \|\| en_app_ios()` y el mensaje neutro `NO_EN_APP_IOS` («Esta acción no está disponible en la app.»), en `app/bootstrap.php` |
+| Qué se esconde | Todo lo que ya se escondía en Google Play (usa `en_app_tienda()`): precios del plan y de los módulos, «Pedir cotización», «Pagar», «Pagar con tarjeta», «Pasarme al Completo», «Renovar», WhatsApp de ventas, «cambia de plan». Además, solo en iPhone: la sección **Cancelar mi plan** (en Google Play dice «cancela en Google Play»; en iPhone no se dice dónde), el WhatsApp de ventas de «Solicitar demo» y el motivo de la cuenta pausada (texto neutro) |
+| Qué se ve | Información neutra: «Plan Básico», «Pagado hasta el …», «Este módulo no está en tu plan», «Tu demo terminó», «Tu plan vence en 3 días». **Elegir este módulo** (los incluidos en el Básico, no cuesta más). Lo que el negocio cobra a SUS clientes (cuotas, recibos, Payphone del portal) y **Borrar mi cuenta** (Apple lo exige) |
+| Servidor | Rechaza con el mensaje neutro `pedir_plan`, pedir módulos fuera del plan, `pasar_completo`, `pagar_tarjeta`, `cancelar_tarjeta`, `cancelar_plan` y `seguir_plan` |
+| Marca para la app | `class="tukan-ios"` en `<body>` (la app además esconde `.solo-web`, `.tukan-pago`, `#pago-tarjeta`, `.tukan-sugerencia`, `.modulo-precio`) |
+| Lo propio de Google Play | Sigue solo con `en_app_android()` (texto «cancela en Google Play → Pagos y suscripciones», cookie `tp_app`) |
+| Pruebas | `tests/web_121_app_iphone.sh` (UA con TukanIOS y cookie `canal=ios`; sin TukanIOS todo sigue igual; con el Panel simulado y el cobro con tarjeta prendido) |
