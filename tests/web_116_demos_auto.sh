@@ -18,6 +18,7 @@ rm -f "$JAR"
 echo "1. El formulario pide los 6 datos (un solo teléfono: el celular), todos obligatorios, y dice que la demo dura 3 días"
 check "Días de demo: 3 (migración 116, una sola vez)" "3|2026-11-10" "$(sql "SELECT (SELECT valor FROM ajustes WHERE clave='dias_prueba')||'|'||(SELECT valor FROM ajustes WHERE clave='demo_3_dias')")"
 check "Solicitar demo abre" "200" "$(get "r=registro")"
+check "Aviso: datos reales o no se prepara la demo (13 nov 2026)" "1" "$(grep -c 'data-aviso-datos-reales' "$TMP/pag.html")"
 for campo in nombre nombre_comercial celular direccion ciudad email; do
   check "Campo «$campo» obligatorio en el navegador" "1" "$(grep -c "name=\"$campo\"[^>]* required" "$TMP/pag.html")"
 done

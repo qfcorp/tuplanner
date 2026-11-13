@@ -27,6 +27,7 @@ $waTukan = 'https://wa.me/' . whatsapp_ventas() . '?text=' . rawurlencode('Hola,
         <div class="aviso aviso-error" role="alert"><?php foreach ($errores as $e1): ?><div><?= e($e1) ?></div><?php endforeach; ?></div>
     <?php endif; ?>
     <p class="suave" style="margin-top:0">Llena <strong>todos</strong> los datos y te armamos la demo con datos de ejemplo. <strong>La demo dura <?= (int) $diasDemo ?> días.</strong> Preparar tu demo toma entre 5 y 10 minutos aproximadamente.</p>
+    <p class="tk-aviso aviso" data-aviso-datos-reales role="note"><strong>Usa tus datos reales.</strong> Los necesitamos para activar tu demo y, después, tu plan. Si están incompletos o no son verdaderos, no podremos preparar tu demo.</p>
     <div class="fila-campos">
         <div class="campo tk-campo">
             <label for="nombre">Tu nombre y apellido</label>

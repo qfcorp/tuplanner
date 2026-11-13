@@ -316,3 +316,5 @@ módulos de Tukán, ni botones, enlaces o formularios para pagar, contratar, cot
 - Archivos: `app/bootstrap.php`, `app/menu.php`, `app/paginas/planes.php`, `app/paginas/tufactura.php`, `app/vistas/_diseno.php`, `espacios.php`,
   `modulo_apagado.php`, `planes.php`, `prueba_terminada.php`, `registro.php`, `usuarios.php`. Prueba nueva: `tests/web_121_app_iphone.sh`. Docs: `docs/GOOGLE_PLAY.md`, `docs/MANUAL.md`, manual.
 - **Falta:** regenerar el PDF del manual (`bash docs/manual/generar/generar.sh`) en una máquina con el generador.
+
+- 13 nov 2026: **Aviso de datos reales en «Solicitar demo»** (pedido de Dimitry): «Usa tus datos reales. Los necesitamos para activar tu demo y, después, tu plan. Si están incompletos o no son verdaderos, no podremos preparar tu demo.» Prueba web nueva (`data-aviso-datos-reales`).
