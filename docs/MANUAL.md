@@ -132,3 +132,7 @@ Con este módulo, cada pago confirmado de un evento sale como **factura electró
 **Si algo falla**
 - Si TuFactura o el SRI no responden, el cobro igual se guarda. La factura queda pendiente: toca **Reintentar las pendientes** o **Revisar**.
 - Si apagas el módulo, las facturas hechas se quedan en TuFactura.
+
+
+## Súper usuario
+El súper usuario de Tukán entra por el login normal del programa (también en la app de iPhone) escribiendo su correo, su clave y su código de 2 pasos del Panel Tukán. La clave y el código se revisan en el Panel Tukán; el programa no los guarda.
