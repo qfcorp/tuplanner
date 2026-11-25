@@ -1,6 +1,13 @@
 # Bloc de notas — TuPlanner (wedding planners y organizadores de eventos · marca Tukán)
 
-Última actualización: 6 de noviembre de 2026
+Última actualización: 25 de noviembre de 2026
+
+## 25 nov 2026 — Súper usuario: entra por el login normal con su clave y código de 2 pasos del Panel Tukán (también en la app de iPhone)
+- Antes: solo entraba con el botón «Entrar» del Panel Tukán Central; en el login normal (el de la app de iPhone) decía «El correo o la contraseña no coinciden».
+- Ahora: si el login de cliente falla y el programa está conectado al Panel Tukán, `app/paginas/login.php` pregunta al panel (`TukanCentral::verificarSuper`, POST firmado v2 tipo `super` a `/super_api.php`, Anexo C del protocolo). El programa NO guarda ni compara la clave: la revisa el panel (misma clave, mismo código, mismo bloqueo de 5 fallos/15 min).
+- Si falta el código, la pantalla pide «Código de 2 pasos» (no cuenta como intento fallido). Panel caído: mensaje de siempre. Un cliente que entra bien nunca toca el panel.
+- Archivos: `src/TukanCentral.php`, `app/paginas/login.php`, `app/vistas/login.php`. Pruebas: `tests/logica_95_super_login.php`, `tests/web_95_super_login.sh`, panel de mentira `tests/panel_super_simulado.php`.
+- **Falta:** `location = /super_api.php` en el nginx del Panel Central y desplegar primero el Panel Central. La app de iPhone no se recompila.
 
 ## 10 nov 2026 — Identidad gráfica común Tukán (decisión de Dimitry: todos los programas iguales, modelo el ERP)
 - TuPlanner usa el **kit común** `public/assets/tukan-ui.css` + `tukan-ui.js` (idénticos en todos los programas; no se editan aquí).
