@@ -74,10 +74,11 @@ final class Eventos
     {
         $nombre = trim((string) ($d['nombre'] ?? ''));
         $tel = trim((string) ($d['telefono'] ?? ''));
-        $ident = preg_replace('/\D+/', '', (string) ($d['identificacion'] ?? ''));
+        $pais = Paises::normalizar((string) ($d['pais'] ?? ''));
+        $ciudad = mb_substr(trim((string) ($d['ciudad'] ?? '')), 0, 80);
         $email = strtolower(trim((string) ($d['email'] ?? '')));
         if (mb_strlen($nombre) < 3) throw new RuntimeException('Escribe el nombre del cliente.');
-        if ($ident !== '' && !in_array(strlen($ident), [10, 13], true)) throw new RuntimeException('La cédula debe tener 10 dígitos o el RUC 13.');
+        $ident = Paises::identificacion((string) ($d['identificacion'] ?? ''), $pais);   // cédula/RUC en Ecuador; pasaporte si es de otro país
         if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) throw new RuntimeException('El correo del cliente no es válido.');
         $origen = (string) ($d['origen'] ?? '');
         if ($origen !== '' && !isset(self::ORIGENES[$origen])) $origen = 'otro';
@@ -87,19 +88,21 @@ final class Eventos
         $valores = [mb_substr($nombre, 0, 150), $ident ?: null, $tel ?: null, $email ?: null,
                     mb_substr(trim((string) ($d['direccion'] ?? '')), 0, 250) ?: null, $origen ?: null];
         if ($id) {
+            // País y ciudad solo se cambian si vienen en los datos (un cliente repetido no pierde su país)
             $st = $this->db->prepare('UPDATE clientes SET nombre = ?, identificacion = COALESCE(?, identificacion), telefono = COALESCE(?, telefono),
-                                             email = COALESCE(?, email), direccion = COALESCE(?, direccion), origen = COALESCE(origen, ?)
+                                             email = COALESCE(?, email), direccion = COALESCE(?, direccion), origen = COALESCE(origen, ?),
+                                             pais = COALESCE(?, pais), ciudad = COALESCE(?, ciudad)
                                        WHERE id = ? AND negocio_id = ?');
-            $st->execute([...$valores, $id, $negocioId]);
+            $st->execute([...$valores, isset($d['pais']) && trim((string) $d['pais']) !== '' ? $pais : null, $ciudad ?: null, $id, $negocioId]);
             if ($st->rowCount() !== 1) throw new RuntimeException('No se encontró el cliente.');
             if (array_key_exists('notas', $d)) {
                 $this->db->prepare('UPDATE clientes SET notas = ? WHERE id = ?')->execute([trim((string) $d['notas']) ?: null, $id]);
             }
             return $id;
         }
-        $st = $this->db->prepare('INSERT INTO clientes (negocio_id, nombre, identificacion, telefono, email, direccion, origen, notas)
-                                  VALUES (?,?,?,?,?,?,?,?) RETURNING id');
-        $st->execute([$negocioId, ...$valores, trim((string) ($d['notas'] ?? '')) ?: null]);
+        $st = $this->db->prepare('INSERT INTO clientes (negocio_id, nombre, identificacion, telefono, email, direccion, origen, notas, pais, ciudad)
+                                  VALUES (?,?,?,?,?,?,?,?,?,?) RETURNING id');
+        $st->execute([$negocioId, ...$valores, trim((string) ($d['notas'] ?? '')) ?: null, $pais, $ciudad ?: null]);
         return (int) $st->fetchColumn();
     }
 

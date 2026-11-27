@@ -222,5 +222,6 @@ if ($pagoPlan && $estadoMod['precio_acordado'] === null && empty($planesMod[$u['
         if ($sm && $sm['tipo'] === 'mayor') $sugerenciaModulo[$mid] = $sm;
     }
 }
-vista('planes', compact('cancelacion', 'estadoMod', 'catalogo', 'planesMod', 'precios', 'estadoCuenta', 'pagos', 'pedidos', 'pedidosPendientes', 'uso', 'listaPlanes', 'tarjeta', 'sugerencia', 'sugerenciaModulo', 'mejora'),
+$exterior = $pagoPlan ? $pagoPlan->esExterior($nid) : false;   // negocio del exterior: los valores salen SIN IVA (27 nov 2026)
+vista('planes', compact('exterior', 'cancelacion', 'estadoMod', 'catalogo', 'planesMod', 'precios', 'estadoCuenta', 'pagos', 'pedidos', 'pedidosPendientes', 'uso', 'listaPlanes', 'tarjeta', 'sugerencia', 'sugerenciaModulo', 'mejora'),
       'Mi plan · TuPlanner');

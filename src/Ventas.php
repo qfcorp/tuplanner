@@ -404,19 +404,21 @@ final class Ventas
     {
         $nombre = trim((string) ($d['nombre'] ?? ''));
         $tel = trim((string) ($d['telefono'] ?? ''));
-        $ident = preg_replace('/\D+/', '', (string) ($d['identificacion'] ?? ''));
+        $pais = Paises::normalizar((string) ($d['pais'] ?? ''));
+        $ciudad = mb_substr(trim((string) ($d['ciudad'] ?? '')), 0, 80);
         $email = strtolower(trim((string) ($d['email'] ?? '')));
         if (mb_strlen($nombre) < 3) throw new RuntimeException('Escribe el nombre del cliente.');
-        if ($ident !== '' && !in_array(strlen($ident), [10, 13], true)) throw new RuntimeException('La cédula debe tener 10 dígitos o el RUC 13.');
+        $ident = Paises::identificacion((string) ($d['identificacion'] ?? ''), $pais);   // cédula/RUC en Ecuador; pasaporte si es de otro país
         if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) throw new RuntimeException('El correo del cliente no es válido.');
         if ($tel !== '' && WhatsApp::normalizarTelefono($tel) === null) throw new RuntimeException('Revisa el celular (ej. 0991234567).');
         $origen = (string) ($d['origen'] ?? '');
         if ($origen !== '' && !isset(Eventos::ORIGENES[$origen])) $origen = 'otro';
-        $st = $this->db->prepare('UPDATE clientes SET nombre = ?, telefono = ?, identificacion = ?, email = ?, direccion = ?, origen = ?, notas = ?
+        $st = $this->db->prepare('UPDATE clientes SET nombre = ?, telefono = ?, identificacion = ?, email = ?, direccion = ?, origen = ?, notas = ?,
+                                          pais = ?, ciudad = ?
                                    WHERE id = ? AND negocio_id = ?');
         $st->execute([mb_substr($nombre, 0, 150), mb_substr($tel, 0, 20) ?: null, $ident ?: null, $email ?: null,
                       mb_substr(trim((string) ($d['direccion'] ?? '')), 0, 250) ?: null, $origen ?: null,
-                      trim((string) ($d['notas'] ?? '')) ?: null, $id, $negocioId]);
+                      trim((string) ($d['notas'] ?? '')) ?: null, $pais, $ciudad ?: null, $id, $negocioId]);
         if ($st->rowCount() !== 1) throw new RuntimeException('No se encontró el cliente.');
     }
 
@@ -495,7 +497,8 @@ final class Ventas
             if ($d['cliente_id'] <= 0) throw new RuntimeException('Elige el cliente de la lista, o marca "Cliente nuevo".');
         } else {
             $d['cliente'] = ['nombre' => $t('cliente_nombre'), 'telefono' => $t('cliente_telefono'),
-                             'identificacion' => $t('cliente_identificacion'), 'email' => $t('cliente_email'), 'origen' => $t('origen')];
+                             'identificacion' => $t('cliente_identificacion'), 'email' => $t('cliente_email'), 'origen' => $t('origen'),
+                             'pais' => $t('cliente_pais'), 'ciudad' => $t('cliente_ciudad')];
             if (mb_strlen($d['cliente']['nombre']) < 3) throw new RuntimeException('Escribe el nombre del cliente.');
             if ($d['cliente']['telefono'] !== '' && WhatsApp::normalizarTelefono($d['cliente']['telefono']) === null) {
                 throw new RuntimeException('Revisa el celular del cliente (ej. 0991234567).');
