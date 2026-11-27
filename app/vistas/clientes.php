@@ -25,9 +25,10 @@ use TuPlanner\{Eventos, WhatsApp};
                 <input type="tel" id="telefono" name="telefono" value="<?= e($d['telefono']) ?>" placeholder="0991234567">
             </div>
             <div class="campo tk-campo">
-                <label for="identificacion">Cédula o RUC <small>(opcional)</small></label>
-                <input type="text" id="identificacion" name="identificacion" value="<?= e($d['identificacion']) ?>" inputmode="numeric" maxlength="13">
+                <label for="identificacion">Cédula, RUC o pasaporte <small>(opcional)</small></label>
+                <input type="text" id="identificacion" name="identificacion" value="<?= e($d['identificacion']) ?>" maxlength="20">
             </div>
+            <?php $pcPais = $d['pais']; $pcCiudad = $d['ciudad']; $pcId = ''; require RAIZ . '/app/vistas/_pais_ciudad.php'; ?>
             <div class="campo tk-campo">
                 <label for="email">Correo <small>(opcional)</small></label>
                 <input type="email" id="email" name="email" value="<?= e($d['email']) ?>">

@@ -6,7 +6,7 @@ $nid = (int) $u['negocio_id'];
 $eventos = new Eventos(db());
 $q = mb_substr(trim((string) ($_GET['q'] ?? '')), 0, 80);
 $error = null;
-$d = ['nombre' => '', 'telefono' => '', 'identificacion' => '', 'email' => '', 'origen' => ''];
+$d = ['nombre' => '', 'telefono' => '', 'identificacion' => '', 'email' => '', 'origen' => '', 'pais' => 'Ecuador', 'ciudad' => ''];
 
 if (es_post()) {
     exigir(es_comercial($u), 'Solo el dueño y los vendedores pueden crear clientes.');

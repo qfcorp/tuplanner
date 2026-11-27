@@ -26,7 +26,7 @@ if (es_post()) {
     $accion = (string) ($_GET['accion'] ?? 'guardar');
     try {
         if ($accion === 'guardar') {
-            foreach (['nombre', 'telefono', 'identificacion', 'email', 'direccion', 'origen', 'notas'] as $k) $d[$k] = campo($k);
+            foreach (['nombre', 'telefono', 'identificacion', 'email', 'direccion', 'origen', 'notas', 'pais', 'ciudad'] as $k) $d[$k] = campo($k);
             $ventas->editarCliente($nid, $id, $d);
             aviso('Ficha guardada.');
             redirigir('cliente', ['id' => $id]);

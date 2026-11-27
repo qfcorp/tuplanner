@@ -81,6 +81,47 @@ check('El país y la ciudad viajan a TuFactura', ['Paraguay', 'Asunción'], [$ex
 $ext2_x = $tf_x->armar(['precios_con_iva' => 0, 'iva' => 15], 'venta', '3', ['identificacion' => 'AB123456', 'nombre' => 'Cliente', 'direccion' => 'Madrid, España'], [['descripcion' => 'X', 'precio' => 50, 'iva' => 15]]);
 check('Una línea con 15 % sale a 0 % si la dirección es del exterior', 0, $ext2_x['items'][0]['iva']);
 
+// ---- Exterior v2 (27 nov 2026, noche): la cédula o el RUC ecuatoriano válido PREVALECE; país y ciudad en los datos del cliente
+titulo('Exterior v2: cédula/RUC válido prevalece; país y ciudad del cliente');
+foreach ([
+    ['cédula válida + Paraguay => con IVA', ['identificacion' => '1710034065', 'pais' => 'Paraguay'], false],
+    ['cédula INVÁLIDA + Paraguay => sin IVA', ['identificacion' => '1710034066', 'pais' => 'Paraguay'], true],
+    ['país Ecuador con dirección extranjera => con IVA', ['pais' => 'Ecuador', 'direccion' => 'Calle 5, Asunción, Paraguay'], false],
+    ['pasaporte sin país (tipo_id 08) => sin IVA', ['identificacion' => 'AB123456', 'tipo_id' => '08'], true],
+    ['RUC válido + dirección en España => con IVA', ['identificacion' => '1710034065001', 'direccion' => 'Madrid, España'], false],
+] as [$nom_v, $cli_v, $espera_v]) {
+    check($nom_v, $espera_v, \TukanFactura::esExterior($cli_v));
+}
+check('Paises: sin país = Ecuador', ['Ecuador', true, false], [\TuPlanner\Paises::normalizar(''), \TuPlanner\Paises::esEcuador('ecuador'), \TuPlanner\Paises::esEcuador('Paraguay')]);
+check('Paises: pasaporte → tipo 08; cédula → sin tipo', ['08', ''], [\TuPlanner\Paises::tipoId('PY1234567'), \TuPlanner\Paises::tipoId('1710034065')]);
+check_error('En Ecuador la identificación sigue siendo cédula (10) o RUC (13)', 'La cédula debe tener 10 dígitos', fn() => $ev->guardarCliente($nid, ['nombre' => 'Cliente Local', 'identificacion' => 'AB12345']));
+check_error('Fuera de Ecuador el pasaporte debe ser válido (5 a 20 letras y números)', 'pasaporte', fn() => $ev->guardarCliente($nid, ['nombre' => 'Cliente Afuera', 'identificacion' => 'A1', 'pais' => 'Paraguay']));
+check('Un cliente viejo (migración) queda en Ecuador', 'Ecuador', (string) $db->query("SELECT c.pais FROM clientes c JOIN eventos e ON e.cliente_id = c.id WHERE e.id = $e1")->fetchColumn());
+// De punta a punta: cliente de Paraguay con pasaporte
+$fecha2 = (new DateTimeImmutable('today'))->modify('+61 days')->format('Y-m-d');
+$esp = (int) $db->query("SELECT id FROM espacios WHERE negocio_id = $nid ORDER BY id LIMIT 1")->fetchColumn();
+$e2 = $ev->crear($nid, ['cliente' => ['nombre' => 'Federación Paraguaya', 'telefono' => '0992223344', 'identificacion' => 'py-1234567', 'email' => 'fp@ejemplo.com', 'pais' => 'Paraguay', 'ciudad' => 'Asunción'],
+    'tipo' => 'boda', 'fecha' => $fecha2, 'hora_inicio' => '18:00', 'hora_fin' => '02:00', 'invitados' => 80, 'espacios' => [$esp]], (int) $dueno['id']);
+$pX = $pag->registrar($nid, $e2, ['monto' => 115, 'metodo' => 'transferencia', 'tipo' => 'evento'], $dueno);
+[$cliX, $itemsX] = FacturaTukan::datos($nid, (string) $pX);
+check('Datos al exterior: identificación y tipo 08 (pasaporte)', ['PY1234567', '08'], [$cliX['identificacion'], $cliX['tipo_id']]);
+check('Datos al exterior: país y ciudad', ['Paraguay', 'Asunción'], [$cliX['pais'], $cliX['ciudad']]);
+$fX = $tf->facturar($nid, 'pago', (string) $pX, ...FacturaTukan::datos($nid, (string) $pX));
+$envioX = json_decode((string) $fX['envio'], true);
+check('Factura al exterior: todas las líneas a 0 % y por lo cobrado (115)', [[0], 115.0], [array_values(array_unique(array_column($envioX['items'], 'iva'))), (float) $fX['total']]);
+check('Factura al exterior: viaja el país', 'Paraguay', $envioX['cliente']['pais'] ?? '');
+// Cédula ecuatoriana válida con país Paraguay: prevalece la cédula (con IVA)
+$cl2 = $ev->guardarCliente($nid, ['nombre' => 'Rosa Quiroga', 'telefono' => '0993334455', 'identificacion' => '1710034065', 'pais' => 'Paraguay', 'ciudad' => 'Asunción']);
+check('Cliente con cédula ecuatoriana y país Paraguay: se guarda con su país', 'Paraguay', (string) $db->query("SELECT pais FROM clientes WHERE id = $cl2")->fetchColumn());
+check('… pero la regla lo trata como de Ecuador (con IVA)', false, \TukanFactura::esExterior(\TuPlanner\Paises::paraFactura('1710034065', 'Paraguay', 'Asunción', 'Calle 5')));
+// La ficha del cliente se edita con país y ciudad
+(new \TuPlanner\Ventas($db))->editarCliente($nid, $cl2, ['nombre' => 'Rosa Quiroga', 'telefono' => '0993334455', 'identificacion' => '1710034065', 'pais' => 'Ecuador', 'ciudad' => 'Quito']);
+check('Editar la ficha: país y ciudad', ['Ecuador', 'Quito'], [$db->query("SELECT pais FROM clientes WHERE id = $cl2")->fetchColumn(), $db->query("SELECT ciudad FROM clientes WHERE id = $cl2")->fetchColumn()]);
+// La migración 120 se puede correr dos veces
+$mig = file_get_contents(RAIZ . '/db/migraciones/120_pais_ciudad.sql');
+$db->exec($mig);
+check('Migración 120 idempotente (otra vez no falla ni toca filas)', 'Paraguay', (string) $db->query("SELECT pais FROM clientes WHERE id = " . (int) $db->query("SELECT cliente_id FROM eventos WHERE id = $e2")->fetchColumn())->fetchColumn());
+
 proc_terminate($proc);
 array_map('unlink', glob("$simDir/*") ?: []);
 @rmdir($simDir);

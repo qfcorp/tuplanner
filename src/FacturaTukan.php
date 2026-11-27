@@ -47,14 +47,17 @@ final class FacturaTukan
     {
         if (!ctype_digit($pagoId)) return null;
         $st = self::db()->prepare("SELECT p.*, e.nombre AS evento, e.codigo, e.fecha AS fecha_evento,
-                                          c.nombre AS c_nombre, c.identificacion AS c_ident, c.email AS c_email, c.telefono AS c_tel, c.direccion AS c_dir
+                                          c.nombre AS c_nombre, c.identificacion AS c_ident, c.email AS c_email, c.telefono AS c_tel, c.direccion AS c_dir,
+                                          c.pais AS c_pais, c.ciudad AS c_ciudad
                                      FROM pagos p JOIN eventos e ON e.id = p.evento_id JOIN clientes c ON c.id = e.cliente_id
                                     WHERE p.id = ? AND p.negocio_id = ? AND p.tipo = 'evento' AND p.estado = 'confirmado'");
         $st->execute([(int) $pagoId, $negocio]);
         $p = $st->fetch(PDO::FETCH_ASSOC);
         if (!$p) return null;
-        $cliente = ['identificacion' => (string) $p['c_ident'], 'nombre' => (string) $p['c_nombre'], 'correo' => (string) $p['c_email'],
-                    'telefono' => (string) $p['c_tel'], 'direccion' => (string) $p['c_dir']];
+        // País y ciudad (27 nov 2026): con cédula o RUC ecuatoriano válido siempre con IVA; con otro país y sin cédula/RUC válido, sin IVA (regla en TukanFactura::esExterior).
+        // tipo_id «08» solo si la identificación es un pasaporte (letras y números).
+        $cliente = ['nombre' => (string) $p['c_nombre'], 'correo' => (string) $p['c_email'], 'telefono' => (string) $p['c_tel']]
+                 + Paises::paraFactura((string) $p['c_ident'], (string) ($p['c_pais'] ?? ''), (string) ($p['c_ciudad'] ?? ''), (string) $p['c_dir']);
         $items = [['descripcion' => 'Evento: ' . $p['evento'], 'detalle' => $p['codigo'] . ' · ' . date('d/m/Y', strtotime((string) $p['fecha_evento'])), 'cantidad' => 1, 'precio' => (float) $p['monto']]];
         return [$cliente, $items, ['forma' => (string) $p['metodo'], 'info' => array_filter(['Evento' => (string) $p['codigo'], 'Recibo' => $p['numero_recibo'] ? 'N.º ' . $p['numero_recibo'] : ''])]];
     }

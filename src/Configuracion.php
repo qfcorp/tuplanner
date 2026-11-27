@@ -50,8 +50,13 @@ final class Configuracion
     {
         $nombre = self::texto($d, 'nombre', 120);
         if ($nombre === null || mb_strlen($nombre) < 3) throw new RuntimeException('Escribe el nombre de tu salón, quinta o hacienda.');
-        $ruc = preg_replace('/\D+/', '', (string) ($d['ruc'] ?? ''));
-        if ($ruc !== '' && strlen($ruc) !== 13) throw new RuntimeException('El RUC debe tener 13 dígitos (termina en 001).');
+        $pais = Paises::normalizar((string) ($d['pais'] ?? ''));
+        if (Paises::esEcuador($pais)) {
+            $ruc = preg_replace('/\D+/', '', (string) ($d['ruc'] ?? ''));
+            if ($ruc !== '' && strlen($ruc) !== 13) throw new RuntimeException('El RUC debe tener 13 dígitos (termina en 001).');
+        } else {
+            $ruc = Paises::identificacion((string) ($d['ruc'] ?? ''), $pais);   // negocio del exterior: su identificación fiscal o pasaporte
+        }
         $email = strtolower((string) self::texto($d, 'email', 120));
         if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) throw new RuntimeException('El correo del negocio no es válido.');
         $color = trim((string) ($d['color'] ?? '#6B2D3C'));
@@ -65,11 +70,11 @@ final class Configuracion
         }
         $ciudad = self::texto($d, 'ciudad', 80) ?? 'Quito';
         $this->db->prepare('UPDATE negocios SET nombre = ?, razon_social = ?, ruc = ?, telefono = ?, whatsapp = ?, email = ?, direccion = ?,
-                                   ciudad = ?, mapa_url = ?, instagram = ?, facebook = ?, descripcion = ?, color = ? WHERE id = ?')
+                                   ciudad = ?, pais = ?, mapa_url = ?, instagram = ?, facebook = ?, descripcion = ?, color = ? WHERE id = ?')
                  ->execute([$nombre, self::texto($d, 'razon_social', 150), $ruc ?: null,
                             self::telefono(self::texto($d, 'telefono', 20), 'teléfono'),
                             self::telefono(self::texto($d, 'whatsapp', 20), 'WhatsApp'),
-                            $email ?: null, self::texto($d, 'direccion', 250), $ciudad,
+                            $email ?: null, self::texto($d, 'direccion', 250), $ciudad, $pais,
                             self::enlace(self::texto($d, 'mapa_url', 400), 'Google Maps'), $instagram,
                             self::enlace(self::texto($d, 'facebook', 200), 'Facebook'),
                             self::texto($d, 'descripcion', 3000), strtoupper($color), $negocioId]);

@@ -55,9 +55,10 @@ $accion = $nuevo ? url('evento_nuevo') : url('evento_editar', ['id' => $ev['id']
                     <input type="tel" id="cliente_telefono" name="cliente_telefono" value="<?= e($d['cliente_telefono']) ?>" placeholder="0991234567" inputmode="tel">
                 </div>
                 <div class="campo tk-campo">
-                    <label for="cliente_identificacion">Cédula o RUC <small>(opcional, para el contrato)</small></label>
-                    <input type="text" id="cliente_identificacion" name="cliente_identificacion" value="<?= e($d['cliente_identificacion']) ?>" inputmode="numeric" maxlength="13">
+                    <label for="cliente_identificacion">Cédula, RUC o pasaporte <small>(opcional, para el contrato)</small></label>
+                    <input type="text" id="cliente_identificacion" name="cliente_identificacion" value="<?= e($d['cliente_identificacion']) ?>" maxlength="20">
                 </div>
+                <?php $pcPais = $d['cliente_pais'] ?? 'Ecuador'; $pcCiudad = $d['cliente_ciudad'] ?? ''; $pcId = 'cliente_'; require RAIZ . '/app/vistas/_pais_ciudad.php'; ?>
                 <div class="campo tk-campo">
                     <label for="cliente_email">Correo <small>(opcional)</small></label>
                     <input type="email" id="cliente_email" name="cliente_email" value="<?= e($d['cliente_email']) ?>">

@@ -42,9 +42,12 @@ $fmt = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . ' ' . s
                     <input type="tel" id="telefono" name="telefono" value="<?= e($d['telefono']) ?>" placeholder="0991234567">
                 </div>
                 <div class="campo tk-campo">
-                    <label for="identificacion">Cédula o RUC</label>
-                    <input type="text" id="identificacion" name="identificacion" value="<?= e($d['identificacion']) ?>" inputmode="numeric" maxlength="13">
+                    <label for="identificacion">Cédula, RUC o pasaporte</label>
+                    <input type="text" id="identificacion" name="identificacion" value="<?= e($d['identificacion']) ?>" maxlength="20">
                 </div>
+            </div>
+            <div class="fila-campos">
+                <?php $pcPais = $d['pais'] ?? 'Ecuador'; $pcCiudad = $d['ciudad'] ?? ''; $pcId = ''; require RAIZ . '/app/vistas/_pais_ciudad.php'; ?>
             </div>
             <div class="campo tk-campo">
                 <label for="email">Correo</label>
@@ -71,6 +74,7 @@ $fmt = fn(?string $ts) => $ts ? fecha_corta(substr($ts, 0, 10), false) . ' ' . s
             <dl class="ficha-datos">
                 <dt>Celular</dt><dd><?= e($cliente['telefono'] ?: '—') ?></dd>
                 <dt>Cédula/RUC</dt><dd><?= e($cliente['identificacion'] ?: '—') ?></dd>
+                <dt>País</dt><dd><?= e(($cliente['pais'] ?? 'Ecuador') . (!empty($cliente['ciudad']) ? ' · ' . $cliente['ciudad'] : '')) ?></dd>
                 <dt>Correo</dt><dd><?= e($cliente['email'] ?: '—') ?></dd>
                 <dt>Dirección</dt><dd><?= e($cliente['direccion'] ?: '—') ?></dd>
             </dl>

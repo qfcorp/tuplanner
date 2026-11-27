@@ -130,18 +130,17 @@ final class PagoPlan
         if (!$c) throw new RuntimeException('Elige el plan y cada cuánto quieres pagar.');
         if (($mj = $this->mejora($nid)) && $mj['plan'] === $plan) throw new RuntimeException('Para pasarte al plan ' . $mj['plan_nombre'] . ' pagas solo la diferencia de los días que te faltan: usa «Pasar al Completo» en esta página.');
         $nombrePlan = $this->planes($nid)[$plan];
-        $st = $this->db->prepare('SELECT nombre, razon_social, ruc, telefono FROM negocios WHERE id = ?');
+        $st = $this->db->prepare('SELECT nombre, razon_social, ruc, telefono, pais, ciudad, direccion FROM negocios WHERE id = ?');
         $st->execute([$nid]);
         $n = $st->fetch();
-        $ruc = preg_replace('/\D/', '', (string) ($n['ruc'] ?? ''));
         $desc = 'TuPlanner plan ' . $nombrePlan . ' · ' . ($auto ? 'suscripción ' . self::PERIODOS_TEXTO[$periodo] : mb_strtolower(Planes::PERIODOS_NOMBRE[$periodo]) . ' (' . $c['meses_recibidos'] . ($c['meses_recibidos'] === 1 ? ' mes)' : ' meses)'))
             . ' · ' . $n['nombre'];
         [$http, $j] = ($this->llamar)([
             'accion' => 'crear', 'tipo' => $auto ? 'suscripcion' : 'cobro', 'cliente_id' => (string) $nid, 'nombre' => (string) $n['nombre'],
             'plan' => $plan, 'plan_nombre' => $nombrePlan, 'periodo' => $periodo, 'meses' => (int) $c['meses_recibidos'],
             'subtotal' => round((float) $c['monto'], 2), 'descripcion' => mb_substr($desc, 0, 90),
-            'comprador' => ['nombre' => (string) ($u['nombre'] ?? ''), 'correo' => (string) ($u['email'] ?? ''), 'telefono' => (string) (($u['telefono'] ?? '') ?: ($n['telefono'] ?? ''))],
-            'fiscal' => in_array(strlen($ruc), [10, 13], true) ? ['identificacion' => $ruc, 'razon_social' => (string) (($n['razon_social'] ?? '') ?: $n['nombre']), 'correo' => (string) ($u['email'] ?? '')] : [],
+            'comprador' => self::comprador($u, $n),
+            'fiscal' => self::fiscal($u, $n),
             'volver' => $volver,
         ], (string) ($u['email'] ?? ''));
         unset($this->estados[$nid]);
@@ -152,6 +151,51 @@ final class PagoPlan
             throw new RuntimeException('El sistema de pagos no devolvió la página de pago. Intenta otra vez.');
         }
         return $cobro;
+    }
+
+    /**
+     * Quién paga (27 nov 2026): además de nombre, correo y teléfono va el ORIGEN del negocio (identificacion, tipo_id si es pasaporte, pais,
+     * ciudad y direccion) para que Tukán Pagos decida si el cobro lleva IVA: con cédula o RUC ecuatoriano válido siempre con IVA; con otro
+     * país y sin cédula/RUC válido, el valor sale SIN IVA (el subtotal que mandamos es el total).
+     */
+    public static function comprador(array $u, array $n): array
+    {
+        return ['nombre' => (string) ($u['nombre'] ?? ''), 'correo' => (string) ($u['email'] ?? ''), 'telefono' => (string) (($u['telefono'] ?? '') ?: ($n['telefono'] ?? ''))]
+            + Paises::paraFactura((string) ($n['ruc'] ?? ''), (string) ($n['pais'] ?? ''), (string) ($n['ciudad'] ?? ''), (string) ($n['direccion'] ?? ''));
+    }
+
+    /** Datos para la factura del plan: cédula o RUC (10 o 13 dígitos) o, si el negocio es del exterior, su pasaporte o identificación. Vacío si no hay. */
+    public static function fiscal(array $u, array $n): array
+    {
+        $ruc = preg_replace('/[^A-Za-z0-9]/', '', (string) ($n['ruc'] ?? '')) ?? '';
+        $ok = in_array(strlen($ruc), [10, 13], true) && ctype_digit($ruc) || ($ruc !== '' && !Paises::esEcuador((string) ($n['pais'] ?? '')) && preg_match('/^[A-Za-z0-9]{5,20}$/', $ruc));
+        if (!$ok) return [];
+        return ['identificacion' => strtoupper($ruc), 'razon_social' => (string) (($n['razon_social'] ?? '') ?: $n['nombre']), 'correo' => (string) ($u['email'] ?? '')]
+            + array_diff_key(Paises::paraFactura($ruc, (string) ($n['pais'] ?? ''), (string) ($n['ciudad'] ?? ''), (string) ($n['direccion'] ?? '')), ['identificacion' => 1]);
+    }
+
+    /** ¿El negocio es del exterior? Entonces el valor del plan se muestra y se cobra SIN IVA. */
+    public function esExterior(int $negocioId): bool
+    {
+        $st = $this->db->prepare('SELECT ruc, pais, ciudad, direccion FROM negocios WHERE id = ?');
+        $st->execute([$negocioId]);
+        $n = $st->fetch();
+        if (!$n) return false;
+        require_once __DIR__ . '/TukanFactura.php';
+        return \TukanFactura::esExterior(Paises::paraFactura((string) $n['ruc'], (string) $n['pais'], (string) $n['ciudad'], (string) $n['direccion']));
+    }
+
+    /**
+     * Texto de «Mi plan» para un negocio del exterior: los valores NO llevan IVA, así que se quita todo «+ IVA» / «con IVA» (también en los
+     * enlaces de WhatsApp, ya codificados) y las frases que explican que el IVA se suma al pagar.
+     */
+    public static function sinIva(string $html): string
+    {
+        return str_replace(
+            ['Los valores son sin IVA: el IVA se suma al pagar y la factura te llega al correo.', 'Los precios no incluyen el IVA: se suma al pagar y sale en tu factura.',
+             '(valores sin IVA)', ' + IVA', ' con IVA', '%20%2B%20IVA'],
+            ['Los valores no llevan IVA (venta al exterior): lo que ves es lo que pagas, y la factura te llega al correo.', 'Venta al exterior: los precios no llevan IVA.',
+             '(el valor ya es el total, sin IVA)', '', '', ''], $html);
     }
 
     /** Cancela un pago con tarjeta que todavía no se pagó (para poder elegir otro plan u otro período). */
@@ -311,15 +355,16 @@ final class PagoPlan
             if ($diasPeriodo > 0) $porDia = ($nuevo - $actual) * (int) $p['meses_pagados'] / $diasPeriodo;
         }
         $subtotal = round(max(0, $porDia * $dias), 2);
-        return ['plan' => $completo, 'plan_nombre' => (string) $planes[$completo]['nombre'], 'dias' => $dias, 'hasta' => (string) $n['activo_hasta'],
-                'actual' => $actual, 'nuevo' => $nuevo, 'subtotal' => $subtotal, 'total' => round($subtotal * (1 + self::IVA_PCT / 100), 2)];
+        $exterior = $this->esExterior($negocioId);   // del exterior: el total es el subtotal, sin IVA
+        return ['exterior' => $exterior, 'plan' => $completo, 'plan_nombre' => (string) $planes[$completo]['nombre'], 'dias' => $dias, 'hasta' => (string) $n['activo_hasta'],
+                'actual' => $actual, 'nuevo' => $nuevo, 'subtotal' => $subtotal, 'total' => $exterior ? $subtotal : round($subtotal * (1 + self::IVA_PCT / 100), 2)];
     }
 
     /** El texto que se manda por WhatsApp a Tukán para pagar el cambio por transferencia. */
     public static function textoWhatsAppMejora(array $m, string $negocio): string
     {
         return 'Hola, soy ' . $negocio . ' (TuPlanner). Quiero pasar al plan ' . $m['plan_nombre'] . ' pagando por transferencia. Me faltan ' . $m['dias']
-            . ($m['dias'] === 1 ? ' día' : ' días') . ' (hasta el ' . date('d/m/Y', strtotime($m['hasta'])) . '). Valor del cambio: ' . self::dinero($m['total']) . ' con IVA.';
+            . ($m['dias'] === 1 ? ' día' : ' días') . ' (hasta el ' . date('d/m/Y', strtotime($m['hasta'])) . '). Valor del cambio: ' . self::dinero($m['total']) . (empty($m['exterior']) ? ' con IVA.' : ' (sin IVA).');
     }
 
     /**
@@ -331,15 +376,14 @@ final class PagoPlan
     {
         $nid = (int) $u['negocio_id'];
         $m = $this->mejora($nid, $hoy) ?? throw new RuntimeException('Este cambio de plan se paga completo, no por días.');
-        $st = $this->db->prepare('SELECT nombre, razon_social, ruc, telefono FROM negocios WHERE id = ?');
+        $st = $this->db->prepare('SELECT nombre, razon_social, ruc, telefono, pais, ciudad, direccion FROM negocios WHERE id = ?');
         $st->execute([$nid]);
         $n = $st->fetch();
-        $ruc = preg_replace('/\D/', '', (string) ($n['ruc'] ?? ''));
         [$http, $j] = ($this->llamar)([
             'accion' => 'mejora', 'cliente_id' => (string) $nid, 'nombre' => (string) $n['nombre'], 'plan' => $m['plan'], 'plan_nombre' => $m['plan_nombre'],
             'subtotal' => $m['subtotal'], 'hasta' => $m['hasta'],
-            'comprador' => ['nombre' => (string) ($u['nombre'] ?? ''), 'correo' => (string) ($u['email'] ?? ''), 'telefono' => (string) (($u['telefono'] ?? '') ?: ($n['telefono'] ?? ''))],
-            'fiscal' => in_array(strlen($ruc), [10, 13], true) ? ['identificacion' => $ruc, 'razon_social' => (string) (($n['razon_social'] ?? '') ?: $n['nombre']), 'correo' => (string) ($u['email'] ?? '')] : [],
+            'comprador' => self::comprador($u, $n),
+            'fiscal' => self::fiscal($u, $n),
             'volver' => $volver,
         ], (string) ($u['email'] ?? ''));
         unset($this->estados[$nid]);

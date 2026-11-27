@@ -415,3 +415,27 @@ $pp()->aplicarPendientes();
 check('Un pedido de más de 7 días se olvida', 0, (int) $valor('SELECT count(*) FROM plan_mejoras_pedidas'));
 
 putenv('TUKAN_CENTRAL_ID'); putenv('TUKAN_CENTRAL_SECRET'); putenv('TUKAN_CENTRAL_URL');
+
+titulo('Negocio del exterior: el plan se cobra SIN IVA (27 nov 2026)');
+[$x] = negocio_prueba($db, 'esencial', 'Hotel del Exterior');
+$db->prepare("UPDATE negocios SET estado = 'activo', activo_hasta = CURRENT_DATE + 10, modulos_extra = 'paquetes,contratos,portal_cliente,plano,asistente_ia' WHERE id = ?")->execute([$x]);
+$ux = $usuarioDe($x);
+check('Un negocio nuevo o viejo queda en Ecuador por defecto', 'Ecuador', $valor("SELECT pais FROM negocios WHERE id = $x"));
+check('Ecuador con cédula o RUC: no es del exterior', false, $pp()->esExterior($x));
+$cfg = new \TuPlanner\Configuracion($db);
+$cfg->guardarDatos($x, ['nombre' => 'Hotel del Exterior', 'ruc' => 'py-1234567', 'pais' => 'Paraguay', 'ciudad' => 'Asunción', 'direccion' => 'Calle 5']);
+check('Configuración guarda el país y el pasaporte del negocio', ['Paraguay', 'PY1234567', 'Asunción'], [$valor("SELECT pais FROM negocios WHERE id = $x"), $valor("SELECT ruc FROM negocios WHERE id = $x"), $valor("SELECT ciudad FROM negocios WHERE id = $x")]);
+check('Paraguay con pasaporte: es del exterior', true, $pp()->esExterior($x));
+$pp()->crear($ux, 'esencial', 'mensual', true, $VOLVER);
+$p = $ultimo();
+check('El comprador manda identificación, tipo 08, país, ciudad y dirección', ['PY1234567', '08', 'Paraguay', 'Asunción', 'Calle 5'],
+    [$p['comprador']['identificacion'], $p['comprador']['tipo_id'], $p['comprador']['pais'], $p['comprador']['ciudad'], $p['comprador']['direccion']]);
+check('… y el fiscal lleva el pasaporte y el país para la factura', ['PY1234567', 'Paraguay'], [$p['fiscal']['identificacion'], $p['fiscal']['pais']]);
+check('… el valor que se manda es el del plan (el Panel no suma IVA)', 20.99, $p['subtotal']);
+$db->prepare("UPDATE negocios SET ruc = '1710034065' WHERE id = ?")->execute([$x]);
+check('Con cédula ecuatoriana válida prevalece: con IVA aunque el país sea Paraguay', false, $pp()->esExterior($x));
+$db->prepare("UPDATE negocios SET ruc = 'PY1234567' WHERE id = ?")->execute([$x]);
+$m = $pp()->mejora($x);
+check('Mejora al Completo del exterior: el total es el subtotal (sin IVA)', [true, true], [$m !== null && !empty($m['exterior']), $m !== null && $m['total'] === $m['subtotal']]);
+$t = PagoPlan::sinIva('Cuesta $20,99 + IVA al mes · $24,14 con IVA. Los precios no incluyen el IVA: se suma al pagar y sale en tu factura. wa: %20%2B%20IVA');
+check('Mi plan del exterior: el texto sale sin «+ IVA» ni «con IVA»', false, str_contains($t, '+ IVA') || str_contains($t, 'con IVA') || str_contains($t, '%2B'));

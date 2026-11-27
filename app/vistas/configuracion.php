@@ -40,8 +40,8 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
         <div class="fila-campos">
             <div class="campo tk-campo"><label for="razon_social">Razón social <small>(como dice tu RUC)</small></label>
                 <input type="text" id="razon_social" name="razon_social" value="<?= $f('razon_social') ?>" maxlength="150"></div>
-            <div class="campo tk-campo"><label for="ruc">RUC</label>
-                <input type="text" id="ruc" name="ruc" value="<?= $f('ruc') ?>" inputmode="numeric" maxlength="13" placeholder="1790000000001"></div>
+            <div class="campo tk-campo"><label for="ruc">RUC <small>(o identificación fiscal si el negocio es del exterior)</small></label>
+                <input type="text" id="ruc" name="ruc" value="<?= $f('ruc') ?>" maxlength="20" placeholder="1790000000001"></div>
         </div>
         <div class="fila-campos">
             <div class="campo tk-campo"><label for="telefono">Teléfono</label>
@@ -56,6 +56,10 @@ $num = fn(string $k) => e(rtrim(rtrim(number_format((float) $n[$k], 2, '.', ''),
             <div class="campo tk-campo"><label for="ciudad">Ciudad</label>
                 <input type="text" id="ciudad" name="ciudad" value="<?= $f('ciudad') ?>" maxlength="80"></div>
         </div>
+        <div class="fila-campos">
+            <?php $pcPais = $n['pais'] ?? 'Ecuador'; $pcCiudad = null; $pcId = ''; $pcSinCiudad = true; require RAIZ . '/app/vistas/_pais_ciudad.php'; ?>
+        </div>
+        <p class="g-nota">Si el negocio es del exterior, el valor de tu plan sale sin IVA al pagar con tarjeta.</p>
         <div class="campo tk-campo"><label for="direccion">Dirección</label>
             <input type="text" id="direccion" name="direccion" value="<?= $f('direccion') ?>" maxlength="250" placeholder="Vía a Tumbaco km 5, junto a…"></div>
         <div class="campo tk-campo"><label for="mapa_url">Enlace de Google Maps</label>

@@ -1,5 +1,6 @@
 <?php
-use TuPlanner\{Modulos, PanelTukan, Planes};
+use TuPlanner\{Modulos, PanelTukan, PagoPlan, Planes};
+if (!empty($exterior)) ob_start();   // negocio del exterior: todo el texto sale sin IVA (PagoPlan::sinIva al final)
 /** Mi plan (Anexo B). @var array $estadoMod @var array $catalogo @var array $planesMod @var array $precios @var string $estadoCuenta
  *  @var array $pagos @var array $pedidos @var array $pedidosPendientes @var array $uso @var array $listaPlanes
  *  @var ?array $mejora pasar al Completo pagando el prorrateo (PagoPlan::mejora; null = no aplica)
@@ -326,3 +327,4 @@ $conTarjeta = fn(string $cod) => !empty($tarjeta) && !$tarjeta['suscripcion'] &&
 <?php if ($u['estado'] !== 'prueba'): /* «Cancelar mi plan» (src/TukanCancelarPlan.php) */ ?>
 <?= en_app_ios() ? '' /* iPhone (regla de Apple): sin botón para cancelar ni decir dónde se paga */ : TukanCancelarPlan::html($cancelacion ?? null, campo_csrf(), url('planes'), $u['activo_hasta'] ?? null, en_app_android()) ?>
 <?php endif; ?>
+<?php if (!empty($exterior)) echo PagoPlan::sinIva((string) ob_get_clean()); ?>

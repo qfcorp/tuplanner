@@ -26,7 +26,7 @@ foreach ($ev['espacios'] as $es) {
 $d = [
     'modo_cliente' => 'existente', 'cliente_id' => (int) $ev['cliente_id'],
     'cliente_texto' => $ev['cliente'] . ($ev['cliente_telefono'] ? ' · ' . $ev['cliente_telefono'] : ''),
-    'cliente_nombre' => '', 'cliente_telefono' => '', 'cliente_identificacion' => '', 'cliente_email' => '',
+    'cliente_nombre' => '', 'cliente_telefono' => '', 'cliente_identificacion' => '', 'cliente_email' => '', 'cliente_pais' => 'Ecuador', 'cliente_ciudad' => '',
     'origen' => (string) $ev['origen'], 'tipo' => $ev['tipo'], 'nombre' => $ev['nombre'], 'fecha' => $ev['fecha'],
     'hora_inicio' => hora_corta($ev['hora_inicio']), 'hora_fin' => hora_corta($ev['hora_fin']), 'invitados' => (string) $ev['invitados'],
     'espacios' => array_map('intval', array_column($ev['espacios'], 'id')), 'montaje' => (string) $ev['montaje'],
